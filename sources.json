@@ -40,7 +40,7 @@
           "path": "crates/benilla-app/src/codcraft/shot_math.rs"
         },
         {
-          "sha256": "3307e6803fd623e88945c00aaffed20bf37db644e152a6df44a9b7b2e18640a5",
+          "sha256": "5a9b437a4a2ade50c4df2659292722fbc59da354d8296cec57d002212a72a002",
           "path": "crates/benilla-app/src/codcraft/tracers.rs"
         },
         {

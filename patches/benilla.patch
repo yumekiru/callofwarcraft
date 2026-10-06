@@ -1,0 +1,2909 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index aba3867..cbe8346 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -679,6 +679,7 @@ dependencies = [
+  "objc2 0.5.2",
+  "objc2-app-kit 0.2.2",
+  "objc2-foundation 0.2.2",
++ "wgpu",
+ ]
+ 
+ [[package]]
+diff --git a/crates/benilla-app/src/combat_text/mod.rs b/crates/benilla-app/src/combat_text/mod.rs
+index 1b569d5..ada04fe 100644
+--- a/crates/benilla-app/src/combat_text/mod.rs
++++ b/crates/benilla-app/src/combat_text/mod.rs
+@@ -425,6 +425,33 @@ fn melee_impact_text(
+     }
+ }
+ 
++/// The server's normal attacker-state packet is reused for CoD bullets, but the melee animation
++/// path is intentionally bypassed. Re-enter only the shared floating-number formatter so a bullet
++/// hit has the same damage colour and wording without starting a sword swing.
++fn codcraft_damage_text(
++    mut impacts: MessageReader<crate::codcraft::CodcraftDamageText>,
++    gates: Res<DamageTextGates>,
++    mut text: MessageWriter<CombatTextSpawn>,
++) {
++    for impact in impacts.read() {
++        let Some(color) = damage_color(*gates, DamageSource::Player, true) else {
++            continue;
++        };
++        if let Some((category, body)) = melee_text(
++            impact.hit_info,
++            impact.victim_state,
++            impact.damage,
++        ) {
++            text.write(CombatTextSpawn {
++                anchor: impact.anchor,
++                text: body,
++                category,
++                color,
++            });
++        }
++    }
++}
++
+ /// Registers the spawn message, the pool, and the per-frame engine (after the script extract,
+ /// inside the append window the mesh rebuild waits on).
+ pub(crate) struct CombatTextPlugin;
+@@ -449,7 +476,12 @@ impl Plugin for CombatTextPlugin {
+             .add_message::<CombatTextSpawn>()
+             .add_systems(
+                 Update,
+-                (melee_impact_text, missile_miss_text, float_combat_text)
++                (
++                    melee_impact_text,
++                    codcraft_damage_text,
++                    missile_miss_text,
++                    float_combat_text,
++                )
+                     .chain()
+                     .in_set(UiQuadAppend),
+             );
+diff --git a/crates/benilla-app/src/creature_anim.rs b/crates/benilla-app/src/creature_anim.rs
+index 04617da..0d16a90 100644
+--- a/crates/benilla-app/src/creature_anim.rs
++++ b/crates/benilla-app/src/creature_anim.rs
+@@ -218,6 +218,13 @@ pub(crate) fn start_attack_local(
+     commands: &mut Commands,
+     net: &crate::net::NetCommands,
+ ) {
++    // CoDCraft owns the trigger and its weapon presentation.  Several local seams can reach
++    // StartAttack (selection, the attack pseudo-spell, and cast fallback), so guard the common
++    // helper instead of trying to close each caller independently.
++    if crate::codcraft::passthrough_enabled() {
++        let _ = net.0.send(crate::net::ClientCommand::AttackStop);
++        return;
++    }
+     // Starting an attack stands you up (`0x5ecc9b`), after the attackability check but before
+     // the range logic and the already-attacking skip, so a re-issued or out-of-reach attack
+     // stands you too.
+diff --git a/crates/benilla-app/src/creature_anim/net.rs b/crates/benilla-app/src/creature_anim/net.rs
+index dcd1173..b7528c7 100644
+--- a/crates/benilla-app/src/creature_anim/net.rs
++++ b/crates/benilla-app/src/creature_anim/net.rs
+@@ -32,8 +32,33 @@ pub(super) fn register(app: &mut App) {
+         .net_handler(K::EnvironmentalDamageLog, on_environmental_damage_log);
+ }
+ 
+-fn on_attack_start(In(ev): In<SessionEvent>, mut commands: Commands, index: Res<GuidIndex>) {
++fn on_attack_start(
++    In(ev): In<SessionEvent>,
++    mut commands: Commands,
++    index: Res<GuidIndex>,
++    self_guid: Res<SelfGuid>,
++    codcraft: Option<Res<crate::codcraft::GuestInputPublisher>>,
++    net: Option<Res<crate::net::NetCommands>>,
++) {
+     if let SessionEvent::AttackStart { attacker, victim } = ev {
++        // The visible Benilla client owns the player's trigger in passthrough mode.  A Warcraft
++        // AttackStart can still be echoed by the server after an old selection or a stale combat
++        // latch; allowing it through would put the player into the sword swing path.  Stop the
++        // server combat and leave the CoD weapon presentation as the only local attack animation.
++        if codcraft
++            .as_ref()
++            .is_some_and(|input| input.owns_gameplay_controls())
++            && self_guid.0 == Some(attacker)
++        {
++            if let Some(net) = net {
++                let _ = net.0.send(crate::net::ClientCommand::AttackStop);
++            }
++            if let Some(&entity) = index.0.get(&attacker) {
++                commands.entity(entity).remove::<Engaged>();
++            }
++            debug!("net: suppressed local Warcraft attack start {attacker:#x} → {victim:#x}");
++            return;
++        }
+         attack_start(attacker, victim, &mut commands, &index);
+     }
+ }
+@@ -122,6 +147,12 @@ fn on_attacker_state(
+     mut center: MessageWriter<CombatTextEvent>,
+     mut sheaths: MessageWriter<SheathRequest>,
+     mut edges: MessageWriter<SwingRefusalEdge>,
++    mut codcraft: ResMut<crate::codcraft::CodcraftCombatState>,
++    mut hit_markers: MessageWriter<crate::codcraft::CodcraftHitMarker>,
++    mut bullet_impacts: MessageWriter<crate::codcraft::CodcraftBulletImpact>,
++    mut damage_text: MessageWriter<crate::codcraft::CodcraftDamageText>,
++    codcraft_mode: Option<Res<crate::codcraft::GuestInputPublisher>>,
++    time: Res<Time>,
+     stores: Query<&mut crate::net::ObjectStore>,
+     mut play_seq: ResMut<PlaySeq>,
+ ) {
+@@ -130,11 +161,19 @@ fn on_attacker_state(
+             s,
+             &index,
+             &self_guid,
++            codcraft_mode
++                .as_ref()
++                .is_some_and(|input| input.owns_gameplay_controls()),
+             &mut swings,
+             &mut impacts,
+             &mut center,
+             &mut sheaths,
+             &mut edges,
++            &mut codcraft,
++            &mut hit_markers,
++            &mut bullet_impacts,
++            &mut damage_text,
++            time.elapsed_secs(),
+             &stores,
+             play_seq.next(),
+         );
+@@ -239,15 +278,63 @@ fn attacker_state(
+     mut s: AttackerState,
+     index: &GuidIndex,
+     self_guid: &SelfGuid,
++    codcraft_mode: bool,
+     swings: &mut MessageWriter<SwingMessage>,
+     impacts: &mut MessageWriter<SwingImpact>,
+     center: &mut MessageWriter<CombatTextEvent>,
+     sheaths: &mut MessageWriter<SheathRequest>,
+     edges: &mut MessageWriter<SwingRefusalEdge>,
++    codcraft: &mut crate::codcraft::CodcraftCombatState,
++    hit_markers: &mut MessageWriter<crate::codcraft::CodcraftHitMarker>,
++    bullet_impacts: &mut MessageWriter<crate::codcraft::CodcraftBulletImpact>,
++    damage_text: &mut MessageWriter<crate::codcraft::CodcraftDamageText>,
++    now: f32,
+     stores: &Query<&mut crate::net::ObjectStore>,
+     seq: u64,
+ ) {
+     let victim = index.0.get(&s.victim).copied();
++    if codcraft_mode && self_guid.0 == Some(s.victim) && s.damage > 0 {
++        codcraft.incoming_hits.push_back((s.attacker, now));
++        if codcraft.incoming_hits.len() > 64 { codcraft.incoming_hits.pop_front(); }
++    }
++    // A pending custom shot is already scoped to the local guest request.  Do not require the
++    // serialized attacker GUID to match byte-for-byte: vmangos can normalize that field while
++    // still returning the correct attacker-state packet.
++    let codcraft_shot = codcraft.take_for_response(s.victim, now);
++    if codcraft_shot.is_some() {
++        if s.damage > 0 {
++            if let Some(target_guid) = codcraft_shot {
++                codcraft.confirm_bullet_hit(target_guid, now);
++            }
++            // Set the latch in the packet handler as well as publishing the message.  This makes
++            // the visual deterministic even when the HUD and network handler run in different
++            // Update stages.
++            codcraft.marker_until = now + 0.16;
++            hit_markers.write(crate::codcraft::CodcraftHitMarker);
++            bullet_impacts.write(crate::codcraft::CodcraftBulletImpact);
++            if let Some(anchor) = victim {
++                damage_text.write(crate::codcraft::CodcraftDamageText {
++                    anchor,
++                    hit_info: s.hit_info,
++                    victim_state: s.victim_state,
++                    damage: s.damage,
++                });
++            }
++        }
++        // The custom bullet deliberately reuses the server's ordinary damage calculation, but
++        // its attacker-state response must not enter Benilla's melee animation/sheathe path.
++        // The 3-D CoD weapon remains the only first-person weapon presentation.
++        return;
++    }
++    // Any remaining attacker-state packet for our local player is ordinary WoW melee feedback.
++    // It must not animate the sword or produce melee hit audio while CoDCraft owns the trigger.
++    if codcraft_mode && self_guid.0 == Some(s.attacker) {
++        debug!(
++            "net: suppressed unmatched local Warcraft attacker state {:#x} → {:#x}",
++            s.attacker, s.victim
++        );
++        return;
++    }
+     // Our landed swing clears the refusal latch (`0x6259b6` → `0x5ea800` → `0x5ecdb0(0)`) when we
+     // are the attacker (`0x5fa6d0`) and the victim resolves; sent from here to keep packet order.
+     if self_guid.0 == Some(s.attacker) && victim.is_some() {
+@@ -284,6 +371,12 @@ fn attacker_state(
+             });
+         }
+     }
++    // These attacker-state packets carry authoritative rifle damage, not a Warcraft
++    // sword swing. Keep received-damage text above, suppress melee animation/audio below.
++    if codcraft_mode && (combat_rifle_attacker(&codcraft,s.attacker)) {
++        info!("CoDCraft: rifle damage attacker={:#x} damage={}", s.attacker, s.damage);
++        return;
++    }
+     let swing = SwingMessage {
+         attacker: Entity::PLACEHOLDER, // filled per branch below
+         victim,
+@@ -322,6 +415,10 @@ fn attacker_state(
+     }
+ }
+ 
++fn combat_rifle_attacker(state:&crate::codcraft::CodcraftCombatState,guid:u64)->bool {
++    state.rifle_attackers.contains(&guid)
++}
++
+ /// `SMSG_TEXT_EMOTE`: the animation needs the performer streamed, the chat line only needs their
+ /// name, so an off-screen emote still prints (reference: `0x49dbe0`).
+ fn text_emote(
+diff --git a/crates/benilla-app/src/entities/equipment/resolve.rs b/crates/benilla-app/src/entities/equipment/resolve.rs
+index 652b36a..6be07a4 100644
+--- a/crates/benilla-app/src/entities/equipment/resolve.rs
++++ b/crates/benilla-app/src/entities/equipment/resolve.rs
+@@ -138,6 +138,7 @@ pub(in crate::entities) fn resolve_equipment(
+         Option<&DressKey>,
+         Option<&DisarmFreeze>,
+         Has<crate::net::SelfPlayer>,
++        Option<&crate::codcraft::RifleEnemy>,
+     )>,
+     held: Option<ResMut<ItemDisplays>>,
+     templates: Res<Items>,
+@@ -188,12 +189,17 @@ pub(in crate::entities) fn resolve_equipment(
+         current_dress,
+         freeze,
+         is_self,
++        rifle_enemy,
+     ) in &units
+     {
+         if !matches!(net_entity.kind, EntityKind::Unit | EntityKind::Player) {
+             continue;
+         }
+         let s = &store.0;
++        // CoDCraft fork: native rifle visuals for eligible hostile humanoids.
++        let boomstick = std::env::var_os("CODCRAFT_INPUT").is_some()
++            && net_entity.kind == EntityKind::Unit
++            && rifle_enemy.is_some();
+         // The anim layer's committed sheath state, else the raw byte until the driver runs.
+         let committed = driver
+             .and_then(|d| d.sheath_state())
+@@ -287,7 +293,12 @@ pub(in crate::entities) fn resolve_equipment(
+         let mut resolved: [Option<(u32, u32, u8, u8, u8, u8)>; HELD_SLOTS] = [None; HELD_SLOTS];
+         for slot in 0..HELD_SLOTS {
+             // (display id, inventory type, item sheath type, class, subclass, material) per slot.
+-            resolved[slot] = match net_entity.kind {
++            resolved[slot] = if boomstick {
++                (slot == 0).then(|| templates.held(4362, &net)).flatten().map(|t| (
++                    t.display_info_id, t.inventory_type, t.sheath as u8,
++                    t.class as u8, t.subclass as u8, t.material as u8,
++                ))
++            } else { match net_entity.kind {
+                 EntityKind::Unit => {
+                     let display = s.unit_virtual_item_display(slot as u8).filter(|d| *d != 0);
+                     display.map(|d| {
+@@ -313,7 +324,7 @@ pub(in crate::entities) fn resolve_equipment(
+                         )
+                     }),
+                 _ => None,
+-            };
++            }};
+             let Some((_, inv_type, item_sheath, class, subclass, material)) = resolved[slot] else {
+                 continue;
+             };
+@@ -366,7 +377,8 @@ pub(in crate::entities) fn resolve_equipment(
+             // The dress, above the placement gate; its enchants come off the descriptor, since an
+             // enchant raises a model event drawn or not and `visual` exists only for a placed slot.
+             worn[slot] = Some((display, kind, enchant_fold(s, net_entity.kind, slot)));
+-            let live = placement(slot, inv_type, item_sheath, sheath_of(slot, inv_type));
++            let live = if boomstick { Some(attach_id::HAND_RIGHT) }
++                else { placement(slot, inv_type, item_sheath, sheath_of(slot, inv_type)) };
+             // The hidden hand's weapon stays where the disarm reflex left it (`0x5ff580`).
+             let attach = if hidden == Some(slot) {
+                 if disarm_edge {
+diff --git a/crates/benilla-app/src/lib.rs b/crates/benilla-app/src/lib.rs
+index 7f3d229..ae10bdd 100644
+--- a/crates/benilla-app/src/lib.rs
++++ b/crates/benilla-app/src/lib.rs
+@@ -37,6 +37,7 @@ mod char_select;
+ mod chat_bubble;
+ mod chr_classes;
+ mod cinematic;
++mod codcraft;
+ mod combat_log;
+ mod combat_text;
+ mod console;
+@@ -371,6 +372,9 @@ pub fn run(build: BuildId) -> AppExit {
+     // cost and the GPU's per-pass split to `benilla-config/Diagnostics/fps-journal.csv`;
+     // `WOW_FPS_JOURNAL=<csv>` is the harness lever.
+     .add_plugins(perf::FpsJournalPlugin)
++    // CoDCraft: the passthrough link to the other process. Reads what the Modern Warfare 2 engine
++    // publishes; inert unless `CODCRAFT_STATE` names its state file.
++    .add_plugins(codcraft::CodcraftPlugin)
+     // The game as one group on top of the engine; `game_plugins.rs` has its members, its
+     // load-bearing ordering edges and the test that builds it headless.
+     .add_plugins(game_plugins::GamePlugins {
+diff --git a/crates/benilla-app/src/nameplates.rs b/crates/benilla-app/src/nameplates.rs
+index c950c19..f055afd 100644
+--- a/crates/benilla-app/src/nameplates.rs
++++ b/crates/benilla-app/src/nameplates.rs
+@@ -39,6 +39,10 @@ const SCALE_FLOOR: f32 = 0.2; // [0x80679c]
+ const SCALE_KNEE: f32 = 4.0; // [0x8112a8]
+ const SCALE_RATE: f32 = 1.5; // [0x8112ac]
+ 
++/// A one-frame miss in a streamed visibility/name gate must not destroy and recreate a world
++/// billboard. Three consecutive misses still retire it promptly (50 ms at 60 Hz).
++const NAME_MISS_GRACE_FRAMES: u8 = 3;
++
+ /// The `UnitNamePlayer`/`UnitNameNPC`/`UnitNameOwn` CVars (the reference's `0xce8720` mask), with
+ /// the reference's defaults `"1"`, `"0"`, `"0"` (`0x6c7470`).
+ #[derive(Resource, Clone, Copy)]
+@@ -151,6 +155,8 @@ pub(crate) struct Nameplates {
+     meshes: HashMap<Vec<String>, Handle<Mesh>>,
+     /// unit → (plate entity, the (lines, color) it was built with).
+     live: bevy::ecs::entity::EntityHashMap<(Entity, Vec<String>, NamePaint)>,
++    /// Consecutive Update frames a live label has failed its show/name gates.
++    missed_frames: bevy::ecs::entity::EntityHashMap<u8>,
+     /// The atlas generation the meshes' UVs were built from; `None` before the first build.
+     baked_from: Option<u64>,
+ }
+@@ -499,19 +505,42 @@ pub(crate) fn drive_nameplates(
+             }
+         }
+     }
+-    // Plates whose unit despawned or gated off this frame.
+-    plates.live.retain(|unit, (plate, _, _)| {
+-        if seen.contains(unit) {
+-            true
+-        } else {
+-            if let Ok(mut e) = commands.get_entity(*plate) {
+-                e.despawn();
++    // A single transient miss used to despawn the mesh here, then respawn it next frame. Keep a
++    // live label through brief churn in the stream/gates; a sustained hide or a despawn still
++    // retires it after NAME_MISS_GRACE_FRAMES.
++    let Nameplates {
++        live,
++        missed_frames,
++        ..
++    } = &mut *plates;
++    live.retain(|unit, (plate, _, _)| {
++        let is_seen = seen.contains(unit);
++        let misses = missed_frames.entry(*unit).or_default();
++        if !name_miss_expired(misses, is_seen) {
++            if is_seen {
++                missed_frames.remove(unit);
+             }
+-            false
++            return true;
++        }
++        missed_frames.remove(unit);
++        if let Ok(mut e) = commands.get_entity(*plate) {
++            e.despawn();
+         }
++        false
+     });
+ }
+ 
++/// Track gate misses without allowing a single bad frame to blink a live world-space label.
++fn name_miss_expired(misses: &mut u8, seen: bool) -> bool {
++    if seen {
++        *misses = 0;
++        false
++    } else {
++        *misses = misses.saturating_add(1);
++        *misses >= NAME_MISS_GRACE_FRAMES
++    }
++}
++
+ /// Seat every live plate from this frame's propagated pose, so a moving name does not trail;
+ /// plates are roots, so writing `GlobalTransform` directly is exact.
+ #[allow(clippy::type_complexity)] // one Bevy system's full input set
+@@ -659,6 +688,7 @@ fn drop_stale_glyph_caches(plates: &mut Nameplates, generation: u64, commands: &
+             }
+         }
+         plates.live.clear();
++        plates.missed_frames.clear();
+         plates.meshes.clear();
+     }
+     plates.baked_from = Some(generation);
+@@ -690,6 +720,24 @@ mod tests {
+         assert!(height_scale(4.1) > 0.2, "past the knee: the jump is real");
+     }
+ 
++    #[test]
++    fn a_transient_gate_miss_does_not_retire_a_world_name() {
++        let mut misses = 0;
++        assert!(!name_miss_expired(&mut misses, false));
++        assert_eq!(misses, 1);
++        assert!(
++            !name_miss_expired(&mut misses, true),
++            "a recovered frame resets the streak"
++        );
++        assert_eq!(misses, 0);
++        assert!(!name_miss_expired(&mut misses, false));
++        assert!(!name_miss_expired(&mut misses, false));
++        assert!(
++            name_miss_expired(&mut misses, false),
++            "a sustained hide is still retired"
++        );
++    }
++
+     /// Bare concatenation in slot order AFK, DND, GM (`0x608f50`); other bits ignored.
+     #[test]
+     fn flag_prefix_matches_the_slot_law() {
+diff --git a/crates/benilla-app/src/net.rs b/crates/benilla-app/src/net.rs
+index f669ffe..9364557 100644
+--- a/crates/benilla-app/src/net.rs
++++ b/crates/benilla-app/src/net.rs
+@@ -962,6 +962,19 @@ pub(crate) enum ClientCommand {
+     AttackSwing {
+         guid: u64,
+     },
++    /// CoDCraft's one-shot bullet impact; the vmangos extension reuses normal main-hand damage.
++    CodcraftBullet {
++        guid: u64,
++    },
++    /// CoDCraft's private one-shot fired by a visible Kobold bot at our player.
++    CodcraftNpcBullet {
++        attacker_guid: u64,
++        target_guid: u64,
++        yaw: f32,
++        forward: i32,
++        right: i32,
++        shot_sequence: u32,
++    },
+     /// `CMSG_ATTACKSTOP`, sent when the target is lost; the weapons stay drawn.
+     AttackStop,
+     /// `CMSG_CANCEL_AUTO_REPEAT_SPELL`, sent by every local cancel (`0x6ea0c6` in `0x6ea080`);
+diff --git a/crates/benilla-app/src/net/io.rs b/crates/benilla-app/src/net/io.rs
+index 0129070..403927d 100644
+--- a/crates/benilla-app/src/net/io.rs
++++ b/crates/benilla-app/src/net/io.rs
+@@ -1067,6 +1067,12 @@ fn writer_loop(
+                     ClientCommand::PetAbandon { pet_guid } => w.pet_abandon(pet_guid),
+                     ClientCommand::PetRename { pet_guid, name } => w.pet_rename(pet_guid, &name),
+                     ClientCommand::AttackSwing { guid } => w.attack_swing(guid),
++                    ClientCommand::CodcraftBullet { guid } => w.codcraft_bullet(guid),
++                    ClientCommand::CodcraftNpcBullet {
++                        attacker_guid,
++                        target_guid,
++                        yaw, forward, right, shot_sequence,
++                    } => w.codcraft_npc_bullet(attacker_guid, target_guid, yaw, forward, right, shot_sequence),
+                     ClientCommand::AttackStop => w.attack_stop(),
+                     ClientCommand::SetSheathed { state } => w.set_sheathed(state),
+                     ClientCommand::StandStateChange { state } => w.stand_state_change(state),
+diff --git a/crates/benilla-app/src/player/camera.rs b/crates/benilla-app/src/player/camera.rs
+index 1e54b39..641e25e 100644
+--- a/crates/benilla-app/src/player/camera.rs
++++ b/crates/benilla-app/src/player/camera.rs
+@@ -14,7 +14,7 @@ use crate::net::Embodied;
+ use benilla_assets::materials::WowModelMaterial;
+ use benilla_world::interact::{WorldClick, WorldRightClick, WorldRightPress};
+ use benilla_world::model_fade::{
+-    self_model_fade_alpha, FadeMaterials, PendingAppearFade, RenderFade, SELF_FADE_WINDOW,
++    FadeMaterials, PendingAppearFade, RenderFade, SELF_FADE_WINDOW, self_model_fade_alpha,
+ };
+ 
+ /// The reference's up-edge click predicate (`0x514ae0`): a click is a release within 200 ms, or
+@@ -40,7 +40,7 @@ pub(super) struct PressGesture {
+ }
+ 
+ impl PressGesture {
+-    fn new(now: f32) -> Self {
++    pub(super) fn new(now: f32) -> Self {
+         Self {
+             at: now,
+             yaw_travel: 0.0,
+@@ -48,7 +48,7 @@ impl PressGesture {
+         }
+     }
+ 
+-    fn is_click(&self, now: f32) -> bool {
++    pub(super) fn is_click(&self, now: f32) -> bool {
+         let elapsed = now - self.at;
+         elapsed < CLICK_FREE_WINDOW
+             || (elapsed < CLICK_HOLD_CEILING
+@@ -609,6 +609,13 @@ impl CameraControl {
+         self.target_distance = d;
+     }
+ 
++    /// Keep the Warcraft camera at the player's eye while CoDCraft supplies the view angles.
++    pub(crate) fn codcraft_first_person(&mut self) {
++        self.distance = 0.0;
++        self.target_distance = 0.0;
++        self.collision_distance = 0.0;
++    }
++
+     /// True while a mouse-look drag is active (right- or left-button). The cursor is hidden then.
+     pub(crate) fn is_looking(&self) -> bool {
+         self.look.is_some()
+@@ -680,6 +687,7 @@ impl WorldMouse {
+ /// the controller and would otherwise read it a frame late.
+ pub(super) fn latch_world_mouse(
+     buttons: Res<ButtonInput<MouseButton>>,
++    codcraft: Option<Res<crate::codcraft::GuestInputPublisher>>,
+     // The raw flag: a press on a nameplate is the plate's, so dragging from a plate never turns the
+     // camera, as in 1.12. `0x7662c0` hands a mouse-down to one frame (capture at `0x7663e9`), and
+     // `CBindings::ExecuteBinding` (`0x4b7990`) runs only from `CGWorldFrame` handlers; the release
+@@ -696,7 +704,13 @@ pub(super) fn latch_world_mouse(
+         return;
+     };
+     let over_ui = pointer_over_ui.0;
+-    let world_press = rig.look.is_some() || (cursor_in_viewport(&window, camera) && !over_ui);
++    let codcraft_active = codcraft.as_ref().is_some_and(|input| input.owns_gameplay_controls());
++    let alt_held = codcraft.as_ref().is_some_and(|input|input.allows_world_interaction());
++    let world_press = if codcraft_active {
++        alt_held && cursor_in_viewport(&window, camera) && !over_ui
++    } else {
++        rig.look.is_some() || (cursor_in_viewport(&window, camera) && !over_ui)
++    };
+     rig.world_mouse.update(&buttons, world_press);
+ }
+ 
+@@ -726,6 +740,7 @@ impl FlyCam {
+         self.yaw = yaw;
+         self.pitch = pitch;
+     }
++
+ }
+ 
+ /// A model's framing-pivot height in model-local yards before scale, the reference's camera-target
+@@ -1786,6 +1801,7 @@ mod tests {
+                 &crate::bindings::BindingsState::default(),
+                 &super::super::Player::default(),
+                 &rig,
++                false,
+             )
+             .follow_command
+         };
+diff --git a/crates/benilla-app/src/player/controller.rs b/crates/benilla-app/src/player/controller.rs
+index 3143372..f0d08c4 100644
+--- a/crates/benilla-app/src/player/controller.rs
++++ b/crates/benilla-app/src/player/controller.rs
+@@ -64,6 +64,8 @@ pub(super) fn control(
+         Res<scoped_view::ScopedView>,
+         // The loading cover blanks input at the source; a gesture in flight is unwound below.
+         Res<crate::loading_screen::LoadingScreen>,
++        // CoDCraft takes the same raw WASD as an FPS and supplies the view heading.
++        Res<crate::codcraft::GuestInputPublisher>,
+     ),
+     mut commands: Commands,
+     mut player: ResMut<Player>,
+@@ -97,14 +99,15 @@ pub(super) fn control(
+     let zoom_max = pointer.2.max;
+     let (move_speed, capsule, inspect, ui_capture, click_consumed) = (
+         &speed_capsule.0,
+-        &speed_capsule.1 .0,
++        &speed_capsule.1.0,
+         &speed_capsule.2,
+         &speed_capsule.3,
+         &speed_capsule.4,
+     );
+     let binds = &speed_capsule.5;
++    let codcraft_controls = speed_capsule.10.owns_gameplay_controls();
+     let view_subject = &speed_capsule.6;
+-    let self_guid = speed_capsule.7 .0;
++    let self_guid = speed_capsule.7.0;
+     let scoped = &speed_capsule.8;
+     let covered = speed_capsule.9.covering();
+     // Far sight turns the auto-follow off: our facing is not "behind" for a body we only watch.
+@@ -125,6 +128,10 @@ pub(super) fn control(
+     // Free fly reads no keys while an EditBox is `typing` (not the per-key `consumed`, a binding's
+     // concern); `binds` applied that gate when it latched, and the dev chords ignore it.
+     let typing = ui_capture.typing;
++    let codcraft_alt_interact = codcraft_controls
++        && speed_capsule.10.allows_world_interaction()
++        && !typing;
++    let codcraft_cursor_free = codcraft_controls && (speed_capsule.10.allows_world_interaction() || typing);
+ 
+     // Every press below comes from `camera::latch_world_mouse`, so one the UI ate reaches none of
+     // them; the raw buttons only hold and release a gesture the world already owns. Read before
+@@ -132,7 +139,7 @@ pub(super) fn control(
+     let input::LookInput {
+         both_buttons,
+         follow_command,
+-    } = input::look_input(binds, &player, &rig);
++    } = input::look_input(binds, &player, &rig, codcraft_controls);
+ 
+     // Last frame's word, as `0x50fee0` reads it: its caller `0x514446` precedes the mover lookup.
+     let dynamics = camera_dynamics::DynamicsInput {
+@@ -227,25 +234,55 @@ pub(super) fn control(
+         *left_click = None;
+         *right_click = None;
+     }
+-    run_look_session(
+-        &buttons,
+-        mouse_motion,
+-        both_buttons,
+-        &mut rig,
+-        &mut cam,
+-        &mut player.face_yaw,
+-        &mut window,
+-        &mut opts_shadow,
+-        inspect.enabled,
+-        click_consumed.0,
+-        &mut world_clicks.0,
+-        &mut world_clicks.1,
+-        left_click,
+-        right_click,
+-        look_cfg,
+-        &dynamics,
+-        time.elapsed_secs(),
+-    );
++    // CoDCraft predicts the current raw mouse motion before this controller. Keep WoW's cursor
++    // grab/release gestures, but do not rotate a second time while RMB is held.
++    if codcraft_controls {
++        // The CoD bridge owns camera motion continuously. Do not let Warcraft's normal look
++        // session steal either mouse button: RMB is aim, while Alt+RMB is the sole context-click.
++        rig.look = None;
++        rig.freelook = false;
++        *left_click = None;
++        if codcraft_alt_interact {
++            if rig.world_mouse.down(LookButton::Right) {
++                *right_click = Some(camera::PressGesture::new(time.elapsed_secs()));
++            }
++            if buttons.just_released(MouseButton::Right) {
++                if let Some(test) = right_click.take() {
++                    if test.is_click(time.elapsed_secs()) {
++                        world_clicks.1.write(WorldRightClick);
++                    }
++                }
++            }
++        } else {
++            *right_click = None;
++        }
++        opts_shadow.grab_mode = if codcraft_cursor_free {
++            bevy::window::CursorGrabMode::None
++        } else {
++            bevy::window::CursorGrabMode::Locked
++        };
++        opts_shadow.visible = codcraft_cursor_free;
++    } else {
++        run_look_session(
++            &buttons,
++            mouse_motion,
++            both_buttons,
++            &mut rig,
++            &mut cam,
++            &mut player.face_yaw,
++            &mut window,
++            &mut opts_shadow,
++            inspect.enabled,
++            click_consumed.0,
++            &mut world_clicks.0,
++            &mut world_clicks.1,
++            left_click,
++            right_click,
++            look_cfg,
++            &dynamics,
++            time.elapsed_secs(),
++        );
++    }
+     // The mouse turns the view, but the body hand-off (`0x514474`) skips a body that is stunned,
+     // dead or seated (`0x5145e0`) or not ours to drive (`control_lost`, `reseat`), while the
+     // camera rotate (`0x514444`) still runs. The reference never writes the facing; writing and
+@@ -352,22 +389,24 @@ pub(super) fn control(
+             );
+             // Flush a stale run once, but never under a ride, whose FORWARD is deliberate.
+             if !player.server_riding {
+-                movement_net::park_mover(&net.0 .0, &mut player);
++                movement_net::park_mover(&net.0.0, &mut player);
+             }
+             // After the park, so a fear's ack carries the stopped word.
+-            movement_net::ack_speeds_undriven(&net.0 .0, &player, &speed_acks);
++            movement_net::ack_speeds_undriven(&net.0.0, &player, &speed_acks);
+             return;
+         }
+         // `0x514560`, after `apply_server_moves`, so this frame's root edge is already in `modes`.
+         let may_translate = mover.may_translate(player.modes.rooted);
+         let axes = input::move_axes(
+             binds,
++            &keys,
+             &buttons,
+             &mut player,
+             &rig,
+             both_buttons,
+             may_translate,
+             may_turn,
++            codcraft_controls && !typing,
+         );
+         let input::MoveAxes {
+             fwd: fwd_axis,
+@@ -477,7 +516,7 @@ pub(super) fn control(
+         // `GetCurrentSpeed` (`0x7c4c90`), shared with the remote extrapolator: the walk arm comes
+         // before the backward min, so walking backwards is walk speed. It takes this frame's gait
+         // intent, since the wire word is built after the mover.
+-        let speed = crate::net::current_speed(
++        let base_speed = crate::net::current_speed(
+             &speeds,
+             if net_backward {
+                 move_flags::BACKWARD
+@@ -489,10 +528,24 @@ pub(super) fn control(
+                 0
+             },
+         );
++        // Sprint is a local CoD movement state. 11 yd/s crosses Benilla's native Sprint gait
++        // threshold (143) while keeping the server-facing direction flags unchanged.
++        let sprinting = codcraft_controls
++            && speed_capsule.10.buttons & crate::codcraft::INPUT_SPRINT != 0
++            && fwd_axis > 0
++            && may_translate;
++        let speed = if sprinting {
++            base_speed.max(11.0)
++        } else {
++            base_speed
++        };
+         // `Jump` (`0x513bd0`) inlines `0x5144e0` and `0x514560`, which is `may_translate` term for
+         // term: health, root and stand state 7. Hover's refusal is the movement handler's
+         // (`0x7c623a`), which keeps the mounted flourish reachable while hovering.
+-        let mut want_jump = binds.fired(crate::bindings::cmd::JUMP) && may_translate;
++        // FPS Space is independent of modifier-sensitive Warcraft bindings (Shift+Space).
++        let mut want_jump = (if codcraft_controls {
++            keys.just_pressed(KeyCode::Space) && !typing && window.focused
++        } else { binds.fired(crate::bindings::cmd::JUMP) }) && may_translate;
+ 
+         // Swim or walk, latched with hysteresis at the `0x6030c0` boundary against flicker.
+         let surface_y = swim::surface_over_feet(world, player.pos);
+@@ -544,7 +597,7 @@ pub(super) fn control(
+                 if store.is_some_and(|s| s.0.unit_mount_display_id() != 0) {
+                     want_jump = false;
+                     if !turning {
+-                        let _ = net.0 .0.send(ClientCommand::MountSpecial);
++                        let _ = net.0.0.send(ClientCommand::MountSpecial);
+                         net.8.write(crate::creature_anim::MountFlourish { unit: e });
+                     }
+                 }
+@@ -745,7 +798,7 @@ pub(super) fn control(
+                 || jumped
+                 || autorun_armed)
+         {
+-            net.7 .0 = true;
++            net.7.0 = true;
+         }
+         // The loot window's walk-away, the movement-start guard `0x60e990`: forward, back, strafe,
+         // keyboard turn, pitch and jump close it, mouse-look facing does not, and only for our
+@@ -757,7 +810,7 @@ pub(super) fn control(
+                 != 0
+                 || jumped)
+         {
+-            net.14 .0 = true;
++            net.14.0 = true;
+         }
+ 
+         // Stream the movement: a `MSG_MOVE_*` per axis transition, the jump and fall edges and a
+@@ -770,7 +823,7 @@ pub(super) fn control(
+             mover: player.foreign_mover.or(self_guid),
+         };
+         movement_net::stream_self_movement(
+-            &net.0 .0,
++            &net.0.0,
+             &mut player,
+             move_flags_now,
+             swim_pitch,
+@@ -793,7 +846,7 @@ pub(super) fn control(
+     } else {
+         // Free fly. Park the mover first, so a detach mid-move leaves no stale flags for observers
+         // to extrapolate; a no-op once stopped.
+-        movement_net::park_mover(&net.0 .0, &mut player);
++        movement_net::park_mover(&net.0.0, &mut player);
+         camera::fly_free(dt, &keys, typing, &mut rig, &mut cam, &mut cam_t);
+     }
+ }
+diff --git a/crates/benilla-app/src/player/input.rs b/crates/benilla-app/src/player/input.rs
+index e1b3bf2..c684bdb 100644
+--- a/crates/benilla-app/src/player/input.rs
++++ b/crates/benilla-app/src/player/input.rs
+@@ -21,14 +21,19 @@ pub(super) fn look_input(
+     binds: &crate::bindings::BindingsState,
+     player: &Player,
+     rig: &CameraControl,
++    codcraft_controls: bool,
+ ) -> LookInput {
+     // Both buttons held run forward and steer with the mouse, whichever went down first.
+     // MOVEANDSTEER is the same state: its 1.12 body runs CameraOrSelectOrMove and TurnOrAction.
+     let steer_held = binds.pressed(crate::bindings::cmd::MOVE_AND_STEER);
+-    let both_buttons = rig.world_mouse.both() || steer_held;
++    let both_buttons = !codcraft_controls && (rig.world_mouse.both() || steer_held);
+ 
+     // 1.12's `[InputControl+0x4]`, bit for bit: the camera's auto-follow arms on its edges.
+-    let follow_command = {
++    let follow_command = if codcraft_controls {
++        // CoD owns view/movement semantics; Warcraft's two-button auto-run/follow camera path
++        // must not add forward motion when the user fires while aiming.
++        0
++    } else {
+         use camera::follow_cmd as bit;
+         let mut w = 0;
+         let mut set = |on: bool, b: u32| {
+@@ -108,6 +113,7 @@ pub(super) struct MoveAxes {
+ /// Decodes the movement keys into [`MoveAxes`], running the autorun latch and its cancel set.
+ pub(super) fn move_axes(
+     binds: &crate::bindings::BindingsState,
++    keys: &ButtonInput<KeyCode>,
+     buttons: &ButtonInput<MouseButton>,
+     player: &mut Player,
+     rig: &CameraControl,
+@@ -116,12 +122,17 @@ pub(super) fn move_axes(
+     // `state::may_turn`); death takes both down.
+     may_translate: bool,
+     may_turn: bool,
++    codcraft_controls: bool,
+ ) -> MoveAxes {
+     // ── Autorun ── TOGGLEAUTORUN, a latch (1.12 defaults NUMLOCK and BUTTON4, winit's
+     // `Forward`). The reference's window-deactivate handler (`0x514490`, called only from the
+     // WM_ACTIVATE slot at `0x493058`) releases every direction bit and keeps `0x1000`.
+     let mut autorun_armed = false;
+-    if binds.fired(crate::bindings::cmd::TOGGLE_AUTORUN) {
++    if codcraft_controls {
++        // CoD is authoritative for this input mode; stale Warcraft autorun must not keep moving
++        // the host character after its WASD packet goes neutral.
++        player.autorun = false;
++    } else if binds.fired(crate::bindings::cmd::TOGGLE_AUTORUN) {
+         player.autorun = !player.autorun;
+         autorun_armed = player.autorun;
+     }
+@@ -143,41 +154,55 @@ pub(super) fn move_axes(
+     //   emit; ours is `state::may_translate`. The server-ride term is benilla's own.
+     // A jump, a chat EditBox taking focus and a zone change leave it set; mounting is untraced and
+     // leaves it set here. A focused chat box releases nothing, so W held through ENTER still runs.
+-    let both_buttons_engaged = (both_buttons
++    let both_buttons_engaged = !codcraft_controls && ((both_buttons
+         && (rig.world_mouse.down(LookButton::Left) || rig.world_mouse.down(LookButton::Right)))
+-        || binds.just_pressed(crate::bindings::cmd::MOVE_AND_STEER);
++        || binds.just_pressed(crate::bindings::cmd::MOVE_AND_STEER));
++    let forward = if codcraft_controls {
++        keys.pressed(KeyCode::KeyW)
++    } else {
++        binds.pressed(crate::bindings::cmd::MOVE_FORWARD) || player.follow_forward
++    };
++    let backward = if codcraft_controls {
++        keys.pressed(KeyCode::KeyS)
++    } else {
++        binds.pressed(crate::bindings::cmd::MOVE_BACKWARD)
++    };
+     if state::autorun_cancelled(
+-        binds.just_pressed(crate::bindings::cmd::MOVE_FORWARD),
+-        binds.just_pressed(crate::bindings::cmd::MOVE_BACKWARD),
++        if codcraft_controls {
++            keys.just_pressed(KeyCode::KeyW)
++        } else {
++            binds.just_pressed(crate::bindings::cmd::MOVE_FORWARD)
++        },
++        if codcraft_controls {
++            keys.just_pressed(KeyCode::KeyS)
++        } else {
++            binds.just_pressed(crate::bindings::cmd::MOVE_BACKWARD)
++        },
+         both_buttons_engaged,
+         !may_translate || player.server_riding,
+     ) {
+         player.autorun = false;
+     }
+-    let autorun = player.autorun;
++    let autorun = player.autorun && !codcraft_controls;
+     // ── The forward/back axis ── The order of S and autorun decides: S held, then autorun
+     // toggled, keeps both (the toggle pushes `0x1000`, so `test cl,0x30` misses) and the
+     // reference sends MSG_MOVE_STOP with S held; autorun, then S, clears the bit at key-down and
+     // walks you backward. `/follow` is a held forward, W's own bit `0x100000` through W's setter,
+     // so it nets against S like W and never trips the cancel set, which fires on key-down edges.
+-    let fwd_axis = state::forward_axis(
+-        binds.pressed(crate::bindings::cmd::MOVE_FORWARD) || player.follow_forward,
+-        binds.pressed(crate::bindings::cmd::MOVE_BACKWARD),
+-        both_buttons,
+-        autorun,
+-    );
+-    // The 1.12 control model (`0x7c5360`): A/D turn the character unless right-mouse is held,
+-    // when they strafe and the facing tracks the camera; Q/E always strafe. W walks along the
+-    // character's facing, so a left-drag orbit does not change it.
+-    let mouselook = both_buttons || rig.look == Some(LookButton::Right);
++    let fwd_axis = state::forward_axis(forward, backward, both_buttons, autorun);
++    // In normal WoW, A/D turn unless right-mouse is held. In CoDCraft, CoD always owns the view,
++    // so raw A/D are always strafes and W/S follow the supplied CoD heading; Q/E remain strafes.
++    let mouselook = codcraft_controls || both_buttons || rig.look == Some(LookButton::Right);
+     // The strafe axis nets like `fwd_axis`: vmangos relays no packet carrying both strafe bits,
+     // and the reference's 1.12.1 capture sends none.
+-    let strafe_left = binds.pressed(crate::bindings::cmd::STRAFE_LEFT);
+-    let strafe_right = binds.pressed(crate::bindings::cmd::STRAFE_RIGHT);
+-    let turn_left = binds.pressed(crate::bindings::cmd::TURN_LEFT);
+-    let turn_right = binds.pressed(crate::bindings::cmd::TURN_RIGHT);
++    let strafe_left = binds.pressed(crate::bindings::cmd::STRAFE_LEFT)
++        || (codcraft_controls && keys.pressed(KeyCode::KeyA));
++    let strafe_right = binds.pressed(crate::bindings::cmd::STRAFE_RIGHT)
++        || (codcraft_controls && keys.pressed(KeyCode::KeyD));
++    let turn_left = !codcraft_controls && binds.pressed(crate::bindings::cmd::TURN_LEFT);
++    let turn_right = !codcraft_controls && binds.pressed(crate::bindings::cmd::TURN_RIGHT);
+     let side_axis = i32::from(strafe_right) - i32::from(strafe_left)
+-        + if mouselook {
++        + if mouselook && !codcraft_controls {
+             i32::from(turn_right) - i32::from(turn_left)
+         } else {
+             0
+@@ -201,3 +226,48 @@ pub(super) fn move_axes(
+         turn_right,
+     }
+ }
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    #[test]
++    fn codcraft_wasd_uses_fps_strafe_and_forward_axes_without_turning() {
++        for (key, expected_side) in [(KeyCode::KeyA, -1), (KeyCode::KeyD, 1)] {
++            let mut keys = ButtonInput::<KeyCode>::default();
++            keys.press(key);
++            let mut player = Player::default();
++            let axes = move_axes(
++                &crate::bindings::BindingsState::default(),
++                &keys,
++                &ButtonInput::default(),
++                &mut player,
++                &CameraControl::default(),
++                false,
++                true,
++                true,
++                true,
++            );
++
++            assert_eq!(axes.side, expected_side);
++            assert!(axes.mouselook, "the CoD view remains the facing authority");
++            assert!(!axes.turning, "A/D must not rotate the Warcraft avatar");
++        }
++
++        let mut keys = ButtonInput::<KeyCode>::default();
++        keys.press(KeyCode::KeyW);
++        let mut player = Player::default();
++        let axes = move_axes(
++            &crate::bindings::BindingsState::default(),
++            &keys,
++            &ButtonInput::default(),
++            &mut player,
++            &CameraControl::default(),
++            false,
++            true,
++            true,
++            true,
++        );
++        assert_eq!(axes.fwd, 1, "W must be forwarded as CoD forward");
++    }
++}
+diff --git a/crates/benilla-app/src/player/state.rs b/crates/benilla-app/src/player/state.rs
+index 2adbcaf..191c871 100644
+--- a/crates/benilla-app/src/player/state.rs
++++ b/crates/benilla-app/src/player/state.rs
+@@ -486,6 +486,12 @@ pub(super) struct PendingKnockback {
+ }
+ 
+ impl Player {
++    /// Current body yaw, for an external authoritative pose source that needs to establish a
++    /// relative heading without reaching into the controller's private state.
++    pub(crate) fn face_yaw(&self) -> f32 {
++        self.face_yaw
++    }
++
+     /// Take the jump a hover grant owes, clearing the latch: `Jump(0)` refuses only ROOT and
+     /// FALLING (`0x7c625c`), skipping the hover test (`0x7c6236`), and a refused jump is dropped,
+     /// not retried.
+@@ -823,8 +829,8 @@ mod autorun_tests {
+ #[cfg(test)]
+ mod move_mode_tests {
+     use super::{
+-        incapacitated_flags, view_is_out, MoveModes, MoverInput, Player, FEATHER_TERMINAL_VELOCITY,
+-        GRAVITY, HOVER_CLIMB_RATE, HOVER_HEIGHT, TERMINAL_VELOCITY,
++        FEATHER_TERMINAL_VELOCITY, GRAVITY, HOVER_CLIMB_RATE, HOVER_HEIGHT, MoveModes, MoverInput,
++        Player, TERMINAL_VELOCITY, incapacitated_flags, view_is_out,
+     };
+     use crate::creature_anim::move_flags as f;
+     use benilla_protocol::MoveMode;
+diff --git a/crates/benilla-app/src/sound/mod.rs b/crates/benilla-app/src/sound/mod.rs
+index b50d946..6a0beff 100644
+--- a/crates/benilla-app/src/sound/mod.rs
++++ b/crates/benilla-app/src/sound/mod.rs
+@@ -316,6 +316,29 @@ fn world_audio_live(
+     *state.get() == crate::char_select::ClientState::InWorld && player.active
+ }
+ 
++/// CoDCraft's confirmed projectile hit. The guest process owns the retail IW4 sound bank, so the
++/// host writes a tiny sequence file and lets iw4L play its real `MP_hit_alert` alias. This keeps
++/// the feedback identical to MW2 instead of approximating it with a Warcraft sword/projectile
++/// kit.
++fn codcraft_bullet_impact_sounds(
++    mut events: MessageReader<crate::codcraft::CodcraftBulletImpact>,
++    mut sequence: Local<u64>,
++) {
++    let Some(path) = std::env::var_os("CODCRAFT_HIT")
++        .filter(|value| !value.is_empty())
++        .map(std::path::PathBuf::from)
++    else {
++        events.clear();
++        return;
++    };
++    for _ in events.read() {
++        *sequence = sequence.wrapping_add(1).max(1);
++        if let Err(error) = std::fs::write(&path, sequence.to_le_bytes()) {
++            warn!("CoDCraft: failed to publish native hit-alert sound: {error}");
++        }
++    }
++}
++
+ pub(crate) struct SoundPlugin;
+ 
+ /// The sound CVars' change callback: volumes clamp to `[0, 1]`, enables are `!= 0` as the
+@@ -408,6 +431,10 @@ impl Plugin for SoundPlugin {
+                 poll_mix_health,
+             ),
+         );
++        app.add_systems(
++            Update,
++            codcraft_bullet_impact_sounds.in_set(WorldStage::Present),
++        );
+         probe::plugin(app);
+         kit::plugin(app);
+         liquid_loop::plugin(app);
+diff --git a/crates/benilla-app/src/target/click.rs b/crates/benilla-app/src/target/click.rs
+index 53942be..f4ff198 100644
+--- a/crates/benilla-app/src/target/click.rs
++++ b/crates/benilla-app/src/target/click.rs
+@@ -42,6 +42,7 @@ pub(super) fn select_on_plate_click(
+     mut greeting: MessageWriter<crate::sound::NpcGreetingRequest>,
+     mut right_clicks: MessageWriter<WorldRightClick>,
+     units: Query<(&Guid, Option<&ObjectStore>)>,
++    codcraft: Option<Res<crate::codcraft::GuestInputPublisher>>,
+ ) {
+     let (left, right) = (
+         std::mem::take(&mut plate.left),
+@@ -50,6 +51,22 @@ pub(super) fn select_on_plate_click(
+     if ground.active() {
+         return;
+     }
++    // CoDCraft owns both mouse buttons except for the explicit Alt context-click chord. Letting
++    // the ordinary plate router handle a normal click would select-and-attack with WoW's weapon.
++    if codcraft.as_ref().is_some_and(|bridge| {
++        bridge.owns_gameplay_controls() && !bridge.allows_world_interaction()
++    }) {
++        return;
++    }
++    if codcraft
++        .as_ref()
++        .is_some_and(|bridge| bridge.owns_gameplay_controls())
++    {
++        if right.iter().any(|e| press.hovered.target == Some(*e)) {
++            right_clicks.write(WorldRightClick);
++        }
++        return;
++    }
+     let (self_guid, engaged) = self_q
+         .single()
+         .map(|(g, e)| (Some(g.0), e))
+@@ -94,6 +111,7 @@ pub(super) fn select_on_click(
+     click_cfg: Res<ClickConfig>,
+     // Read at the commit, where the reference resolves it for `0x493540`'s `IsSelectable` gate.
+     stores: Query<&ObjectStore>,
++    codcraft: Option<Res<crate::codcraft::GuestInputPublisher>>,
+ ) {
+     let (hovered, occlusion) = (press.hovered, press.occlusion);
+     let clicked = clicks.read().last().is_some();
+@@ -104,6 +122,10 @@ pub(super) fn select_on_click(
+     if ground.active() {
+         return;
+     }
++    // Left-clicks are fire/select input for CoDCraft, never WoW target commits.
++    if codcraft.is_some_and(|bridge| bridge.owns_gameplay_controls()) {
++        return;
++    }
+     let (self_guid, engaged) = self_q
+         .single()
+         .map(|(g, e)| (Some(g.0), e))
+@@ -197,12 +219,20 @@ pub(super) fn act_on_right_click(
+         // The stone's refusals need the roster, so they run in `drain_meeting_stone_joins`.
+         MessageWriter<crate::ui_dialog_verbs::MeetingStoneUse>,
+     ),
++    codcraft: Option<Res<crate::codcraft::GuestInputPublisher>>,
+ ) {
+     let (mut ui_error_keys, mut cast_errors, mut mail, mut item_text, mut openers, mut stone_uses) =
+         ui_feedback;
+     if clicks.read().last().is_none() {
+         return;
+     }
++    // Right-click is CoD aim input unless Left Alt explicitly released the Warcraft context
++    // action. In normal passthrough mode it must not enter WoW's interact or auto-attack ladder.
++    if codcraft.is_some_and(|bridge| {
++        bridge.owns_gameplay_controls() && !bridge.allows_world_interaction()
++    }) {
++        return;
++    }
+     let (hovered, hovered_object, cursor) = (&press.hovered, &press.object, &press.cursor);
+     // The reference's one mounted predicate, the player's `UNIT_FIELD_MOUNTDISPLAYID`.
+     let self_store = self_player
+diff --git a/crates/benilla-app/src/ui_loot/mod.rs b/crates/benilla-app/src/ui_loot/mod.rs
+index 443e66e..5621e27 100644
+--- a/crates/benilla-app/src/ui_loot/mod.rs
++++ b/crates/benilla-app/src/ui_loot/mod.rs
+@@ -219,7 +219,7 @@ impl LootState {
+     }
+ 
+     /// Nothing lootable left: the reference's empty check `0x4c2a70`.
+-    fn is_empty(&self) -> bool {
++    pub(crate) fn is_empty(&self) -> bool {
+         !self.has_coin() && self.items.iter().all(|it| self.taken.contains(&it.slot))
+     }
+ 
+@@ -690,10 +690,13 @@ fn feed_loot(
+                 return;
+             }
+             script.fire_event("LOOT_OPENED", vec![]);
+-            // Auto-loot (`LootConfig`), inverted by a held Shift: every row gets a hand pick's
+-            // sends, and emptying the window auto-releases it.
++            // A confirmed CoDCraft bullet kill is looted straight into the bags; other loot keeps
++            // the stock Auto Loot setting and Shift override.
++            let codcraft_auto_loot = crate::codcraft::passthrough_enabled()
++                && loot.loot_type == benilla_protocol::messages::loot_type::CORPSE;
+             let shift = keys.pressed(KeyCode::ShiftLeft) || keys.pressed(KeyCode::ShiftRight);
+-            if cfg.auto_loot != shift {
++            // CoDCraft takes are dispatched by the packet handler, exactly once per response.
++            if !codcraft_auto_loot && cfg.auto_loot != shift {
+                 let mut bind_confirm_fired = false;
+                 for index in 1..=snap.rows.len() as u32 {
+                     match loot.action_at(index) {
+@@ -710,7 +713,9 @@ fn feed_loot(
+                         }) if slot_type == slot_type::ALLOW_LOOT => {
+                             // A hand click's bind gate plus a one-shot latch (`0x4c21c2`,
+                             // `0x4c21e2`): later bind-on-pickup rows stay, untaken and unasked.
+-                            if bind_confirm_required(&items, &commands, item_id) {
++                            if !codcraft_auto_loot
++                                && bind_confirm_required(&items, &commands, item_id)
++                            {
+                                 if bind_confirm_fired {
+                                     continue;
+                                 }
+@@ -828,6 +833,10 @@ fn close_on_move_start(
+     use benilla_protocol::guid;
+     use benilla_protocol::messages::loot_type;
+     let source = loot.source()?;
++    // Deviation: remote CoDCraft corpse transfers must survive FPS movement.
++    if crate::codcraft::passthrough_enabled() && loot.loot_type == loot_type::CORPSE {
++        return None;
++    }
+     if loot.loot_type == loot_type::DISENCHANTING && !loot.is_empty() {
+         return None;
+     }
+diff --git a/crates/benilla-app/src/ui_loot/net.rs b/crates/benilla-app/src/ui_loot/net.rs
+index ce24974..f7b7dd3 100644
+--- a/crates/benilla-app/src/ui_loot/net.rs
++++ b/crates/benilla-app/src/ui_loot/net.rs
+@@ -185,6 +185,30 @@ fn loot_response(
+     loot.open(guid, loot_type, gold, items);
+     // A fishing bobber first arms here and still does not kneel: `LootKneel` decides the pose.
+     latch.0 = Some(guid);
++    // CoDCraft corpse collection is a wire transaction, not a Lua window transition.
++    // Dispatch before movement/UI callbacks can close or replace the session.
++    if crate::codcraft::passthrough_enabled()
++        && loot_type == benilla_protocol::messages::loot_type::CORPSE
++    {
++        auto_collect_corpse(net, gold, &loot.items);
++    }
++}
++
++fn auto_collect_corpse(net: &NetCommands, gold: u32, items: &[LootItem]) {
++    if gold > 0 {
++        let _ = net.0.send(ClientCommand::LootMoney);
++    }
++    for item in items {
++        if item.slot_type == benilla_protocol::messages::slot_type::ALLOW_LOOT {
++            let _ = net
++                .0
++                .send(ClientCommand::AutostoreLootItem { slot: item.slot });
++        }
++    }
++    debug!(
++        "CoDCraft: dispatched corpse collection: gold {gold}, {} rows",
++        items.len()
++    );
+ }
+ 
+ /// `SMSG_FISH_ESCAPED` (the skill roll failed) or `SMSG_FISH_NOT_HOOKED` (clicked before the
+@@ -295,7 +319,12 @@ fn loot_release_response(
+     debug!("net: loot released {guid:#x}");
+     latch.clear_for(guid);
+     unlock.unlock(guid);
+-    super::close_interaction(loot, latch, None)
++    if loot.source() == Some(guid) {
++        super::close_interaction(loot, latch, None)
++    } else {
++        // A release acknowledgement for the previous corpse must not close a newer one.
++        None
++    }
+ }
+ 
+ /// `SMSG_LOOT_MASTER_LIST`, staged: it lands just ahead of the response it belongs to.
+@@ -510,6 +539,45 @@ mod tests {
+         (crate::net::NetCommands(tx), rx)
+     }
+ 
++    #[test]
++    fn codcraft_collection_dispatches_money_and_allowed_wire_slots_immediately() {
++        let (net, rx) = net();
++        let row = LootItem {
++            slot: 5,
++            item_id: 7074,
++            count: 1,
++            display_info_id: 1,
++            random_property_id: 0,
++            slot_type: benilla_protocol::messages::slot_type::ALLOW_LOOT,
++        };
++        let blocked = LootItem {
++            slot: 6,
++            slot_type: benilla_protocol::messages::slot_type::ROLL_ONGOING,
++            ..row
++        };
++        auto_collect_corpse(&net, 4, &[row, blocked]);
++        assert!(matches!(rx.try_recv(), Ok(ClientCommand::LootMoney)));
++        assert!(matches!(
++            rx.try_recv(),
++            Ok(ClientCommand::AutostoreLootItem { slot: 5 })
++        ));
++        assert!(rx.try_recv().is_err());
++    }
++
++    #[test]
++    fn old_corpse_release_does_not_close_new_corpse() {
++        let mut loot = LootState::default();
++        let newer = CORPSE + 1;
++        loot.open(newer, 1, 4, Vec::new());
++        let mut latch = LootLatch(Some(newer));
++        assert_eq!(
++            loot_release_response(CORPSE, &mut loot, &mut latch, no_item!()),
++            None
++        );
++        assert_eq!(loot.source(), Some(newer));
++        assert_eq!(latch.0, Some(newer));
++    }
++
+     /// No `CMSG_LOOT` armed the latch; a chest's answer is wire type 2 (`0x5eb94b`-`0x5eb95b`).
+     #[test]
+     fn a_cold_latch_admits_a_server_started_loot_and_arms_on_it() {
+diff --git a/crates/benilla-app/src/world_backdrop.rs b/crates/benilla-app/src/world_backdrop.rs
+index 8316b42..8b8a912 100644
+--- a/crates/benilla-app/src/world_backdrop.rs
++++ b/crates/benilla-app/src/world_backdrop.rs
+@@ -140,13 +140,18 @@ fn setup_backdrop(
+     windows: Query<&Window, With<PrimaryWindow>>,
+     scale: Res<RenderScale>,
+ ) {
+-    let (size, _) = windows.single().map_or((UVec2::new(1280, 720), 1.0), |w| {
+-        render_target_for(
+-            window_physical_size(w),
+-            w.resolution.scale_factor(),
+-            scale.0,
+-        )
+-    });
++    let size = windows
++        .single()
++        .ok()
++        .filter(|w| w.physical_width() > 0 && w.physical_height() > 0)
++        .map_or(UVec2::new(1280, 720), |w| {
++            render_target_for(
++                window_physical_size(w),
++                w.resolution.scale_factor(),
++                scale.0,
++            )
++            .0
++        });
+     let image = images.add(new_world_target(size));
+     commands.insert_resource(WorldBackdrop {
+         image,
+@@ -170,6 +175,12 @@ fn track_render_size(
+     let Ok(window) = windows.single() else {
+         return;
+     };
++    // A minimized/temporarily hidden Win32 window reports 0×0. Treat that as a pause, not as a
++    // real resize: shrinking the world target to 1×1 makes the next visible passthrough frame
++    // black even though the world and the guest are both healthy.
++    if window.physical_width() == 0 || window.physical_height() == 0 {
++        return;
++    }
+     let (size, _) = render_target_for(
+         window_physical_size(window),
+         window.resolution.scale_factor(),
+@@ -207,9 +218,17 @@ fn retarget_world_camera(
+     added: Query<(), Added<WorldCamera>>,
+     mut cameras: Query<(Entity, &mut RenderTarget), With<WorldCamera>>,
+ ) {
+-    let (px, window_factor) = windows.single().map_or((UVec2::ONE, 1.0), |w| {
+-        (window_physical_size(w), w.resolution.scale_factor())
+-    });
++    let Ok(window) = windows.single() else {
++        return;
++    };
++    // Keep the previous target and projection while the native surface is minimized. The target
++    // is a persistent size-carrier; replacing it with a 1×1 texture here loses the WoW picture
++    // when the window comes back.
++    if window.physical_width() == 0 || window.physical_height() == 0 {
++        return;
++    }
++    let px = window_physical_size(window);
++    let window_factor = window.resolution.scale_factor();
+     // The built size, not the requested one: `track_render_size` may have clamped.
+     let scale_factor = window_factor * backdrop.size.x as f32 / px.x.max(1) as f32;
+     // The image as well as the factor: a pure window resize rebuilds without moving the factor.
+diff --git a/crates/benilla-assets/src/blp.rs b/crates/benilla-assets/src/blp.rs
+index cce75de..181fcdc 100644
+--- a/crates/benilla-assets/src/blp.rs
++++ b/crates/benilla-assets/src/blp.rs
+@@ -11,6 +11,16 @@ use benilla_formats::{blp_bytes_to_native_chain, blp_to_rgba};
+ 
+ use crate::gpu_blp::{for_upload, UploadChain};
+ 
++// Ray alpha tests require the authored texels after GPU upload. Legacy sessions
++// keep their render-only lifetime; the reconstructed renderer retains CPU data.
++fn world_image_usages() -> RenderAssetUsages {
++    if std::env::var("CODCRAFT_LIGHTING_ENGINE").as_deref() == Ok("1") {
++        RenderAssetUsages::MAIN_WORLD | RenderAssetUsages::RENDER_WORLD
++    } else {
++        RenderAssetUsages::RENDER_WORLD
++    }
++}
++
+ /// Which on-GPU form a BLP decodes to.
+ #[derive(Default, Clone, Copy, PartialEq, Eq, Debug, Serialize, Deserialize)]
+ pub enum BlpVariant {
+@@ -113,7 +123,7 @@ fn world_art_image(upload: UploadChain, wrap: (bool, bool)) -> Image {
+         format,
+         // The render world takes the chain on extract rather than cloning it and keeping a
+         // main-world copy (bevy_render `render_asset.rs`); nothing reads world art main-side.
+-        RenderAssetUsages::RENDER_WORLD,
++        world_image_usages(),
+     );
+     image.data = Some(data);
+     image.texture_descriptor.mip_level_count = levels;
+@@ -150,7 +160,7 @@ fn sprite_image(width: u32, height: u32, rgba: Vec<u8>) -> Image {
+         TextureDimension::D2,
+         rgba,
+         TextureFormat::Rgba8UnormSrgb,
+-        RenderAssetUsages::RENDER_WORLD,
++        world_image_usages(),
+     );
+     image.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor {
+         address_mode_u: ImageAddressMode::ClampToEdge,
+@@ -180,7 +190,7 @@ fn effect_image(width: u32, height: u32, rgba: Vec<u8>) -> Image {
+         TextureDimension::D2,
+         rgba,
+         GAMMA_BYTES,
+-        RenderAssetUsages::RENDER_WORLD,
++        world_image_usages(),
+     );
+     image.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor {
+         address_mode_u: ImageAddressMode::ClampToEdge,
+@@ -208,7 +218,7 @@ fn point_sprite_image(upload: UploadChain) -> Image {
+         },
+         TextureDimension::D2,
+         format,
+-        RenderAssetUsages::RENDER_WORLD,
++        world_image_usages(),
+     );
+     image.data = Some(data);
+     image.texture_descriptor.mip_level_count = levels;
+diff --git a/crates/benilla-assets/src/materials.rs b/crates/benilla-assets/src/materials.rs
+index 14aef4f..746df11 100644
+--- a/crates/benilla-assets/src/materials.rs
++++ b/crates/benilla-assets/src/materials.rs
+@@ -17,9 +17,24 @@ use bevy::render::render_resource::{
+ };
+ use bevy::shader::ShaderRef;
+ 
++/// CoDCraft fork deviation: the enhanced world lane is explicit opt-in, shared by materials
++/// and the pre-UI compositor. The rejected WOW_REALISTIC_LIGHTING shader path stays disabled.
++pub fn enhanced_world_enabled() -> bool {
++    static ENABLED: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
++    *ENABLED.get_or_init(|| std::env::var("CODCRAFT_LIGHTING_ENGINE").as_deref() == Ok("1"))
++}
++
++/// Hardware-traced sun visibility; independent of terrain textures and layer indices.
++pub const SUN_VISIBILITY: bevy::mesh::MeshVertexAttribute = bevy::mesh::MeshVertexAttribute::new(
++    "CoDCraftSunVisibility",
++    0x43435356,
++    bevy::render::render_resource::VertexFormat::Float32,
++);
++
+ /// Compile the four WGSL files into the binary under `embedded://benilla_assets/shaders/…`. Call
+ /// after Bevy's `AssetPlugin`, whose registry this fills; [`crate::register_asset_loaders`] does.
+ pub fn register_shaders(app: &mut App) {
++    bevy::asset::embedded_asset!(app, "shaders/enhanced_lighting.wgsl");
+     bevy::asset::embedded_asset!(app, "shaders/terrain.wgsl");
+     bevy::asset::embedded_asset!(app, "shaders/wow_model.wgsl");
+     bevy::asset::embedded_asset!(app, "shaders/wdl.wgsl");
+@@ -423,6 +438,30 @@ impl MaterialExtension for TerrainExtension {
+     fn fragment_shader() -> ShaderRef {
+         "embedded://benilla_assets/shaders/terrain.wgsl".into()
+     }
++
++    fn specialize(
++        _pipeline: &MaterialExtensionPipeline,
++        descriptor: &mut RenderPipelineDescriptor,
++        _layout: &MeshVertexBufferLayoutRef,
++        _key: MaterialExtensionKey<Self>,
++    ) -> Result<(), SpecializedMeshPipelineError> {
++        // CoDCraft opts into a modern terrain lane; ordinary clients keep vanilla shading.
++        if _layout.0.contains(SUN_VISIBILITY.id) {
++            descriptor
++                .vertex
++                .shader_defs
++                .push("CODCRAFT_SUN_VISIBILITY".into());
++            descriptor.vertex.buffers = vec![_layout.0.get_layout(&[
++                Mesh::ATTRIBUTE_POSITION.at_shader_location(0),
++                Mesh::ATTRIBUTE_NORMAL.at_shader_location(1),
++                Mesh::ATTRIBUTE_UV_0.at_shader_location(2),
++                Mesh::ATTRIBUTE_UV_1.at_shader_location(3),
++                Mesh::ATTRIBUTE_COLOR.at_shader_location(5),
++                SUN_VISIBILITY.at_shader_location(8),
++            ])?];
++        }
++        Ok(())
++    }
+ }
+ 
+ #[cfg(test)]
+diff --git a/crates/benilla-assets/src/model.rs b/crates/benilla-assets/src/model.rs
+index 6424cd2..ba82b08 100644
+--- a/crates/benilla-assets/src/model.rs
++++ b/crates/benilla-assets/src/model.rs
+@@ -171,7 +171,13 @@ pub const ATTRIBUTE_WOW_MERGED_SLOT: bevy::mesh::MeshVertexAttribute =
+ /// The static mesh, render-world only. Pair it with an explicit `Aabb`: a render-world mesh races
+ /// Bevy's `calculate_bounds`, and the exterior cull draws a mesh that has no bound.
+ pub fn submesh_to_static_mesh(sub: &RenderSubmesh) -> Mesh {
+-    build_submesh_mesh(sub, RenderAssetUsages::RENDER_WORLD)
++    // CoDCraft fork: ray scenes need the actual render triangles, not collision proxies.
++    let usages = if std::env::var("CODCRAFT_LIGHTING_ENGINE").as_deref() == Ok("1") {
++        RenderAssetUsages::default()
++    } else {
++        RenderAssetUsages::RENDER_WORLD
++    };
++    build_submesh_mesh(sub, usages)
+ }
+ 
+ /// The skinned mesh: the static one plus the joint attributes. It keeps its main-world copy,
+diff --git a/crates/benilla-assets/src/shaders/liquid.wgsl b/crates/benilla-assets/src/shaders/liquid.wgsl
+index 375750b..a571c6c 100644
+--- a/crates/benilla-assets/src/shaders/liquid.wgsl
++++ b/crates/benilla-assets/src/shaders/liquid.wgsl
+@@ -32,6 +32,8 @@
+ @group(#{MATERIAL_BIND_GROUP}) @binding(100) var frames: texture_2d_array<f32>;
+ @group(#{MATERIAL_BIND_GROUP}) @binding(101) var frames_samp: sampler;
+ 
++#import "embedded://benilla_assets/shaders/enhanced_lighting.wgsl"::{decode_colour, GridLight, GridProbe, interpolate_grid, shade_grid_surface}
++
+ struct LiquidParams {
+     // x = fullbright (magma/slime); y = ocean swatch; z = interior fog; w = sun-sheen shininess.
+     kind: vec4<f32>,
+@@ -58,9 +60,84 @@ struct WowLight {
+     _grade: vec4<f32>,             // 17
+     wmo_fog_color: vec4<f32>,      // 18 rgb = interior fog (block 2); w = enable
+     wmo_fog_params: vec4<f32>,     // 19 x = start yd; y = end yd
++    point_count: vec4<f32>,
++    points: array<vec4<f32>, 512>,
++    grid: array<vec4<f32>, 70248>,
+ };
+ @group(#{MATERIAL_BIND_GROUP}) @binding(90) var<storage, read> wow_light: WowLight;
+ 
++
++// Keep this binding-specific loader identical across terrain, models and retained statics.
++fn world_grid_light(position: vec3<f32>, normal: vec3<f32>) -> GridLight {
++    var blended = GridLight(1.0, 1.0, vec3<f32>(0.0));
++    // Compose the identical cascade weights near-to-far. Once a fine cascade has full
++    // weight, coarser fields contribute zero and need no probe reads.
++    var result = GridLight(0.0, 0.0, vec3<f32>(0.0));
++    var remaining = 1.0;
++    let n = normal / max(length(normal), 0.0001);
++    let normal_weights = n * n;
++    let normal_faces = vec3<u32>(select(1u, 0u, n.x >= 0.0),
++        select(3u, 2u, n.y >= 0.0), select(5u, 4u, n.z >= 0.0));
++    for (var level = 0u; level < 3u; level += 1u) {
++        let cascade_base = level * 23416u;
++        let origin = wow_light.grid[cascade_base];
++        let grid_info = wow_light.grid[cascade_base + 1u];
++        if (grid_info.w < 0.5 || origin.w <= 0.0 || any(grid_info.xyz != vec3<f32>(17.0, 9.0, 17.0))) { continue; }
++        let coord = (position - origin.xyz) / origin.w;
++        let last = grid_info.xyz - vec3<f32>(1.0);
++        if (any(coord < vec3<f32>(0.0)) || any(coord > last)) { continue; }
++        let edge = min(coord, last - coord);
++        let cascade_weight = smoothstep(0.0, 2.0, min(edge.x, min(edge.y, edge.z)));
++        if (cascade_weight == 0.0) { continue; }
++        let low = vec3<u32>(min(floor(coord), last - vec3<f32>(1.0)));
++        let fraction = coord - vec3<f32>(low);
++        var sampled = GridLight(0.0, 0.0, vec3<f32>(0.0));
++        var total_weight = 0.0;
++        for (var i = 0u; i < 8u; i += 1u) {
++            let side = vec3<bool>((i & 1u) != 0u, (i & 2u) != 0u, (i & 4u) != 0u);
++            let offset = (select(vec3<f32>(0.0), vec3<f32>(1.0), side) - fraction) * origin.w;
++            if (dot(offset, n) < -0.02) { continue; }
++            let axis_weight = select(vec3<f32>(1.0) - fraction, fraction, side);
++            let probe_weight = axis_weight.x * axis_weight.y * axis_weight.z;
++            if (probe_weight == 0.0) { continue; }
++            let p = low + vec3<u32>(i & 1u, (i >> 1u) & 1u, (i >> 2u) & 1u);
++            let base = cascade_base + 2u + 9u * (p.x + 17u * (p.y + 9u * p.z));
++            let toward_surface = -offset;
++            let distance = abs(toward_surface);
++            var dominant_axis = 0u;
++            if (distance.y > distance.x) { dominant_axis = 1u; }
++            if (distance.z > distance[dominant_axis]) { dominant_axis = 2u; }
++            let face = dominant_axis * 2u + select(1u, 0u, toward_surface[dominant_axis] >= 0.0);
++            if (distance[dominant_axis] > wow_light.grid[base + 3u + face].w + 0.03) { continue; }
++            // Fetch only contributing directional rows; no dynamically indexed private
++            // array of 72 vec4s per fragment and no reads for rejected probes.
++            let sky = wow_light.grid[base + 1u];
++            let skyz = wow_light.grid[base + 2u];
++            let sky_value = normal_weights.x * select(sky.y, sky.x, n.x >= 0.0)
++                + normal_weights.y * select(sky.w, sky.z, n.y >= 0.0)
++                + normal_weights.z * select(skyz.y, skyz.x, n.z >= 0.0);
++            let local_value = max(
++                normal_weights.x * wow_light.grid[base + 3u + normal_faces.x].rgb
++                + normal_weights.y * wow_light.grid[base + 3u + normal_faces.y].rgb
++                + normal_weights.z * wow_light.grid[base + 3u + normal_faces.z].rgb,
++                vec3<f32>(0.0));
++            sampled.sun += probe_weight * clamp(wow_light.grid[base].x, 0.0, 1.0);
++            sampled.sky += probe_weight * clamp(sky_value, 0.0, 1.0);
++            sampled.local += probe_weight * local_value;
++            total_weight += probe_weight;
++        }
++        let inverse_weight = 1.0 / max(total_weight, 0.000001);
++        let contribution = remaining * cascade_weight * inverse_weight;
++        result.sun += contribution * sampled.sun;
++        result.sky += contribution * sampled.sky;
++        result.local += contribution * sampled.local;
++        remaining *= 1.0 - cascade_weight;
++        if (remaining == 0.0) { break; }
++    }
++    return GridLight(result.sun + remaining * blended.sun,
++        result.sky + remaining * blended.sky, result.local + remaining * blended.local);
++}
++
+ struct LiquidVsOut {
+     @builtin(position) clip_position: vec4<f32>,
+     @location(0) world_position: vec4<f32>,
+@@ -206,7 +283,7 @@ fn fragment(in: LiquidVsOut) -> @location(0) vec4<f32> {
+     // Magma/slime: the sheet is the opaque body, unmodulated (the ADT vertex has no colour, the WMO
+     // one is `0xffffffff`) and unlit (lighting off on both paths), but fogged.
+     if (w.kind.x > 0.5) {
+-        return vec4<f32>(apply_fog(detail.rgb, in.world_position.xyz, in.room_fog), 1.0);
++        return vec4<f32>(apply_fog(select(detail.rgb, decode_colour(detail.rgb), wow_light._sh_c16.w > 0.5), in.world_position.xyz, in.room_fog), 1.0);
+     }
+ 
+     // V, from the authored depth byte CPU-side: clamp(byte/42) on river/lake (LUT `0xc81768`,
+@@ -219,6 +296,16 @@ fn fragment(in: LiquidVsOut) -> @location(0) vec4<f32> {
+         shallow = wow_light.water_ocean[0];
+         deep = wow_light.water_ocean[1];
+     }
++    if (wow_light._sh_c16.w > 0.5) {
++        // Authored water colours are reflectance endpoints; no byte swatch math in the HDR lane.
++        let albedo = mix(decode_colour(shallow.rgb), decode_colour(deep.rgb), depth);
++        let grid = world_grid_light(in.world_position.xyz, in.world_normal);
++        let radiance = shade_grid_surface(albedo, in.world_normal,
++            view.world_position.xyz - in.world_position.xyz, -wow_light.light_sun.xyz,
++            wow_light.light_diffuse.rgb, wow_light.light_ambient.rgb, 0.22, 0.0, grid);
++        return vec4<f32>(apply_fog(radiance, in.world_position.xyz, in.room_fog),
++            mix(shallow.w, deep.w, depth));
++    }
+     // ---- The WMO water arms: opacity is the per-vertex authored byte through the zone's linear
+     // alpha ramp, carried in `in.depth`.
+     let vtx_alpha = mix(shallow.w, deep.w, depth);
+diff --git a/crates/benilla-assets/src/shaders/terrain.wgsl b/crates/benilla-assets/src/shaders/terrain.wgsl
+index 638ac1d..eba1280 100644
+--- a/crates/benilla-assets/src/shaders/terrain.wgsl
++++ b/crates/benilla-assets/src/shaders/terrain.wgsl
+@@ -11,12 +11,24 @@
+ 
+ #import bevy_pbr::{
+     mesh_functions,
+-    forward_io::Vertex,
+     view_transformations::position_world_to_clip,
+     mesh_view_bindings::view,
+ }
+ 
++struct Vertex {
++    @builtin(instance_index) instance_index: u32,
++    @location(0) position: vec3<f32>,
++    @location(1) normal: vec3<f32>,
++    @location(2) uv: vec2<f32>,
++    @location(3) uv_b: vec2<f32>,
++    @location(5) color: vec4<f32>,
++#ifdef CODCRAFT_SUN_VISIBILITY
++    @location(8) sun_visibility: f32,
++#endif
++};
++
+ @group(#{MATERIAL_BIND_GROUP}) @binding(100) var layer_array: texture_2d_array<f32>;
++#import "embedded://benilla_assets/shaders/enhanced_lighting.wgsl"::{decode_colour, GridLight, GridProbe, interpolate_grid, shade_grid_surface}
+ @group(#{MATERIAL_BIND_GROUP}) @binding(104) var alpha_array: texture_2d_array<f32>;
+ @group(#{MATERIAL_BIND_GROUP}) @binding(105) var splat_samp: sampler;
+ @group(#{MATERIAL_BIND_GROUP}) @binding(110) var shadow_array: texture_2d_array<f32>;
+@@ -46,9 +58,82 @@ struct WowLight {
+     // then two rows per light, `[pos.xyz, range]` and `[rgb, 0]`.
+     point_count: vec4<f32>,
+     points: array<vec4<f32>, 512>,
++    grid: array<vec4<f32>, 70248>,
+ };
+ @group(#{MATERIAL_BIND_GROUP}) @binding(90) var<storage, read> wow_light: WowLight;
+ 
++
++// Keep this binding-specific loader identical across terrain, models and retained statics.
++fn world_grid_light(position: vec3<f32>, normal: vec3<f32>, fallback: GridLight) -> GridLight {
++    var blended = fallback;
++    // Compose the identical cascade weights near-to-far. Once a fine cascade has full
++    // weight, coarser fields contribute zero and need no probe reads.
++    var result = GridLight(0.0, 0.0, vec3<f32>(0.0));
++    var remaining = 1.0;
++    let n = normal / max(length(normal), 0.0001);
++    let normal_weights = n * n;
++    let normal_faces = vec3<u32>(select(1u, 0u, n.x >= 0.0),
++        select(3u, 2u, n.y >= 0.0), select(5u, 4u, n.z >= 0.0));
++    for (var level = 0u; level < 3u; level += 1u) {
++        let cascade_base = level * 23416u;
++        let origin = wow_light.grid[cascade_base];
++        let grid_info = wow_light.grid[cascade_base + 1u];
++        if (grid_info.w < 0.5 || origin.w <= 0.0 || any(grid_info.xyz != vec3<f32>(17.0, 9.0, 17.0))) { continue; }
++        let coord = (position - origin.xyz) / origin.w;
++        let last = grid_info.xyz - vec3<f32>(1.0);
++        if (any(coord < vec3<f32>(0.0)) || any(coord > last)) { continue; }
++        let edge = min(coord, last - coord);
++        let cascade_weight = smoothstep(0.0, 2.0, min(edge.x, min(edge.y, edge.z)));
++        if (cascade_weight == 0.0) { continue; }
++        let low = vec3<u32>(min(floor(coord), last - vec3<f32>(1.0)));
++        let fraction = coord - vec3<f32>(low);
++        var sampled = GridLight(0.0, 0.0, vec3<f32>(0.0));
++        var total_weight = 0.0;
++        for (var i = 0u; i < 8u; i += 1u) {
++            let side = vec3<bool>((i & 1u) != 0u, (i & 2u) != 0u, (i & 4u) != 0u);
++            let offset = (select(vec3<f32>(0.0), vec3<f32>(1.0), side) - fraction) * origin.w;
++            if (dot(offset, n) < -0.02) { continue; }
++            let axis_weight = select(vec3<f32>(1.0) - fraction, fraction, side);
++            let probe_weight = axis_weight.x * axis_weight.y * axis_weight.z;
++            if (probe_weight == 0.0) { continue; }
++            let p = low + vec3<u32>(i & 1u, (i >> 1u) & 1u, (i >> 2u) & 1u);
++            let base = cascade_base + 2u + 9u * (p.x + 17u * (p.y + 9u * p.z));
++            let toward_surface = -offset;
++            let distance = abs(toward_surface);
++            var dominant_axis = 0u;
++            if (distance.y > distance.x) { dominant_axis = 1u; }
++            if (distance.z > distance[dominant_axis]) { dominant_axis = 2u; }
++            let face = dominant_axis * 2u + select(1u, 0u, toward_surface[dominant_axis] >= 0.0);
++            if (distance[dominant_axis] > wow_light.grid[base + 3u + face].w + 0.03) { continue; }
++            // Fetch only contributing directional rows; no dynamically indexed private
++            // array of 72 vec4s per fragment and no reads for rejected probes.
++            let sky = wow_light.grid[base + 1u];
++            let skyz = wow_light.grid[base + 2u];
++            let sky_value = normal_weights.x * select(sky.y, sky.x, n.x >= 0.0)
++                + normal_weights.y * select(sky.w, sky.z, n.y >= 0.0)
++                + normal_weights.z * select(skyz.y, skyz.x, n.z >= 0.0);
++            let local_value = max(
++                normal_weights.x * wow_light.grid[base + 3u + normal_faces.x].rgb
++                + normal_weights.y * wow_light.grid[base + 3u + normal_faces.y].rgb
++                + normal_weights.z * wow_light.grid[base + 3u + normal_faces.z].rgb,
++                vec3<f32>(0.0));
++            sampled.sun += probe_weight * clamp(wow_light.grid[base].x, 0.0, 1.0);
++            sampled.sky += probe_weight * clamp(sky_value, 0.0, 1.0);
++            sampled.local += probe_weight * local_value;
++            total_weight += probe_weight;
++        }
++        let inverse_weight = 1.0 / max(total_weight, 0.000001);
++        let contribution = remaining * cascade_weight * inverse_weight;
++        result.sun += contribution * sampled.sun;
++        result.sky += contribution * sampled.sky;
++        result.local += contribution * sampled.local;
++        remaining *= 1.0 - cascade_weight;
++        if (remaining == 0.0) { break; }
++    }
++    return GridLight(result.sun + remaining * blended.sun,
++        result.sky + remaining * blended.sky, result.local + remaining * blended.local);
++}
++
+ // The vertex-to-fragment payload; `specular` is clamped per vertex, then Gouraud-interpolated.
+ struct TerrainVsOut {
+     @builtin(position) clip_position: vec4<f32>,
+@@ -61,6 +146,8 @@ struct TerrainVsOut {
+     // carried torch is (1.4, 0.87, 0.40)) saturates one vertex and falls off linearly from it,
+     // where clamping per pixel would pin a wide plateau at white.
+     @location(6) primary: vec3<f32>,
++    @location(7) world_normal: vec3<f32>,
++    @location(8) point_light: vec3<f32>,
+ }
+ 
+ // Terrain's point-light candidacy half-width (yd): `w + 10`, `w` being the chunk's bounding-sphere
+@@ -139,6 +226,7 @@ fn vertex(in: Vertex) -> TerrainVsOut {
+         mesh_functions::mesh_position_local_to_world(world_from_local, vec4<f32>(in.position, 1.0));
+     out.clip_position = position_world_to_clip(out.world_position.xyz);
+     let world_normal = mesh_functions::mesh_normal_local_to_world(in.normal, in.instance_index);
++    out.world_normal = world_normal;
+     out.uv = in.uv;
+     out.uv_b = in.uv_b;
+     out.color = in.color;
+@@ -150,14 +238,19 @@ fn vertex(in: Vertex) -> TerrainVsOut {
+     let v = normalize(view.world_position.xyz - out.world_position.xyz); // to-eye (local viewer)
+     let h = normalize(l + v);
+     let ndoth = max(dot(n, h), 0.0);
+-    out.specular = clamp(wow_light.light_spec.rgb * pow(ndoth, wow_light.light_spec.w), vec3<f32>(0.0), vec3<f32>(1.0));
++    var sun_visibility = 1.0;
++#ifdef CODCRAFT_SUN_VISIBILITY
++    sun_visibility = select(1.0, clamp(in.sun_visibility, 0.0, 1.0), wow_light.sh_c16.w > 0.5);
++#endif
++    out.specular = clamp(wow_light.light_spec.rgb * pow(ndoth, wow_light.light_spec.w), vec3<f32>(0.0), vec3<f32>(1.0)) * sun_visibility;
+ 
+     // The whole diffuse sum on the MCNR normal, clamped per vertex: ambient, sun N·L, and the
+     // chunk's three nearest point lights with their over-gamut colours raw.
+     let ndotl = max(dot(n, l), 0.0);
+     let points = point_light_sum(out.world_position.xyz, n, mcnk_cell_anchor(out.world_position.xyz));
++    out.point_light = points;
+     out.primary = clamp(
+-        wow_light.light_ambient.rgb + wow_light.light_diffuse.rgb * ndotl + points,
++        wow_light.light_ambient.rgb + wow_light.light_diffuse.rgb * ndotl * sun_visibility + points,
+         vec3<f32>(0.0),
+         vec3<f32>(1.0),
+     );
+@@ -224,6 +317,26 @@ fn fragment(in: TerrainVsOut) -> @location(0) vec4<f32> {
+     let diffuse_term = color * primary * (0.3 * shadow_lit + 0.7);
+     let spec_term = in.specular * specmask * shadow_lit;
+     var tuned = clamp(diffuse_term + spec_term, vec3<f32>(0.0), vec3<f32>(1.0));
++    if (wow_light.sh_c16.w > 0.5) {
++        var albedo_linear = decode_colour(s0.rgb);
++        albedo_linear = mix(albedo_linear, decode_colour(s1.rgb), a.r);
++        albedo_linear = mix(albedo_linear, decode_colour(s2.rgb), a.g);
++        albedo_linear = mix(albedo_linear, decode_colour(s3.rgb), a.b);
++        var grid = world_grid_light(in.world_position.xyz, in.world_normal, GridLight(1.0, 1.0, vec3<f32>(0.0)));
++        // The shared helper applies one restrained transport blend to every surface type;
++        // do not stack additional ray shadows on top of WoW's painted terrain shadows.
++        var radiance = shade_grid_surface(albedo_linear, in.world_normal,
++            view.world_position.xyz - in.world_position.xyz, -wow_light.light_sun.xyz,
++            wow_light.light_diffuse.rgb, wow_light.light_ambient.rgb,
++            mix(0.92, 0.45, clamp(specmask, 0.0, 1.0)), 0.0, grid);
++        if (wow_light.fog_color.w > 0.5) {
++            let eye_z = -(view.view_from_world * vec4<f32>(in.world_position.xyz, 1.0)).z;
++            let factor = clamp((wow_light.fog_params.y - eye_z) /
++                max(wow_light.fog_params.y - wow_light.fog_params.x, 0.001), 0.0, 1.0);
++            radiance = mix(wow_light.fog_color.rgb, radiance, factor);
++        }
++        return vec4<f32>(radiance, 1.0);
++    }
+ 
+     // Gamma-space GL_LINEAR fog on planar eye-Z, as the reference computes `fogcoord`, not radial
+     // distance. Per pixel matches its per-vertex fog, since a linear factor interpolates exactly.
+diff --git a/crates/benilla-assets/src/shaders/wow_model.wgsl b/crates/benilla-assets/src/shaders/wow_model.wgsl
+index f84ff88..fb1b802 100644
+--- a/crates/benilla-assets/src/shaders/wow_model.wgsl
++++ b/crates/benilla-assets/src/shaders/wow_model.wgsl
+@@ -23,6 +23,7 @@
+ struct WowFragOut {
+     @location(0) color: vec4<f32>,
+ }
++#import "embedded://benilla_assets/shaders/enhanced_lighting.wgsl"::{decode_colour, GridLight, GridProbe, interpolate_grid, shade_grid_surface}
+ 
+ // Per-material uniforms at binding 100, in `WowModelExt`'s field order (materials.rs).
+ //   clutter_fade: x = plateau-end view depth (yd, 0.75·far), y = ramp-zero view depth (the ~70 yd
+@@ -77,6 +78,7 @@ struct WowLight {
+     // in Bevy's clusterables, which the view layout gives the fragment stage only.
+     point_count: vec4<f32>,
+     points: array<vec4<f32>, 512>,
++    grid: array<vec4<f32>, 70248>,
+     // The interior-prop SH probes, 7 rows per slot (`MAX_PROP_PROBES` = 8192 slots). Only this
+     // shader declares this tail; the other shaders bind the same buffer by its prefix.
+     prop_probes: array<vec4<f32>, 57344>,
+@@ -98,6 +100,78 @@ struct WowLight {
+ };
+ @group(#{MATERIAL_BIND_GROUP}) @binding(90) var<storage, read> wow_light: WowLight;
+ 
++
++// Keep this binding-specific loader identical across terrain, models and retained statics.
++fn world_grid_light(position: vec3<f32>, normal: vec3<f32>, fallback: GridLight) -> GridLight {
++    var blended = fallback;
++    // Compose the identical cascade weights near-to-far. Once a fine cascade has full
++    // weight, coarser fields contribute zero and need no probe reads.
++    var result = GridLight(0.0, 0.0, vec3<f32>(0.0));
++    var remaining = 1.0;
++    let n = normal / max(length(normal), 0.0001);
++    let normal_weights = n * n;
++    let normal_faces = vec3<u32>(select(1u, 0u, n.x >= 0.0),
++        select(3u, 2u, n.y >= 0.0), select(5u, 4u, n.z >= 0.0));
++    for (var level = 0u; level < 3u; level += 1u) {
++        let cascade_base = level * 23416u;
++        let origin = wow_light.grid[cascade_base];
++        let grid_info = wow_light.grid[cascade_base + 1u];
++        if (grid_info.w < 0.5 || origin.w <= 0.0 || any(grid_info.xyz != vec3<f32>(17.0, 9.0, 17.0))) { continue; }
++        let coord = (position - origin.xyz) / origin.w;
++        let last = grid_info.xyz - vec3<f32>(1.0);
++        if (any(coord < vec3<f32>(0.0)) || any(coord > last)) { continue; }
++        let edge = min(coord, last - coord);
++        let cascade_weight = smoothstep(0.0, 2.0, min(edge.x, min(edge.y, edge.z)));
++        if (cascade_weight == 0.0) { continue; }
++        let low = vec3<u32>(min(floor(coord), last - vec3<f32>(1.0)));
++        let fraction = coord - vec3<f32>(low);
++        var sampled = GridLight(0.0, 0.0, vec3<f32>(0.0));
++        var total_weight = 0.0;
++        for (var i = 0u; i < 8u; i += 1u) {
++            let side = vec3<bool>((i & 1u) != 0u, (i & 2u) != 0u, (i & 4u) != 0u);
++            let offset = (select(vec3<f32>(0.0), vec3<f32>(1.0), side) - fraction) * origin.w;
++            if (dot(offset, n) < -0.02) { continue; }
++            let axis_weight = select(vec3<f32>(1.0) - fraction, fraction, side);
++            let probe_weight = axis_weight.x * axis_weight.y * axis_weight.z;
++            if (probe_weight == 0.0) { continue; }
++            let p = low + vec3<u32>(i & 1u, (i >> 1u) & 1u, (i >> 2u) & 1u);
++            let base = cascade_base + 2u + 9u * (p.x + 17u * (p.y + 9u * p.z));
++            let toward_surface = -offset;
++            let distance = abs(toward_surface);
++            var dominant_axis = 0u;
++            if (distance.y > distance.x) { dominant_axis = 1u; }
++            if (distance.z > distance[dominant_axis]) { dominant_axis = 2u; }
++            let face = dominant_axis * 2u + select(1u, 0u, toward_surface[dominant_axis] >= 0.0);
++            if (distance[dominant_axis] > wow_light.grid[base + 3u + face].w + 0.03) { continue; }
++            // Fetch only contributing directional rows; no dynamically indexed private
++            // array of 72 vec4s per fragment and no reads for rejected probes.
++            let sky = wow_light.grid[base + 1u];
++            let skyz = wow_light.grid[base + 2u];
++            let sky_value = normal_weights.x * select(sky.y, sky.x, n.x >= 0.0)
++                + normal_weights.y * select(sky.w, sky.z, n.y >= 0.0)
++                + normal_weights.z * select(skyz.y, skyz.x, n.z >= 0.0);
++            let local_value = max(
++                normal_weights.x * wow_light.grid[base + 3u + normal_faces.x].rgb
++                + normal_weights.y * wow_light.grid[base + 3u + normal_faces.y].rgb
++                + normal_weights.z * wow_light.grid[base + 3u + normal_faces.z].rgb,
++                vec3<f32>(0.0));
++            sampled.sun += probe_weight * clamp(wow_light.grid[base].x, 0.0, 1.0);
++            sampled.sky += probe_weight * clamp(sky_value, 0.0, 1.0);
++            sampled.local += probe_weight * local_value;
++            total_weight += probe_weight;
++        }
++        let inverse_weight = 1.0 / max(total_weight, 0.000001);
++        let contribution = remaining * cascade_weight * inverse_weight;
++        result.sun += contribution * sampled.sun;
++        result.sky += contribution * sampled.sky;
++        result.local += contribution * sampled.local;
++        remaining *= 1.0 - cascade_weight;
++        if (remaining == 0.0) { break; }
++    }
++    return GridLight(result.sun + remaining * blended.sun,
++        result.sky + remaining * blended.sky, result.local + remaining * blended.local);
++}
++
+ // The M2 cutout alpha-test reference, 224/255; in sync with `materials::VANILLA_ALPHA_KEY_REF`.
+ const VANILLA_ALPHA_KEY: f32 = 0.8784314;
+ 
+@@ -480,6 +554,11 @@ fn fragment(in: WowVsOut, @builtin(front_facing) is_front: bool) -> WowFragOut {
+ #endif
+     var pbr_input = pbr_input_from_standard_material(vo, is_front);
+     var base_color = pbr_input.material.base_color;
++    var authored_texel = pbr_input.material.base_color.rgb;
++#ifdef VERTEX_UVS_A
++    authored_texel = textureSampleBias(pbr_bindings::base_color_texture,
++        pbr_bindings::base_color_sampler, vo.uv, view.mip_bias).rgb;
++#endif
+     // WMO MOCV alpha is lighting data (the TRANS lerp, the INT glow mask), and the reference's WMO
+     // output alpha is tex.a alone. Bevy folds the vertex alpha into base_color, so re-sample the
+     // texel alpha: dividing the fold back out loses everything where MOCV.a ≈ 0.
+@@ -758,13 +837,50 @@ fn fragment(in: WowVsOut, @builtin(front_facing) is_front: bool) -> WowFragOut {
+         unlit_rgb = unlit_tex * clamp(unlit_sum, vec3<f32>(0.0), vec3<f32>(1.0));
+     }
+     var rgb = select(lit_rgb, unlit_rgb, is_emissive);
++    let enhanced = wow_light.sh_c16.w > 0.5;
++    if (enhanced) {
++        let physical_material = (u32(m.clutter_fade.z) & 16384u) != 0u;
++        // WMO MOCV and interior MODD colour encode baked lighting, not surface reflectance.
++        let source_albedo = select(base.rgb, authored_texel, is_wmo || interior_prop || is_clutter);
++        var linear_albedo = decode_colour(source_albedo) * decode_colour(anim_tint) * decode_colour(inst_tint);
++        if (physical_material && m.sidn.z > 0.5) { linear_albedo = source_albedo; }
++        var fallback = GridLight(1.0, 1.0, vec3<f32>(0.0));
++        if (is_interior || interior_prop || interior_fogged) { fallback = GridLight(0.0, 0.0, vec3<f32>(0.0)); }
++        let grid = world_grid_light(in.world_position.xyz, n_m2, fallback);
++        let roughness = select(0.85, m.sidn.x, physical_material);
++        let metalness = select(0.0, m.sidn.y, physical_material);
++        rgb = shade_grid_surface(linear_albedo, n_m2,
++            view.world_position.xyz - in.world_position.xyz, L,
++            wow_light.light_diffuse.rgb, wow_light.light_ambient.rgb, roughness, metalness, grid);
++        // Explicit exterior unlit art stays emissive; INT/TRANS baked illumination is removed.
++        if (is_emissive && !(is_wmo && is_interior)) { rgb = linear_albedo; }
++        if (is_wmo && !physical_material) {
++            rgb += decode_colour(m.sidn.rgb) * wow_light.grade.x;
++        }
++        rgb += select(vec3<f32>(0.0), linear_albedo * wow_light.light_ambient.rgb, highlighted);
++        // Streaming or an unavailable ray field must not turn an entire room black.
++        // Keep the legacy room response (converted at the HDR boundary) until valid
++        // transport covers this surface. Never manufacture an ambient floor inside
++        // a valid field: there, only actual visible sources and bounce contribute.
++        var field_valid = false;
++        for (var level = 0u; level < 3u; level += 1u) {
++            let field_origin = wow_light.grid[level * 23416u];
++            let field_info = wow_light.grid[level * 23416u + 1u];
++            let field_coord = (in.world_position.xyz - field_origin.xyz) / max(field_origin.w, 0.001);
++            field_valid = field_valid || (field_info.w > 0.5 && field_origin.w > 0.0
++                && all(field_coord >= vec3<f32>(0.0)) && all(field_coord <= field_info.xyz - vec3<f32>(1.0)));
++        }
++        if (!field_valid && (is_interior || interior_prop || interior_fogged)) {
++            rgb = decode_colour(select(lit_rgb, unlit_rgb, is_emissive));
++        }
++    }
+     // An M2 Mod or Mod2x batch draws the bare texel: the reference zeroes its tint·M2Color term and
+     // forces the primary colour to the blend identity (`0x70c507`/`0x70c5b8`), so neither the
+     // animated M2Color nor the body tint reaches it. Its alpha still does, through the lerp below.
+     let is_mod = (u32(m.clutter_fade.z) & 128u) != 0u;
+     let is_mod2x = (u32(m.clutter_fade.z) & 256u) != 0u;
+     if ((is_mod || is_mod2x) && !is_wmo) {
+-        rgb = base.rgb;
++        rgb = select(base.rgb, decode_colour(base.rgb), enhanced);
+     }
+ 
+     // Linear fog by planar eye depth, as in terrain.wgsl. Per-batch colour policy (`clutter_fade.z`
+@@ -786,7 +902,7 @@ fn fragment(in: WowVsOut, @builtin(front_facing) is_front: bool) -> WowFragOut {
+         var fog_rgb = fog_color.xyz;
+         if (fog_policy == 1u) { fog_rgb = vec3<f32>(0.0); }
+         else if (fog_policy == 2u) { fog_rgb = vec3<f32>(1.0); }
+-        else if (fog_policy == 3u) { fog_rgb = vec3<f32>(0.50196078); }
++        else if (fog_policy == 3u) { fog_rgb = vec3<f32>(select(0.50196078, 0.5, enhanced)); }
+         rgb = mix(fog_rgb, rgb, factor);
+     }
+ 
+diff --git a/crates/benilla-assets/src/world_assets/images.rs b/crates/benilla-assets/src/world_assets/images.rs
+index 4ca61b1..4ee1ff8 100644
+--- a/crates/benilla-assets/src/world_assets/images.rs
++++ b/crates/benilla-assets/src/world_assets/images.rs
+@@ -34,7 +34,11 @@ pub fn repeat_texture_authored(upload: crate::gpu_blp::UploadChain, wrap: (bool,
+         format,
+         // The synchronous twin of `blp.rs`'s `WorldArt` lane: the render world takes the chain, and
+         // neither caller (`WorldAssets::texture`, the character-skin composite) reads it back.
+-        RenderAssetUsages::RENDER_WORLD,
++        if std::env::var("CODCRAFT_LIGHTING_ENGINE").as_deref() == Ok("1") {
++            RenderAssetUsages::MAIN_WORLD | RenderAssetUsages::RENDER_WORLD
++        } else {
++            RenderAssetUsages::RENDER_WORLD
++        },
+     );
+     image.data = Some(data);
+     image.texture_descriptor.mip_level_count = levels;
+diff --git a/crates/benilla-protocol/src/messages/attack.rs b/crates/benilla-protocol/src/messages/attack.rs
+index 4498a0a..ebd4672 100644
+--- a/crates/benilla-protocol/src/messages/attack.rs
++++ b/crates/benilla-protocol/src/messages/attack.rs
+@@ -3,13 +3,32 @@
+ 
+ use std::io::{self, Read};
+ 
+-use crate::wire::{read_f32_le, read_packed_guid, read_u32_le, read_u64_le, read_u8};
++use crate::wire::{read_f32_le, read_packed_guid, read_u8, read_u32_le, read_u64_le};
+ 
+ /// `SMSG_ATTACKSTART` (vmangos `AttackStart::AppendBodyTo`): two full `u64` guids.
+ pub(super) fn read_attack_start(r: &mut impl Read) -> io::Result<(u64, u64)> {
+     Ok((read_u64_le(r)?, read_u64_le(r)?))
+ }
+ 
++/// CoDCraft's private NPC bullet body: attacker creature GUID followed by player target GUID.
++pub fn codcraft_npc_bullet(
++    attacker: u64,
++    target: u64,
++    yaw: f32,
++    forward: i32,
++    right: i32,
++    shot_sequence: u32,
++) -> Vec<u8> {
++    let mut body = Vec::with_capacity(32);
++    body.extend_from_slice(&attacker.to_le_bytes());
++    body.extend_from_slice(&target.to_le_bytes());
++    body.extend_from_slice(&yaw.to_le_bytes());
++    body.extend_from_slice(&forward.to_le_bytes());
++    body.extend_from_slice(&right.to_le_bytes());
++    body.extend_from_slice(&shot_sequence.to_le_bytes());
++    body
++}
++
+ /// `SMSG_ATTACKERSTATEUPDATE`: one melee swing (`Unit.cpp:4572-4605`), sent once per weapon-timer
+ /// cycle per hand; the reference plays one swing animation per packet. `hit_info` bit `0x4` marks
+ /// an offhand swing, bit `0x10000` suppresses the swing animation.
+diff --git a/crates/benilla-protocol/src/messages/mod.rs b/crates/benilla-protocol/src/messages/mod.rs
+index e0814a6..9569a8e 100644
+--- a/crates/benilla-protocol/src/messages/mod.rs
++++ b/crates/benilla-protocol/src/messages/mod.rs
+@@ -62,7 +62,7 @@ pub use action_bar::{
+ };
+ pub use addons::{hidden_from_reply, SecureAddon, STANDARD_MODULUS_CRC, STOCK_SECURE_ADDONS};
+ pub use area_trigger::area_trigger;
+-pub use attack::{attack_swing, AttackSwingError, AttackerState};
++pub use attack::{attack_swing, codcraft_npc_bullet, AttackSwingError, AttackerState};
+ pub use auction::{
+     auction_action, auction_duration, auction_error, auction_filter, auction_hello,
+     auction_list_bidder_items, auction_list_items, auction_list_owner_items, auction_place_bid,
+diff --git a/crates/benilla-protocol/src/messages/opcode.rs b/crates/benilla-protocol/src/messages/opcode.rs
+index 70e42f7..6789d77 100644
+--- a/crates/benilla-protocol/src/messages/opcode.rs
++++ b/crates/benilla-protocol/src/messages/opcode.rs
+@@ -412,6 +412,11 @@ pub const CMSG_BATTLEMASTER_HELLO: u16 = 0x02D7; // 727
+ pub const CMSG_SET_SELECTION: u16 = 0x013D; // 317
+ pub const CMSG_ATTACKSWING: u16 = 0x0141; // 321
+ pub const CMSG_ATTACKSTOP: u16 = 0x0142; // 322
++/// CoDCraft's private one-shot main-hand swing packet (vmangos opcode 320).
++pub const CMSG_CODCRAFT_BULLET: u16 = 0x0140; // 320
++/// CoDCraft's private Kobold one-shot packet (vmangos opcode 826). The body is two raw u64
++/// object GUIDs: attacker creature, then the logged-in player target.
++pub const CMSG_CODCRAFT_NPC_BULLET: u16 = 0x033A; // 826
+ /// Set our weapon sheath state.
+ pub const CMSG_SETSHEATHED: u16 = 0x01E0; // 480
+ pub const CMSG_AUTH_SESSION: u16 = 0x01ED;
+diff --git a/crates/benilla-protocol/src/world/writer/attack.rs b/crates/benilla-protocol/src/world/writer/attack.rs
+index 64d1cc0..f4ece4e 100644
+--- a/crates/benilla-protocol/src/world/writer/attack.rs
++++ b/crates/benilla-protocol/src/world/writer/attack.rs
+@@ -13,6 +13,36 @@ impl WorldWriter {
+         self.send(opcode::CMSG_ATTACKSWING, &messages::attack_swing(guid))
+     }
+ 
++    /// Apply exactly one normal equipped main-hand damage event to a target. This is a CoDCraft
++    /// vmangos extension; unlike `attack_swing`, it never starts persistent autoattack state.
++    pub fn codcraft_bullet(&mut self, guid: u64) -> Result<()> {
++        self.send(opcode::CMSG_CODCRAFT_BULLET, &messages::attack_swing(guid))
++    }
++
++    /// Fire one authoritative CoD-style shot from a streamed Kobold at this player. vmangos
++    /// validates both GUIDs and applies one ordinary creature damage event.
++    pub fn codcraft_npc_bullet(
++        &mut self,
++        attacker_guid: u64,
++        target_guid: u64,
++        yaw: f32,
++        forward: i32,
++        right: i32,
++        shot_sequence: u32,
++    ) -> Result<()> {
++        self.send(
++            opcode::CMSG_CODCRAFT_NPC_BULLET,
++            &messages::codcraft_npc_bullet(
++                attacker_guid,
++                target_guid,
++                yaw,
++                forward,
++                right,
++                shot_sequence,
++            ),
++        )
++    }
++
+     /// Stop melee auto-attack (`CMSG_ATTACKSTOP`, empty body). Echoed as `SMSG_ATTACKSTOP`.
+     pub fn attack_stop(&mut self) -> Result<()> {
+         self.send(opcode::CMSG_ATTACKSTOP, &[])
+diff --git a/crates/benilla-world/Cargo.toml b/crates/benilla-world/Cargo.toml
+index 2c5bec0..d993ae5 100644
+--- a/crates/benilla-world/Cargo.toml
++++ b/crates/benilla-world/Cargo.toml
+@@ -24,6 +24,7 @@ benilla-formats = { path = "../benilla-formats", default-features = false }
+ # For the portal audit, which re-parses a WMO group to check its decode against the file.
+ benilla-wmo = { path = "../benilla-wmo" }
+ bevy.workspace = true
++wgpu.workspace = true
+ bytemuck = { version = "1", features = ["derive"] }
+ image = { version = "0.25", default-features = false, features = ["png"] }
+ 
+diff --git a/crates/benilla-world/src/collision.rs b/crates/benilla-world/src/collision.rs
+index fcbb5f5..2e7c769 100644
+--- a/crates/benilla-world/src/collision.rs
++++ b/crates/benilla-world/src/collision.rs
+@@ -209,6 +209,12 @@ impl WorldCollision<'_, '_> {
+         one_sided::cast_ray(&self.ms, origin, dir, max_distance, &Self::body_filter())
+     }
+ 
++    /// CoDCraft bullets/visibility use a two-sided solid-world LOS ray, not the walking
++    /// body's one-sided face policy. Terrain and camera-blocking WMO faces both stop it.
++    pub fn ray_los(&self, origin: Vec3, dir: Dir3, max_distance: f32) -> Option<RayHitData> {
++        self.ms.spatial_query.cast_ray(origin, dir, max_distance, true, &Self::camera_filter())
++    }
++
+     /// Move `shape` by `velocity` for `delta_time`, sliding along what it hits.
+     pub fn slide_body(
+         &self,
+diff --git a/crates/benilla-world/src/ffx_glow.rs b/crates/benilla-world/src/ffx_glow.rs
+index 36e2b30..3a22cdb 100644
+--- a/crates/benilla-world/src/ffx_glow.rs
++++ b/crates/benilla-world/src/ffx_glow.rs
+@@ -322,6 +322,7 @@ struct FfxGlowPipelines {
+     wave_view: TextureView,
+     wave_sampler: Sampler,
+     downsample: CachedRenderPipelineId,
++    downsample_hdr: CachedRenderPipelineId,
+     gauss_h: CachedRenderPipelineId,
+     gauss_v: CachedRenderPipelineId,
+     combine: FfxCombinePipeline,
+@@ -491,6 +492,11 @@ fn init_pipelines(
+         &layout_filter,
+         "fs_downsample",
+     ));
++    let downsample_hdr = pipeline_cache.queue_render_pipeline(pipeline(
++        "ffx_glow_downsample_hdr",
++        &layout_filter,
++        "fs_downsample_hdr",
++    ));
+     let gauss_h =
+         pipeline_cache.queue_render_pipeline(pipeline("ffx_glow_h", &layout_filter, "fs_gauss_h"));
+     let gauss_v =
+@@ -507,6 +513,7 @@ fn init_pipelines(
+         wave_view,
+         wave_sampler,
+         downsample,
++        downsample_hdr,
+         gauss_h,
+         gauss_v,
+         combine,
+@@ -768,7 +775,11 @@ impl ViewNode for FfxGlowNode {
+         let pipeline_cache = world.resource::<PipelineCache>();
+         let (uniform, wave) = live_combine(world, glow);
+         let (Some(downsample), Some(gauss_h), Some(gauss_v)) = (
+-            pipeline_cache.get_render_pipeline(pipelines.downsample),
++            pipeline_cache.get_render_pipeline(if uniform[6] > 0.5 {
++                pipelines.downsample_hdr
++            } else {
++                pipelines.downsample
++            }),
+             pipeline_cache.get_render_pipeline(pipelines.gauss_h),
+             pipeline_cache.get_render_pipeline(pipelines.gauss_v),
+         ) else {
+@@ -899,16 +910,28 @@ impl ViewNode for FfxGlowNode {
+ fn live_combine(world: &World, glow: &FfxGlow) -> ([f32; 8], bool) {
+     let death = world.resource::<FfxDeathFade>().0;
+     let wave = *world.resource::<FfxWave>();
+-    let uniform = combine_uniform(
++    let mut uniform = combine_uniform(
+         world.resource::<FfxGlowGain>().0,
+         FfxPassState::world(death, world.resource::<FfxHazeMix>().0),
+         FfxPassState::glue(world.resource::<GlueFfx>().death()),
+         glow,
+         wave,
+     );
++    uniform[6] = world_hdr_lane(
++        glow.state,
++        benilla_assets::materials::enhanced_world_enabled(),
++    );
+     (uniform, wave_armed(glow.state, wave, death))
+ }
+ 
++fn world_hdr_lane(state: FfxState, enhanced: bool) -> f32 {
++    if enhanced && state == FfxState::Player {
++        1.0
++    } else {
++        0.0
++    }
++}
++
+ /// The render-world views an [`FfxBackdrop`] claims this frame; a claimed view has no combine.
+ #[derive(Resource, Default)]
+ struct FfxBackdropClaims(Vec<Entity>);
+@@ -1145,6 +1168,16 @@ impl Plugin for FfxGlowPlugin {
+ mod tests {
+     use super::*;
+ 
++    #[test]
++    fn only_enhanced_world_combine_tone_maps() {
++        for enhanced in [false, true] {
++            assert_eq!(world_hdr_lane(FfxState::Glue, enhanced), 0.0);
++            assert_eq!(world_hdr_lane(FfxState::None, enhanced), 0.0);
++        }
++        assert_eq!(world_hdr_lane(FfxState::Player, false), 0.0);
++        assert_eq!(world_hdr_lane(FfxState::Player, true), 1.0);
++    }
++
+     /// The world pair, live: a released ghost, sober.
+     fn ghost_world() -> FfxPassState {
+         FfxPassState::world(1.0, 0.0)
+diff --git a/crates/benilla-world/src/lib.rs b/crates/benilla-world/src/lib.rs
+index 02aef8e..ec19bf7 100644
+--- a/crates/benilla-world/src/lib.rs
++++ b/crates/benilla-world/src/lib.rs
+@@ -123,8 +123,14 @@ pub mod instance_tint;
+ pub mod interact;
+ pub mod interior;
+ pub mod lighting;
++pub mod lighting_scene;
++pub mod lighting_transport;
++pub mod lighting_grid;
++pub(crate) mod lighting_ray_material;
++pub(crate) mod sun_gpu;
+ pub mod liquid;
+ pub mod log_ring;
++mod sun_ray;
+ 
+ /// macOS `Cmd+Q`, re-pointed at the window close so the shutdown systems run.
+ pub mod mac_quit;
+diff --git a/crates/benilla-world/src/lighting/global_light.rs b/crates/benilla-world/src/lighting/global_light.rs
+index 44a4b28..f00f841 100644
+--- a/crates/benilla-world/src/lighting/global_light.rs
++++ b/crates/benilla-world/src/lighting/global_light.rs
+@@ -23,7 +23,7 @@ use crate::view::WorldCamera;
+ ///   0 light_ambient (w=Mod2x 1.0) · 1 light_diffuse (w=clamp on) · 2 light_sun (w=dir/SH enable) ·
+ ///   3 light_spec (w=terrain shininess 20) · 4 fog_color (w=enable) ·
+ ///   5 fog_params (x=start y=end w=farclip) · 6-8 sh_c10_{r,g,b} · 9-11 sh_c13_{r,g,b} ·
+-///   12 sh_c16 · 13-14 water river {shallow,deep} (w=alpha) · 15-16 water ocean (the same) ·
++///   12 sh_c16 (w = enhanced world sentinel; own off-world buffers keep 0) · 13-14 water river {shallow,deep} (w=alpha) · 15-16 water ocean (the same) ·
+ ///   17 grade: `.x` the SIDN night fraction, `.yzw` the sun's SH DC at intensity 1 ·
+ ///   18 wmo_fog_color · 19 wmo_fog_params (x=start y=end): the interior fog triple, read by
+ ///      interior-tagged content in place of 4-5 ·
+@@ -71,6 +71,8 @@ pub fn pack_model_core_rows(
+     rows[12][0] = sun[6].x; // 12 sh_c16 xyz; .w is free
+     rows[12][1] = sun[6].y;
+     rows[12][2] = sun[6].z;
++    // Own portrait/glue buffers always keep the legacy gamma contract.
++    rows[12][3] = 0.0;
+     // 17 `.yzw`: the sun's SH DC at intensity 1; `.x` (SIDN) is the scene's.
+     rows[17][1] = sun[0].w;
+     rows[17][2] = sun[1].w;
+@@ -86,6 +88,29 @@ pub fn commit_raw(rgb: [f32; 3]) -> [f32; 3] {
+     rgb.map(|c| c.max(0.0))
+ }
+ 
++use benilla_assets::materials::enhanced_world_enabled;
++
++/// Converts authored scene colours once at the world boundary; water endpoints remain bytes.
++fn apply_world_linear_header(rows: &mut [[f32; 4]; LIGHT_HEADER_ROWS], enhanced: bool) {
++    rows[12][3] = if enhanced { 1.0 } else { 0.0 };
++    if !enhanced {
++        return;
++    }
++    for row in [0, 1, 3, 4, 18] {
++        for channel in 0..3 {
++            rows[row][channel] = decode_scene_channel(rows[row][channel]);
++        }
++    }
++}
++fn decode_scene_channel(value: f32) -> f32 {
++    let c = value.max(0.0);
++    if c <= 0.04045 {
++        c / 12.92
++    } else {
++        ((c + 0.055) / 1.055).powf(2.4)
++    }
++}
++
+ /// Capacity of the point-light table, fixed in the WGSL mirror structs (keep in sync); past it
+ /// [`build_light_data`] keeps the lights nearest the camera.
+ pub(super) const MAX_POINT_LIGHTS: usize = 256;
+@@ -182,9 +207,9 @@ pub fn light_blob_bytes() -> u64 {
+         + crate::rig_palette::palette_regions_bytes()
+ }
+ 
+-/// The per-frame prefix's size, which is also the probe region's offset.
++/// Offset of the prop-probe region, including the separately uploaded lighting grid.
+ pub(super) fn per_frame_blob_bytes() -> u64 {
+-    std::mem::size_of::<LightStd430>() as u64
++    std::mem::size_of::<LightStd430>() as u64 + (crate::lighting_grid::GRID_ROWS * 16) as u64
+ }
+ 
+ /// Packs the resolved [`WowLighting`], the fog toggle, the farclip and the nearest point lights
+@@ -233,6 +258,7 @@ fn build_light_data(
+     rows[19] = [l.wmo_fog_start, l.wmo_fog_end, 0.0, 0.0];
+     // Rows 0-2, 6-12.xyz and 17.yzw: the model-light core.
+     pack_model_core_rows(rows, l.ambient, l.diffuse, l.sun_dir);
++    apply_world_linear_header(rows, enhanced_world_enabled());
+     // The point table: lights within [`POINT_PACK_RADIUS`], nearest first past capacity. Dividing
+     // by 4π undoes the spawn's premultiply, so the colour is the authored `colour × intensity`,
+     // committed raw. Entries past the count stay stale; the count row guards every reader.
+@@ -366,6 +392,27 @@ fn upload_light(
+ mod tests {
+     use super::*;
+ 
++    #[test]
++    fn grid_region_grows_offsets_without_growing_frame_upload() {
++        assert_eq!(std::mem::size_of::<LightStd430>(), 8528);
++        assert_eq!(crate::lighting_grid::GRID_ROWS, 70248);
++        assert_eq!(per_frame_blob_bytes(), 1132496);
++    }
++
++    #[test]
++    fn world_header_decodes_once_and_booths_clear_the_sentinel() {
++        let mut rows = [[0.5; 4]; LIGHT_HEADER_ROWS];
++        let legacy = rows;
++        apply_world_linear_header(&mut rows, false);
++        assert_eq!(rows[0], legacy[0]);
++        apply_world_linear_header(&mut rows, true);
++        assert!((rows[0][0] - 0.21404114).abs() < 1e-6);
++        assert_eq!(rows[13], legacy[13]);
++        assert_eq!(rows[12][3], 1.0);
++        pack_model_core_rows(&mut rows, [0.5; 3], [0.5; 3], Vec3::Y);
++        assert_eq!(rows[12][3], 0.0);
++    }
++
+     /// `wow_model.wgsl`'s exterior doodad and entity lane over the packed rows gives
+     /// `E = A + I·D·(4/17)(0.375 + 2μ + 1.875μ²)`: ambient never scales by the intensity I, and
+     /// every sun band scales by it once. `eval_sh_lane` mirrors the WGSL line for line, so a swap
+diff --git a/crates/benilla-world/src/model_render/batch.rs b/crates/benilla-world/src/model_render/batch.rs
+index 9e50eb8..57c1c30 100644
+--- a/crates/benilla-world/src/model_render/batch.rs
++++ b/crates/benilla-world/src/model_render/batch.rs
+@@ -3,14 +3,14 @@
+ //! cannot feather through alpha, an authored-Blend batch is its own twin, and a batch that writes
+ //! no depth primes nothing.
+ 
+-use benilla_assets::materials::WowModelMaterial;
+ use benilla_assets::ModelSubmesh;
++use benilla_assets::materials::WowModelMaterial;
+ use benilla_formats::ModelBlend;
+ use bevy::ecs::system::SystemParam;
+ use bevy::prelude::*;
+ use bevy::render::render_resource::Buffer;
+ 
+-use super::{model_material, zfill_material, MaterialCache, ShadeSel};
++use super::{MaterialCache, ShadeSel, model_material, zfill_material};
+ use crate::lighting::SharedLightBuffer;
+ 
+ /// The engine's one `WowModelMaterial` dedup cache, swept by distance and cleared on a map change;
+@@ -96,6 +96,55 @@ impl M2BatchMaterials<'_> {
+         ))
+     }
+ 
++    /// A lit material for a live external first-person model (CoDCraft). This intentionally uses
++    /// the same shared Warcraft light buffer and shader as world M2 batches, while accepting only
++    /// the small material state needed by the streamed viewmodel.
++    pub fn passthrough(
++        &mut self,
++        blend: ModelBlend,
++        two_sided: bool,
++        additive: bool,
++        texture: Option<Handle<Image>>,
++        order: u16,
++        alpha_cutoff: f32,
++    ) -> Option<Handle<WowModelMaterial>> {
++        let light = self.light.as_ref()?.0.clone();
++        let material = model_material(
++            &mut self.cache.0,
++            &mut self.materials,
++            texture,
++            blend,
++            two_sided,
++            false,
++            false,
++            false,
++            additive,
++            false,
++            false,
++            false,
++            benilla_formats::FogPolicy::Scene,
++            false,
++            ShadeSel::Lit,
++            order,
++            None,
++            None,
++            None,
++            None,
++            false,
++            false,
++            &light,
++            None,
++        );
++        // CoD owns this cutout threshold. `model_material` starts with Warcraft's M2 default;
++        // the streamed material has a unique texture/order key, so specialize its own asset.
++        if blend == ModelBlend::AlphaTest && !super::alphatest_disabled() {
++            if let Some(asset) = self.materials.get_mut(&material) {
++                asset.base.alpha_mode = AlphaMode::Mask(alpha_cutoff.clamp(0.0, 1.0));
++            }
++        }
++        Some(material)
++    }
++
+     /// The pair for a batch of a WMO skybox ([`crate::skybox`]), an ordinary M2 but for its depth:
+     /// it draws at the reverse-Z far value ([`crate::sky_order`]), never writes depth, and always
+     /// tests it, overriding M2 flag `0x08`, which the reference uses only to order the sky inside
+diff --git a/crates/benilla-world/src/particles.rs b/crates/benilla-world/src/particles.rs
+index b47622c..b04716a 100644
+--- a/crates/benilla-world/src/particles.rs
++++ b/crates/benilla-world/src/particles.rs
+@@ -18,10 +18,10 @@ mod quads;
+ pub mod render;
+ pub(crate) mod sim; // `SceneGates` is the ribbon sim's draw-set input too
+ 
+-use emit::{emit_local, next_u32, rand01, rand_s11};
++use emit::{emit_local, next_u32, rand_s11, rand01};
+ use sim::simulate_particles;
+ // The water-plane classification, shared with the ribbon sim.
+-pub(crate) use sim::{far_side_of_water, model_far_side, water_height, WaterInterleave};
++pub(crate) use sim::{WaterInterleave, far_side_of_water, model_far_side, water_height};
+ 
+ /// A camera our own pacing (`boothHalfRate`) skips on some frames while its scene poses at full
+ /// rate. The reference's draw-set law (a tick only in a drawn frame, no catch-up) keys on its cull,
+@@ -71,6 +71,28 @@ struct Particle {
+ }
+ 
+ impl ParticleEmitter {
++    /// Lighting reconstruction: a live authored additive flame/glow emits light.
++    /// Smoke and lit (reflective) sprites never become sources. The power mapping
++    /// is an explicit renderer calibration, not a fabricated room fill light.
++    pub(crate) fn emitted_light(&self) -> Option<(Vec3, Vec3, f32)> {
++        if self.def.blend != benilla_formats::ParticleBlend::Add
++            || self.def.lit
++            || self.particles.is_empty()
++            || self.alpha <= 0.
++            || self.draining
++        {
++            return None;
++        }
++        let colour = self.def.over_life.sample(0.5).color;
++        let rgb = Vec3::new(colour[0], colour[1], colour[2]) * colour[3] * self.alpha;
++        if !rgb.is_finite() || rgb.max_element() <= 0. {
++            return None;
++        }
++        let local = benilla_assets::coords::wow_to_bevy(self.def.position);
++        let position = self.placement.transform_point(local);
++        Some((position, rgb * 8., 12.))
++    }
++
+     /// The rig bone this emitter is mounted on, which the depth probes filter by.
+     pub fn bone(&self) -> u16 {
+         self.def.bone
+diff --git a/crates/benilla-world/src/rig_anim.rs b/crates/benilla-world/src/rig_anim.rs
+index f6ca92e..c30e6a2 100644
+--- a/crates/benilla-world/src/rig_anim.rs
++++ b/crates/benilla-world/src/rig_anim.rs
+@@ -10,7 +10,7 @@ mod global_seq;
+ mod pose;
+ 
+ pub(crate) use compose::seed_rig_rows;
+-pub use compose::{finalize_rig_worlds, PosePost};
++pub use compose::{PhysicsPose, PosePost, finalize_rig_worlds};
+ pub use global_seq::GlobalSeqDrive;
+ pub use pose::{RigAnchor, RigFrame, RigPose};
+ 
+@@ -19,6 +19,10 @@ pub use pose::{RigAnchor, RigFrame, RigPose};
+ #[derive(Component)]
+ pub struct AnimParked;
+ 
++/// CoDCraft fork: death physics, not an animation clip, owns this skeleton's locals.
++#[derive(Component)]
++pub struct PhysicsDrivenPose;
++
+ /// Registers the rig machinery; `WorldPlugins` adds it, so a program with no game still poses its
+ /// rigs.
+ pub fn plugin(app: &mut App) {
+diff --git a/crates/benilla-world/src/rig_anim/compose.rs b/crates/benilla-world/src/rig_anim/compose.rs
+index 406ee01..48b004c 100644
+--- a/crates/benilla-world/src/rig_anim/compose.rs
++++ b/crates/benilla-world/src/rig_anim/compose.rs
+@@ -8,7 +8,7 @@
+ use bevy::mesh::skinning::SkinnedMeshInverseBindposes;
+ use bevy::prelude::*;
+ 
+-use crate::billboard::{billboard_basis, parent_arm_matrix, BillboardJointRig};
++use crate::billboard::{BillboardJointRig, billboard_basis, parent_arm_matrix};
+ use crate::rig_palette::{RigPalettes, RigSkin};
+ use crate::view::WorldCamera;
+ 
+@@ -18,6 +18,10 @@ use super::{AnimParked, RigFrame, RigPose};
+ #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+ pub struct PosePost;
+ 
++/// Physics replaces animated locals after all animation overlays, before skin composition.
++#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
++pub struct PhysicsPose;
++
+ /// Fold each pose-dirty rig into model space and re-seat its anchors, leaving `pose_dirty` for
+ /// the world pass. A parked rig is skipped; its wake unparks it before this runs.
+ fn compose_rig_models(
+@@ -266,14 +270,16 @@ pub fn finalize_rig_worlds(
+ pub fn plugin(app: &mut App) {
+     app.configure_sets(
+         PostUpdate,
+-        PosePost
+-            .after(bevy::app::AnimationSystems)
++        (
++            PosePost.after(bevy::app::AnimationSystems),
++            PhysicsPose.after(PosePost),
++        )
+             .before(bevy::transform::TransformSystems::Propagate),
+     )
+     .add_systems(
+         PostUpdate,
+         compose_rig_models
+-            .after(PosePost)
++            .after(PhysicsPose)
+             .before(bevy::transform::TransformSystems::Propagate),
+     );
+ }
+diff --git a/crates/benilla-world/src/rig_anim/pose.rs b/crates/benilla-world/src/rig_anim/pose.rs
+index d41a7f4..4b77b3a 100644
+--- a/crates/benilla-world/src/rig_anim/pose.rs
++++ b/crates/benilla-world/src/rig_anim/pose.rs
+@@ -178,7 +178,10 @@ struct Active {
+ 
+ /// Pose every live rig where `animate_targets` runs, after `advance_animations`.
+ fn evaluate_rig_poses(
+-    mut rigs: Query<(&AnimationPlayer, &ModelAnimations, &mut RigPose), Without<AnimParked>>,
++    mut rigs: Query<
++        (&AnimationPlayer, &ModelAnimations, &mut RigPose),
++        (Without<AnimParked>, Without<super::PhysicsDrivenPose>),
++    >,
+ ) {
+     // Parallel: a rig reads shared clips and writes only its own pose.
+     rigs.par_iter_mut().for_each(|(player, anims, mut rig)| {
+@@ -317,11 +320,11 @@ pub fn plugin(app: &mut App) {
+ mod tests {
+     use std::time::Duration;
+ 
+-    use benilla_assets::{bone_target_id, PoseBone, PoseClip, PoseTrack};
++    use benilla_assets::{PoseBone, PoseClip, PoseTrack, bone_target_id};
+     use bevy::animation::animation_curves::{AnimatableCurve, AnimatableKeyframeCurve};
+     use bevy::animation::graph::{AnimationGraph, AnimationGraphHandle, AnimationNodeIndex};
+     use bevy::animation::transition::AnimationTransitions;
+-    use bevy::animation::{animated_field, AnimatedBy, AnimationClip};
++    use bevy::animation::{AnimatedBy, AnimationClip, animated_field};
+ 
+     use super::*;
+ 
+diff --git a/crates/benilla-world/src/shaders/celestial.wgsl b/crates/benilla-world/src/shaders/celestial.wgsl
+index 7ba44c8..f46d2b5 100644
+--- a/crates/benilla-world/src/shaders/celestial.wgsl
++++ b/crates/benilla-world/src/shaders/celestial.wgsl
+@@ -54,7 +54,11 @@ fn fragment(in: VertexOutput, @builtin(front_facing) is_front: bool) -> @locatio
+     }
+ 
+     // `base.rgb` arrives linear (Bevy decodes the sRGB texture); the target takes gamma values.
++#ifdef CODCRAFT_WORLD_LINEAR
++    let gamma = base.rgb;
++#else
+     let gamma = linear_to_srgb(base.rgb);
++#endif
+     if celestial.z >= 0.5 {
+         // Glare: alpha 0 under `AlphaMode::Add` gives `dst + gamma * a`, `a` the flare envelope.
+         return vec4<f32>(gamma * a * celestial.y, 0.0);
+diff --git a/crates/benilla-world/src/shaders/cloud.wgsl b/crates/benilla-world/src/shaders/cloud.wgsl
+index 084b54b..2fe4904 100644
+--- a/crates/benilla-world/src/shaders/cloud.wgsl
++++ b/crates/benilla-world/src/shaders/cloud.wgsl
+@@ -5,6 +5,8 @@
+ 
+ #import bevy_pbr::forward_io::VertexOutput
+ 
++#import "embedded://benilla_assets/shaders/enhanced_lighting.wgsl"::decode_colour
++
+ @group(#{MATERIAL_BIND_GROUP}) @binding(100) var cloud_tex: texture_2d<f32>;
+ @group(#{MATERIAL_BIND_GROUP}) @binding(101) var cloud_samp: sampler;
+ 
+@@ -16,5 +18,9 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
+     a *= in.color.a; // the dome's rim fade (ring alphas)
+ #endif
+     // Premultiplied gamma blend; the RGB is already the reference's byte math.
++#ifdef CODCRAFT_WORLD_LINEAR
++    return vec4<f32>(decode_colour(texel.rgb) * a, a);
++#else
+     return vec4<f32>(texel.rgb * a, a);
++#endif
+ }
+diff --git a/crates/benilla-world/src/shaders/ffx_glow.wgsl b/crates/benilla-world/src/shaders/ffx_glow.wgsl
+index 24de157..4b14d2d 100644
+--- a/crates/benilla-world/src/shaders/ffx_glow.wgsl
++++ b/crates/benilla-world/src/shaders/ffx_glow.wgsl
+@@ -6,6 +6,7 @@
+ // bytes, and every scene read clamps to 1.0 because the float target does not saturate.
+ 
+ #import bevy_core_pipeline::fullscreen_vertex_shader::FullscreenVertexOutput
++#import "embedded://benilla_assets/shaders/enhanced_lighting.wgsl"::{tone_map, encode_colour}
+ 
+ @group(0) @binding(0) var in_tex: texture_2d<f32>;
+ @group(0) @binding(1) var in_samp: sampler;
+@@ -38,6 +39,16 @@ fn fs_downsample(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
+         * 0.25;
+ }
+ 
++// HDR Box4: linear radiance, without the legacy byte-target clamp.
++@fragment
++fn fs_downsample_hdr(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
++    let texel = 1.0 / vec2<f32>(textureDimensions(in_tex));
++    return (textureSample(in_tex, in_samp, in.uv + vec2<f32>(-1.5, -1.5) * texel)
++        + textureSample(in_tex, in_samp, in.uv + vec2<f32>(0.5, -1.5) * texel)
++        + textureSample(in_tex, in_samp, in.uv + vec2<f32>(0.5, 0.5) * texel)
++        + textureSample(in_tex, in_samp, in.uv + vec2<f32>(-1.5, 0.5) * texel)) * 0.25;
++}
++
+ // Gauss4: taps at ±0.5 and ±2.5 source texels (0x6cad10), weights from FFXGauss4.bls.
+ fn gauss4(uv: vec2<f32>, axis: vec2<f32>) -> vec4<f32> {
+     let texel = axis / vec2<f32>(textureDimensions(in_tex));
+@@ -91,9 +102,28 @@ fn combine_out(outg: vec3<f32>, alpha: f32, frag_coord: vec2<f32>) -> vec4<f32>
+ // Both combines, at the plain or the warped UV; `frag_coord` stays unwarped for the dither.
+ fn combine_body(uv: vec2<f32>, frag_coord: vec2<f32>) -> vec4<f32> {
+     let scene = textureSample(in_tex, in_samp, uv);
++    let blurred = max(textureSample(blur_tex, in_samp, uv).rgb, vec3<f32>(0.0));
++    if (ffx.wave.z > 0.5) {
++        // The world and its glow remain linear HDR until this one pre-UI boundary.
++        let hdr = mix(max(scene.rgb, vec3<f32>(0.0)), blurred, ffx.lane.z)
++            + ffx.lane.x * blurred;
++        var mapped = tone_map(hdr);
++        if (ffx.lane.y > 0.0) {
++            // Death's deliberate effect is applied after mapping, not used as material grading.
++            let luma = dot(mapped, vec3<f32>(0.2126, 0.7152, 0.0722));
++            mapped = vec3<f32>(luma);
++        }
++#ifdef GAMMA_OUT
++        // Existing UI ground expects premultiplied gamma; its own final decode remains unchanged.
++        return vec4<f32>(encode_colour(mapped) * scene.a, scene.a);
++#else
++        // Presentation performs the sRGB encode. No scene gamma decode on this path.
++        return vec4<f32>(mapped, scene.a);
++#endif
++    }
+     // Clamped like the downsample taps: the screen term must saturate before the glow add.
+     let sg = clamp(scene.rgb, vec3<f32>(0.0), vec3<f32>(1.0));
+-    let bg = max(textureSample(blur_tex, in_samp, uv).rgb, vec3<f32>(0.0));
++    let bg = blurred;
+     // Scene alpha passes through; only the transparent-clear create booth reads it.
+     if ffx.lane.y > 0.0 {
+         // FFXDeath replaces the glow while a ghost, unhazed (one pass slot, `[0xce8bb4]`). The
+diff --git a/crates/benilla-world/src/shaders/sky.wgsl b/crates/benilla-world/src/shaders/sky.wgsl
+index e25ae0f..e70b3d9 100644
+--- a/crates/benilla-world/src/shaders/sky.wgsl
++++ b/crates/benilla-world/src/shaders/sky.wgsl
+@@ -6,6 +6,8 @@
+     mesh_view_bindings::view,
+ }
+ 
++#import "embedded://benilla_assets/shaders/enhanced_lighting.wgsl"::decode_colour
++
+ struct SkyColors {
+     sky0: vec4<f32>, // zenith (90°)
+     sky1: vec4<f32>, // 16.8°
+@@ -82,6 +84,9 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
+         col = mix(s1, sky.sky0.rgb, (elev - 16.8) / (90.0 - 16.8)); // warped ring1 to the raw apex
+     }
+ 
++    #ifdef CODCRAFT_WORLD_LINEAR
++    col = decode_colour(col);
++#endif
+     // Raw gamma out: the reference draws the sky as raw DBC bytes, sRGB off (`0x6d4940`).
+     let rgb = col;
+     return vec4<f32>(rgb, 1.0);
+diff --git a/crates/benilla-world/src/shaders/static_gx.wgsl b/crates/benilla-world/src/shaders/static_gx.wgsl
+index fd7888c..261cb68 100644
+--- a/crates/benilla-world/src/shaders/static_gx.wgsl
++++ b/crates/benilla-world/src/shaders/static_gx.wgsl
+@@ -5,6 +5,7 @@
+ // and must stay in sync: naga_oil cannot import functions that use another module's bindings.
+ 
+ #import bevy_render::view::View
++#import "embedded://benilla_assets/shaders/enhanced_lighting.wgsl"::{decode_colour, GridLight, GridProbe, interpolate_grid, shade_grid_surface}
+ 
+ @group(0) @binding(0) var<uniform> view: View;
+ 
+@@ -29,11 +30,84 @@ struct WowLight {
+     wmo_fog_params: vec4<f32>,
+     point_count: vec4<f32>,
+     points: array<vec4<f32>, 512>,
++    grid: array<vec4<f32>, 70248>,
+     // lighting::prop_probes: 8192 slots of 7 rows; the buffer's later regions are not mirrored.
+     prop_probes: array<vec4<f32>, 57344>,
+ }
+ @group(0) @binding(1) var<storage, read> wow_light: WowLight;
+ 
++
++// Keep this binding-specific loader identical across terrain, models and retained statics.
++fn world_grid_light(position: vec3<f32>, normal: vec3<f32>, fallback: GridLight) -> GridLight {
++    var blended = fallback;
++    // Compose the identical cascade weights near-to-far. Once a fine cascade has full
++    // weight, coarser fields contribute zero and need no probe reads.
++    var result = GridLight(0.0, 0.0, vec3<f32>(0.0));
++    var remaining = 1.0;
++    let n = normal / max(length(normal), 0.0001);
++    let normal_weights = n * n;
++    let normal_faces = vec3<u32>(select(1u, 0u, n.x >= 0.0),
++        select(3u, 2u, n.y >= 0.0), select(5u, 4u, n.z >= 0.0));
++    for (var level = 0u; level < 3u; level += 1u) {
++        let cascade_base = level * 23416u;
++        let origin = wow_light.grid[cascade_base];
++        let grid_info = wow_light.grid[cascade_base + 1u];
++        if (grid_info.w < 0.5 || origin.w <= 0.0 || any(grid_info.xyz != vec3<f32>(17.0, 9.0, 17.0))) { continue; }
++        let coord = (position - origin.xyz) / origin.w;
++        let last = grid_info.xyz - vec3<f32>(1.0);
++        if (any(coord < vec3<f32>(0.0)) || any(coord > last)) { continue; }
++        let edge = min(coord, last - coord);
++        let cascade_weight = smoothstep(0.0, 2.0, min(edge.x, min(edge.y, edge.z)));
++        if (cascade_weight == 0.0) { continue; }
++        let low = vec3<u32>(min(floor(coord), last - vec3<f32>(1.0)));
++        let fraction = coord - vec3<f32>(low);
++        var sampled = GridLight(0.0, 0.0, vec3<f32>(0.0));
++        var total_weight = 0.0;
++        for (var i = 0u; i < 8u; i += 1u) {
++            let side = vec3<bool>((i & 1u) != 0u, (i & 2u) != 0u, (i & 4u) != 0u);
++            let offset = (select(vec3<f32>(0.0), vec3<f32>(1.0), side) - fraction) * origin.w;
++            if (dot(offset, n) < -0.02) { continue; }
++            let axis_weight = select(vec3<f32>(1.0) - fraction, fraction, side);
++            let probe_weight = axis_weight.x * axis_weight.y * axis_weight.z;
++            if (probe_weight == 0.0) { continue; }
++            let p = low + vec3<u32>(i & 1u, (i >> 1u) & 1u, (i >> 2u) & 1u);
++            let base = cascade_base + 2u + 9u * (p.x + 17u * (p.y + 9u * p.z));
++            let toward_surface = -offset;
++            let distance = abs(toward_surface);
++            var dominant_axis = 0u;
++            if (distance.y > distance.x) { dominant_axis = 1u; }
++            if (distance.z > distance[dominant_axis]) { dominant_axis = 2u; }
++            let face = dominant_axis * 2u + select(1u, 0u, toward_surface[dominant_axis] >= 0.0);
++            if (distance[dominant_axis] > wow_light.grid[base + 3u + face].w + 0.03) { continue; }
++            // Fetch only contributing directional rows; no dynamically indexed private
++            // array of 72 vec4s per fragment and no reads for rejected probes.
++            let sky = wow_light.grid[base + 1u];
++            let skyz = wow_light.grid[base + 2u];
++            let sky_value = normal_weights.x * select(sky.y, sky.x, n.x >= 0.0)
++                + normal_weights.y * select(sky.w, sky.z, n.y >= 0.0)
++                + normal_weights.z * select(skyz.y, skyz.x, n.z >= 0.0);
++            let local_value = max(
++                normal_weights.x * wow_light.grid[base + 3u + normal_faces.x].rgb
++                + normal_weights.y * wow_light.grid[base + 3u + normal_faces.y].rgb
++                + normal_weights.z * wow_light.grid[base + 3u + normal_faces.z].rgb,
++                vec3<f32>(0.0));
++            sampled.sun += probe_weight * clamp(wow_light.grid[base].x, 0.0, 1.0);
++            sampled.sky += probe_weight * clamp(sky_value, 0.0, 1.0);
++            sampled.local += probe_weight * local_value;
++            total_weight += probe_weight;
++        }
++        let inverse_weight = 1.0 / max(total_weight, 0.000001);
++        let contribution = remaining * cascade_weight * inverse_weight;
++        result.sun += contribution * sampled.sun;
++        result.sky += contribution * sampled.sky;
++        result.local += contribution * sampled.local;
++        remaining *= 1.0 - cascade_weight;
++        if (remaining == 0.0) { break; }
++    }
++    return GridLight(result.sun + remaining * blended.sun,
++        result.sky + remaining * blended.sky, result.local + remaining * blended.local);
++}
++
+ // Per-cell state (static_gx/render.rs `cell_layout`).
+ struct GxCell {
+     origin: vec4<f32>, // xyz = the bake's recentring origin
+@@ -355,6 +429,23 @@ fn fragment(in: GxVsOut) -> @location(0) vec4<f32> {
+     if ((in.word & WORD_UNLIT) != 0u) {
+         rgb = folded;
+     }
++    if (wow_light.sh_c16.w > 0.5) {
++        let is_wmo = (in.word & WORD_WMO) != 0u;
++        let interior = (in.word & WORD_INTERIOR) != 0u;
++        let albedo = decode_colour(select(folded, base.rgb, is_wmo || interior));
++        var fallback = GridLight(1.0, 1.0, vec3<f32>(0.0));
++        if (interior) { fallback = GridLight(0.0, 0.0, vec3<f32>(0.0)); }
++        let grid = world_grid_light(in.world_position.xyz, n_lit, fallback);
++        rgb = shade_grid_surface(albedo, n_lit, view.world_position.xyz - in.world_position.xyz,
++            L, wow_light.light_diffuse.rgb, wow_light.light_ambient.rgb, 0.85, 0.0, grid);
++        if ((in.word & WORD_UNLIT) != 0u && !(is_wmo && interior)) { rgb = albedo; }
++        if (is_wmo) {
++            let packed = recs[in.word & 0xffffu].z;
++            let emission = vec3<f32>(f32(packed & 0xffu),
++                f32((packed >> 8u) & 0xffu), f32((packed >> 16u) & 0xffu)) / 255.0;
++            rgb += decode_colour(emission) * wow_light.grade.x;
++        }
++    }
+     // Planar eye-Z fog; other fog modes belong to blends never admitted here. The interior triple
+     // keys on the per-frame record bit, not `WORD_INTERIOR`: the client sets it per group under
+     // `[0xca7f00]` (`0x6b5190` for surfaces, `0x6b62e0` for the group's doodads).
+diff --git a/crates/benilla-world/src/shaders/wow_effect.wgsl b/crates/benilla-world/src/shaders/wow_effect.wgsl
+index e260870..cd6fbb5 100644
+--- a/crates/benilla-world/src/shaders/wow_effect.wgsl
++++ b/crates/benilla-world/src/shaders/wow_effect.wgsl
+@@ -12,6 +12,7 @@
+ // - BLEND_MOD2X:    (rgb, 1) under (Dst, Src) = `2·src·dst`, rain's state; reads no alpha.
+ 
+ #import bevy_render::view::View
++#import "embedded://benilla_assets/shaders/enhanced_lighting.wgsl"::decode_colour
+ 
+ // Prefix of `lighting::global_light`'s buffer; keep in sync with wow_model.wgsl's copy.
+ struct WowLight {
+@@ -122,7 +123,8 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
+         discard;
+     }
+ #endif
+-    var rgb = c.rgb;
++    let enhanced = wow_light.sh_c16.w > 0.5;
++    var rgb = select(c.rgb, decode_colour(c.rgb), enhanced);
+ #ifdef EFFECT_LIT
+     // Scene lighting (EGxRs id 0x0e, `0x70d8b0`) when the emitter clears the unlit flag 0x1 and
+     // its blend is not Mod or Mod2x (`0x70bb00`): the fixed-function matte with N = world up for
+@@ -130,11 +132,14 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
+     // light into that frame, so N·L holds as the camera orbits. Bevy +Y is WoW +Z.
+     let L = -normalize(wow_light.light_sun.xyz);
+     let N = vec3<f32>(0.0, 1.0, 0.0);
+-    let lit = clamp(
++    var lit = clamp(
+         wow_light.light_ambient.rgb + wow_light.light_diffuse.rgb * max(dot(N, L), 0.0),
+         vec3<f32>(0.0),
+         vec3<f32>(1.0),
+     );
++    if (enhanced) {
++        lit = max(wow_light.light_ambient.rgb + wow_light.light_diffuse.rgb * max(dot(N, L), 0.0), vec3<f32>(0.0));
++    }
+     rgb = rgb * lit;
+ #endif
+     // Scene fog: the world's linear fog (same start and end, planar eye-Z) in gamma space before
+@@ -145,15 +150,16 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
+         var fog_rgb = wow_light.fog_color.xyz;
+         if (wow_params.fog.x > 1.5 && wow_params.fog.x < 2.5) { fog_rgb = vec3<f32>(0.0); }
+         else if (wow_params.fog.x > 2.5 && wow_params.fog.x < 3.5) { fog_rgb = vec3<f32>(1.0); }
+-        else if (wow_params.fog.x > 3.5) { fog_rgb = RAIN_FOG_GREY; }
++        else if (wow_params.fog.x > 3.5) { fog_rgb = select(RAIN_FOG_GREY, vec3<f32>(0.5), enhanced); }
+         rgb = mix(fog_rgb, rgb, factor);
+     }
++    // Mod2x's neutral multiplier is 0.5 in whichever framebuffer space is active.
+     // Rain's forced fog: grey over the draw's own start/end, whatever the scene fog; grey is
+     // neutral under Mod2x, so this is the streaks' distance fade.
+     if (wow_params.fog.y > 0.5) {
+         let denom = max(wow_params.fog.w - wow_params.fog.z, 0.001);
+         let factor = clamp((wow_params.fog.w - in.view_z) / denom, 0.0, 1.0);
+-        rgb = mix(RAIN_FOG_GREY, rgb, factor);
++        rgb = mix(select(RAIN_FOG_GREY, vec3<f32>(0.5), enhanced), rgb, factor);
+     }
+ #ifdef BLEND_ADD
+     // Premultiplied in gamma, so stacked quads sum like the reference's bytes.
+diff --git a/crates/benilla-world/src/sky_order.rs b/crates/benilla-world/src/sky_order.rs
+index 45f8aeb..189578e 100644
+--- a/crates/benilla-world/src/sky_order.rs
++++ b/crates/benilla-world/src/sky_order.rs
+@@ -28,6 +28,11 @@ pub(crate) const SKY_VERTEX_SHADER: &str = "embedded://benilla_world/shaders/sky
+ /// Every sky material's `specialize` (the depth law): zero the rasterizer depth-bias constant, so
+ /// the rung in `StandardMaterial::depth_bias` stays a sort key and the pinned depth is untouched.
+ pub(crate) fn sky_pipeline_state(descriptor: &mut RenderPipelineDescriptor) {
++    if benilla_assets::materials::enhanced_world_enabled() {
++        if let Some(fragment) = descriptor.fragment.as_mut() {
++            fragment.shader_defs.push("CODCRAFT_WORLD_LINEAR".into());
++        }
++    }
+     if let Some(ds) = descriptor.depth_stencil.as_mut() {
+         ds.bias.constant = 0;
+     }
+diff --git a/crates/benilla-world/src/static_gx/mod.rs b/crates/benilla-world/src/static_gx/mod.rs
+index d1ca947..35ab72e 100644
+--- a/crates/benilla-world/src/static_gx/mod.rs
++++ b/crates/benilla-world/src/static_gx/mod.rs
+@@ -67,7 +67,9 @@ const WORD_MATTE: u32 = 1 << 28;
+ /// On unless `WOW_STATIC_GX=0`; read once, and the plugin registers nothing when off.
+ pub fn enabled() -> bool {
+     static ON: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+-    *ON.get_or_init(|| std::env::var("WOW_STATIC_GX").as_deref() != Ok("0"))
++    *ON.get_or_init(|| {
++        !crate::lighting_scene::enabled() && std::env::var("WOW_STATIC_GX").as_deref() != Ok("0")
++    })
+ }
+ 
+ /// `WOW_WMO_BIAS=0`: the authored batch-order nudge bakes as zero, as in `model_material`.
+diff --git a/crates/benilla-world/src/terrain_stream/furnish.rs b/crates/benilla-world/src/terrain_stream/furnish.rs
+index 17b04eb..ded6775 100644
+--- a/crates/benilla-world/src/terrain_stream/furnish.rs
++++ b/crates/benilla-world/src/terrain_stream/furnish.rs
+@@ -86,9 +86,17 @@ pub(super) fn furnish_tile_cells(
+                 .filter_map(|i| Some((adt.chunks.get(i)?, adt.shading.get(i)?)))
+                 .collect();
+             // A hole-emptied cell yields no mesh and does not count.
+-            let Some(mesh) = chunks_to_mesh(&parts) else {
++            let Some(mut mesh) = chunks_to_mesh(&parts) else {
+                 continue;
+             };
++            // CoDCraft's raytraced sun updates a separate visibility attribute. Preserve CPU
++            // vertex data only for that opt-in path; ordinary clients keep one-way uploads.
++            if std::env::var("CODCRAFT_RAYTRACED_SUN").as_deref() == Ok("1")
++                || crate::lighting_scene::enabled()
++            {
++                mesh.asset_usage
++                    .insert(bevy::asset::RenderAssetUsages::MAIN_WORLD);
++            }
+             // The Aabb is computed here: the mesh is `RENDER_WORLD`-only, so `calculate_bounds`
+             // may find it already extracted, and the exterior cull fails open on a missing Aabb.
+             let aabb = mesh.compute_aabb();
+diff --git a/crates/benilla-world/src/terrain_stream/merge.rs b/crates/benilla-world/src/terrain_stream/merge.rs
+index 5233dae..a5ce901 100644
+--- a/crates/benilla-world/src/terrain_stream/merge.rs
++++ b/crates/benilla-world/src/terrain_stream/merge.rs
+@@ -197,7 +197,9 @@ pub struct StaticMerge {
+ /// Whether the consolidation is armed, read once: on unless `WOW_STATIC_MERGE=0`.
+ pub fn merge_enabled() -> bool {
+     static ON: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+-    *ON.get_or_init(|| std::env::var("WOW_STATIC_MERGE").as_deref() != Ok("0"))
++    *ON.get_or_init(|| {
++        !crate::lighting_scene::enabled() && std::env::var("WOW_STATIC_MERGE").as_deref() != Ok("0")
++    })
+ }
+ 
+ impl StaticMerge {
+diff --git a/crates/benilla-world/src/world_plugins.rs b/crates/benilla-world/src/world_plugins.rs
+index 05a1fb5..116a1bf 100644
+--- a/crates/benilla-world/src/world_plugins.rs
++++ b/crates/benilla-world/src/world_plugins.rs
+@@ -18,6 +18,9 @@ impl PluginGroup for WorldPlugins {
+             .add(crate::shaders::plugin)
+             .add(MaterialPlugin::<TerrainMaterial>::default())
+             .add(MaterialPlugin::<WowModelMaterial>::default())
++            .add(crate::sun_ray::SunRayPlugin)
++            .add(crate::lighting_scene::LightingScenePlugin)
++            .add(crate::lighting_grid::LightingGridPlugin)
+             // Physics (avian3d): colliders, their BVH and the shape-casts of controller and picker.
+             .add_group(PhysicsPlugins::default())
+             // No contact pipeline: nothing reads a contact (the player is a shape-cast controller,

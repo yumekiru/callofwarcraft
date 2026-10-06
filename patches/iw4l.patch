@@ -1,0 +1,868 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 3b2abcf..b174679 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -5259,6 +5259,8 @@ checksum = "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4"
+ name = "render"
+ version = "0.1.0"
+ dependencies = [
++ "asset_material",
++ "asset_model",
+  "assets",
+  "bevy",
+  "diag",
+@@ -5276,6 +5278,7 @@ dependencies = [
+  "render_scene",
+  "serde",
+  "serde_json",
++ "xmodel_runtime",
+ ]
+ 
+ [[package]]
+diff --git a/crates/asset_material/src/material_images.rs b/crates/asset_material/src/material_images.rs
+index 703009b..e4dbcfb 100644
+--- a/crates/asset_material/src/material_images.rs
++++ b/crates/asset_material/src/material_images.rs
+@@ -1033,7 +1033,12 @@ fn wrap_mips(mips: &DecodedMips, data: Vec<u8>, wrap: WrapRecipe) -> Image {
+         },
+         TextureDimension::D2,
+         format,
+-        RenderAssetUsages::RENDER_WORLD,
++        if std::env::var_os("CODCRAFT_MODEL").is_some() {
++            // The two-process bridge reads the authored texture after GPU extraction.
++            RenderAssetUsages::MAIN_WORLD | RenderAssetUsages::RENDER_WORLD
++        } else {
++            RenderAssetUsages::RENDER_WORLD
++        },
+     );
+     image.texture_descriptor.mip_level_count = levels;
+     image.data = Some(data);
+diff --git a/crates/audio/src/lib.rs b/crates/audio/src/lib.rs
+index 15bff2e..49858fb 100644
+--- a/crates/audio/src/lib.rs
++++ b/crates/audio/src/lib.rs
+@@ -4,6 +4,7 @@ mod attenuation;
+ mod backend;
+ mod breath;
+ mod clip_store;
++mod codcraft;
+ mod decode_budget;
+ mod emit;
+ mod entity_events;
+diff --git a/crates/audio/src/plugin.rs b/crates/audio/src/plugin.rs
+index b03fcfb..55579eb 100644
+--- a/crates/audio/src/plugin.rs
++++ b/crates/audio/src/plugin.rs
+@@ -8,6 +8,7 @@ impl Plugin for AudioPlugin {
+     fn build(&self, app: &mut App) {
+         crate::backend::register(app);
+         app.add_plugins(PlayerSoundPlugin);
++        crate::codcraft::register(app);
+         crate::match_set::register(app);
+         crate::frontend::register_frontend_audio(app);
+         crate::entity_events::register_entity_event_audio(app);
+diff --git a/crates/bootstrap/src/plugins.rs b/crates/bootstrap/src/plugins.rs
+index 1b74df6..fc7ce55 100644
+--- a/crates/bootstrap/src/plugins.rs
++++ b/crates/bootstrap/src/plugins.rs
+@@ -30,8 +30,8 @@ pub fn add_runtime_plugins_with_role(app: &mut App, role: RuntimeRole) {
+         RuntimeRole::Client => NetPlugin::client(),
+         RuntimeRole::Replay => NetPlugin::replay(),
+     };
+-    if crate::bench::enabled() {
+-        // Unfocused benchmarks must not inherit the window runner's 60 Hz sleep.
++    if crate::bench::enabled() || std::env::var_os("CODCRAFT_STATE").is_some() {
++        // Benchmarks and the passthrough guest keep simulating while their window is unfocused.
+         app.insert_resource(bevy::winit::WinitSettings::continuous());
+     }
+     app.insert_resource(audio::AudioRuntime::new(
+diff --git a/crates/bots/src/lib.rs b/crates/bots/src/lib.rs
+index 582554e..17ebf42 100644
+--- a/crates/bots/src/lib.rs
++++ b/crates/bots/src/lib.rs
+@@ -1,4 +1,5 @@
+ mod controller;
++mod codcraft;
+ mod intent;
+ mod memory;
+ mod motor;
+diff --git a/crates/bots/src/plugin.rs b/crates/bots/src/plugin.rs
+index 49b297d..b20e7dd 100644
+--- a/crates/bots/src/plugin.rs
++++ b/crates/bots/src/plugin.rs
+@@ -99,6 +99,7 @@ pub struct BotsPlugin;
+ 
+ impl Plugin for BotsPlugin {
+     fn build(&self, app: &mut App) {
++        app.init_resource::<crate::codcraft::Bridge>().add_systems(Update, crate::codcraft::tick);
+         app.init_resource::<BotRoster>()
+             .init_resource::<BotAddQueue>()
+             .init_resource::<BotHold>()
+diff --git a/crates/console/src/plugin/dispatch_state.rs b/crates/console/src/plugin/dispatch_state.rs
+index 1c7f80d..bb3a44e 100644
+--- a/crates/console/src/plugin/dispatch_state.rs
++++ b/crates/console/src/plugin/dispatch_state.rs
+@@ -74,7 +74,10 @@ pub struct WaitMovePose {
+     pub angles: [f32; 3],
+ }
+ 
+-pub(super) const WAIT_WORLD_TIMEOUT_SECS: f32 = 120.0;
++// Cold retail map installation can take 2–3 minutes on CoDCraft's configured asset set.
++// Keep startup scripts queued long enough for that load instead of dropping `spawn` and
++// `force_match_start` while the client is still preparing the world.
++pub(super) const WAIT_WORLD_TIMEOUT_SECS: f32 = 360.0;
+ 
+ #[derive(Clone, Copy, Debug, PartialEq)]
+ pub(crate) enum WaitKind {
+diff --git a/crates/console/src/plugin/mod.rs b/crates/console/src/plugin/mod.rs
+index 1bdf05c..ce24a0b 100644
+--- a/crates/console/src/plugin/mod.rs
++++ b/crates/console/src/plugin/mod.rs
+@@ -301,6 +301,51 @@ struct PhysicalInputState {
+     prompts: Option<(bool, frame::PromptStyle)>,
+ }
+ 
++fn reset_captured_client(client: &mut input_iw4::ClientInput, bridge_enabled: bool) {
++    if !bridge_enabled {
++        let keys = client.keys;
++        *client = input_iw4::ClientInput {
++            keys,
++            ..Default::default()
++        };
++    }
++}
++
++#[cfg(test)]
++mod bridge_focus_tests {
++    use super::reset_captured_client;
++
++    #[test]
++    fn unfocused_guest_preserves_bridged_fire_and_sprint_holds() {
++        let mut client = input_iw4::ClientInput::default();
++        for command in [1, 27, 59] {
++            input_iw4::input_cmd(&mut client, command, input_iw4::SCRIPT_KEYNUM, 100, 16);
++        }
++        for frame in 0..120 {
++            reset_captured_client(&mut client, true);
++            let _ = input_iw4::sample_move(&mut client, 116 + frame * 16, 16);
++            assert!(client.kb.attack.active);
++            assert!(client.kb.sprint.active);
++            assert!(client.kb.forward.active);
++            client.kb.clear_was_pressed();
++        }
++        for command in [2, 28, 60] {
++            input_iw4::input_cmd(&mut client, command, input_iw4::SCRIPT_KEYNUM, 2100, 16);
++        }
++        assert!(!client.kb.attack.active);
++        assert!(!client.kb.sprint.active);
++        assert!(!client.kb.forward.active);
++    }
++
++    #[test]
++    fn ordinary_guest_still_releases_controls_when_unfocused() {
++        let mut client = input_iw4::ClientInput::default();
++        input_iw4::input_cmd(&mut client, 1, input_iw4::SCRIPT_KEYNUM, 100, 16);
++        reset_captured_client(&mut client, false);
++        assert!(!client.kb.attack.active);
++    }
++}
++
+ fn publish_client_action_input(
+     time: Res<Time>,
+     keys: Res<ButtonInput<KeyCode>>,
+@@ -423,12 +468,15 @@ fn publish_client_action_input(
+                 key_event(&mut out.client, key_num, false, now, frame);
+             }
+         }
+-        let keys = out.client.keys;
+-        out.scripted_ids.clear();
+-        out.client = input_iw4::ClientInput {
+-            keys,
+-            ..Default::default()
+-        };
++        // Physical releases above remove this window's keys. The Warcraft bridge
++        // owns SCRIPT_KEYNUM independently, and sends edges rather than repeated
++        // presses. Do not erase those holds when the guest window loses focus.
++        let bridge_enabled =
++            std::env::var_os("CODCRAFT_INPUT").is_some_and(|path| !path.is_empty());
++        if !bridge_enabled {
++            out.scripted_ids.clear();
++        }
++        reset_captured_client(&mut out.client, bridge_enabled);
+         out.pad_turn_rate = [0.0; 2];
+         out.pad_lockon = None;
+         out.pad_autoaim = None;
+diff --git a/crates/net/src/authority/mod.rs b/crates/net/src/authority/mod.rs
+index e5342d2..6d5a4ff 100644
+--- a/crates/net/src/authority/mod.rs
++++ b/crates/net/src/authority/mod.rs
+@@ -1,3 +1,5 @@
+ pub mod actions;
++pub mod codcraft_input;
++pub mod codcraft_state;
+ pub mod inbox;
+ pub mod runtime;
+diff --git a/crates/net/src/authority/runtime.rs b/crates/net/src/authority/runtime.rs
+index 42242e1..1933216 100644
+--- a/crates/net/src/authority/runtime.rs
++++ b/crates/net/src/authority/runtime.rs
+@@ -751,6 +751,9 @@ fn step_authority(
+     let pending_final_kill = world.0.take_pending_final_kill();
+     let script_seats = world.0.script_seats();
+     let script_exit_level = world.0.take_script_exit_level();
++    // CoDCraft: hand this frame to the host process. Read-only on the snapshot, and inert unless
++    // `CODCRAFT_STATE` names a file.
++    crate::authority::codcraft_state::publish(&snapshot, &input, &world.0);
+     pending_step.0 = Some(ServerTickData {
+         input,
+         snapshot,
+diff --git a/crates/net/src/client/runtime.rs b/crates/net/src/client/runtime.rs
+index 5d69153..e76482f 100644
+--- a/crates/net/src/client/runtime.rs
++++ b/crates/net/src/client/runtime.rs
+@@ -733,9 +733,13 @@ pub fn sample_client_input(
+     mut request_ids: Option<ResMut<crate::ActionRequestIds>>,
+     view: Option<Res<frame::ViewSubject>>,
+     trace: Option<ResMut<ClientPhaseTrace>>,
+-    aim_cursor: (ResMut<LocationCursor>, Res<crate::ViewweaponAim>),
++    aim_cursor: (
++        ResMut<LocationCursor>,
++        Res<crate::ViewweaponAim>,
++        Res<crate::authority::codcraft_input::GuestInputLink>,
++    ),
+ ) {
+-    let (mut cursor, aim) = aim_cursor;
++    let (mut cursor, aim, codcraft_input) = aim_cursor;
+     push_phase(trace, "Input");
+     if !gate.local_cmds_enabled {
+         actions.client.weapon_cycles.clear();
+@@ -1087,6 +1091,14 @@ pub fn sample_client_input(
+     }
+     template.cmd = cmd;
+     template.ready = true;
++    if let Some(ps) = ps {
++        crate::authority::codcraft_input::publish_aim(
++            &codcraft_input,
++            &actions,
++            cmd.angles,
++            ps.delta_angles,
++        );
++    }
+ }
+ 
+ const AIM_AUTOMELEE_RANGE: f32 = 128.0;
+@@ -1835,6 +1847,14 @@ pub fn reset_cgame_on_match_torn_down(
+ }
+ 
+ pub fn register_client_runtime(app: &mut App) {
++    app.init_resource::<crate::authority::codcraft_input::GuestInputLink>()
++        .add_systems(PreStartup, crate::authority::codcraft_input::configure)
++        .add_systems(
++            Update,
++            crate::authority::codcraft_input::apply
++                .in_set(ClientSet::Input)
++                .before(sample_client_input),
++        );
+     app.add_systems(
+         Update,
+         enforce_client_work_limits
+diff --git a/crates/render/Cargo.toml b/crates/render/Cargo.toml
+index 86962a0..d48d674 100644
+--- a/crates/render/Cargo.toml
++++ b/crates/render/Cargo.toml
+@@ -1,28 +1,31 @@
+-[package]
+-name = "render"
+-version = "0.1.0"
+-edition.workspace = true
+-license.workspace = true
+-description = "Snapshot to pixels: scene, viewmodel, effects. No game logic."
+-
+-[dependencies]
+-diag.workspace = true
+-bevy.workspace = true
+-fx.workspace = true
+-hud = { path = "../hud" }
+-frame.workspace = true
+-render_frame.workspace = true
+-render_anim.workspace = true
+-render_frontend.workspace = true
+-render_fx.workspace = true
+-render_gpu.workspace = true
+-render_scene.workspace = true
+-net = { path = "../net" }
+-assets.workspace = true
+-serde.workspace = true
+-serde_json.workspace = true
+-naga = { version = "29", features = ["wgsl-in"] }
+-perf.workspace = true
+-
+-[lints]
+-workspace = true
++[package]
++name = "render"
++version = "0.1.0"
++edition.workspace = true
++license.workspace = true
++description = "Snapshot to pixels: scene, viewmodel, effects. No game logic."
++
++[dependencies]
++diag.workspace = true
++bevy.workspace = true
++fx.workspace = true
++hud = { path = "../hud" }
++frame.workspace = true
++render_frame.workspace = true
++render_anim.workspace = true
++asset_material.workspace = true
++asset_model.workspace = true
++xmodel_runtime.workspace = true
++render_frontend.workspace = true
++render_fx.workspace = true
++render_gpu.workspace = true
++render_scene.workspace = true
++net = { path = "../net" }
++assets.workspace = true
++serde.workspace = true
++serde_json.workspace = true
++naga = { version = "29", features = ["wgsl-in"] }
++perf.workspace = true
++
++[lints]
++workspace = true
+diff --git a/crates/render/src/diag/mod.rs b/crates/render/src/diag/mod.rs
+index e52ac9e..9c2fdf8 100644
+--- a/crates/render/src/diag/mod.rs
++++ b/crates/render/src/diag/mod.rs
+@@ -1,4 +1,5 @@
+ pub mod acceptance;
+ pub mod capture;
++pub mod codcraft_frame;
+ pub mod frame_spans;
+ pub use render_gpu::diag::render_frame_diag;
+diff --git a/crates/render/src/plugin.rs b/crates/render/src/plugin.rs
+index c0764d7..e37a5d5 100644
+--- a/crates/render/src/plugin.rs
++++ b/crates/render/src/plugin.rs
+@@ -3,6 +3,7 @@ use frame::configure_render_sets;
+ use net::ClientSet;
+ 
+ use crate::diag::capture::{CaptureQueue, capture_frame, report_unwritten_captures};
++use crate::diag::codcraft_frame::CodcraftFramePlugin;
+ use crate::diag::frame_spans::register_frame_spans;
+ use crate::diag::render_frame_diag::{register_render_frame_diag, sample_render_frame_diag};
+ 
+@@ -47,6 +48,8 @@ impl Plugin for RenderPlugin {
+                 .chain()
+                 .in_set(ClientSet::Diag),
+         );
++        // CoDCraft: hand the finished frame to the host process. Inert without `CODCRAFT_FRAME`.
++        app.add_plugins(CodcraftFramePlugin);
+         if let Some(render_app) = app.get_sub_app_mut(bevy::render::RenderApp) {
+             render_app.add_systems(
+                 bevy::render::ExtractSchedule,
+diff --git a/crates/render_anim/src/anim/fpv_host.rs b/crates/render_anim/src/anim/fpv_host.rs
+index 1661a21..eb81893 100644
+--- a/crates/render_anim/src/anim/fpv_host.rs
++++ b/crates/render_anim/src/anim/fpv_host.rs
+@@ -39,6 +39,9 @@ pub struct FpvHeldLife(pub Option<u32>);
+ #[derive(Resource, Default)]
+ pub struct FpvBoltTargets {
+     pub pose: [Option<FpvBoltFrame>; 2],
++    /// Camera-local grip survives the FX consumer taking the per-frame bone array.
++    pub weapon_grip: Option<Mat4>,
++    pub weapon_muzzle: Option<Vec3>,
+     pub tracker_screen: Option<[Vec3; 3]>,
+     pub tracker_light: Option<fx::FxBoltTarget>,
+     pub flash: [Option<fx::FxBoltTarget>; 2],
+@@ -50,6 +53,8 @@ pub struct FpvBoltTargets {
+ impl FpvBoltTargets {
+     pub fn clear(&mut self) {
+         self.pose = [None, None];
++        self.weapon_grip = None;
++        self.weapon_muzzle = None;
+         self.tracker_screen = None;
+         self.tracker_light = None;
+         self.flash = [None, None];
+@@ -59,10 +64,38 @@ impl FpvBoltTargets {
+     }
+ 
+     pub fn set_pose(&mut self, hand: usize, bolt: FpvBoltFrame) {
++        if hand == 0 {
++            self.weapon_grip = bolt.tags.weapon.and_then(|tag| bolt.bones.get(tag as usize)).copied();
++            self.weapon_muzzle = self.weapon_grip.and_then(|grip| {
++                bolt.tags.flash.or(bolt.tags.flash_silenced)
++                    .and_then(|tag| bolt.bones.get(tag as usize))
++                    .map(|flash| grip.inverse().transform_point3(flash.w_axis.truncate()))
++            });
++        }
+         self.pose[hand] = Some(bolt);
+     }
+ }
+ 
++#[cfg(test)]
++mod codcraft_grip_tests {
++    use super::*;
++    use crate::anim::fpv_pose::FpvBoltTags;
++
++    #[test]
++    fn codcraft_grip_survives_effects_consuming_bones_and_clears_with_pose() {
++        let grip = Mat4::from_translation(Vec3::new(4.0, 5.0, 6.0));
++        let mut targets = FpvBoltTargets::default();
++        targets.set_pose(0, FpvBoltFrame {
++            bones: vec![grip],
++            tags: FpvBoltTags { weapon: Some(0), ..Default::default() },
++        });
++        let _fx_bones = targets.pose[0].take().expect("FX consumes the bone array");
++        assert_eq!(targets.weapon_grip, Some(grip));
++        targets.clear();
++        assert_eq!(targets.weapon_grip, None);
++    }
++}
++
+ #[derive(Clone, Debug, PartialEq, Eq)]
+ pub enum FpvPoseRefuse {
+     CatalogMissing,
+diff --git a/crates/render_anim/src/anim/fpv_pose.rs b/crates/render_anim/src/anim/fpv_pose.rs
+index fc73bee..417c3f2 100644
+--- a/crates/render_anim/src/anim/fpv_pose.rs
++++ b/crates/render_anim/src/anim/fpv_pose.rs
+@@ -41,6 +41,7 @@ pub fn tag_camera_lens_local(view_world: Mat4, camera_world: Mat4) -> Mat4 {
+ 
+ #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+ pub struct FpvBoltTags {
++    pub weapon: Option<u16>,
+     pub flash: Option<u16>,
+     pub flash_silenced: Option<u16>,
+     pub brass: Option<u16>,
+diff --git a/crates/render_anim/src/anim/fpv_rig.rs b/crates/render_anim/src/anim/fpv_rig.rs
+index 6a7f21a..47b6684 100644
+--- a/crates/render_anim/src/anim/fpv_rig.rs
++++ b/crates/render_anim/src/anim/fpv_rig.rs
+@@ -205,6 +205,7 @@ impl PreparedFpvModel {
+ struct ComposedPart {
+     model: Arc<PreparedFpvModel>,
+     owner: FpvSurfOwner,
++    role: FpvPartRole,
+     bone_base: usize,
+ }
+ 
+@@ -238,6 +239,7 @@ impl PreparedFpvComposition {
+             parts.push(ComposedPart {
+                 model,
+                 owner: surf_owner(part.role),
++                role: part.role,
+                 bone_base: part.bone_base,
+             });
+         }
+@@ -416,6 +418,8 @@ impl PreparedFpvRig {
+                     surface: range_index,
+                     material: material_index,
+                     is_scope: is_scope && !is_lens,
++                    is_hands: part.owner == FpvSurfOwner::Hands,
++                    is_firearm: matches!(part.role, FpvPartRole::Gun | FpvPartRole::Attachment),
+                 });
+                 if hand == 0 {
+                     match part.owner {
+@@ -449,6 +453,7 @@ impl PreparedFpvRig {
+ 
+         let assembly = &composition.assembly;
+         let tags = FpvBoltTags {
++            weapon: assembly.dobj.find("tag_weapon").and_then(|index| u16::try_from(index).ok()),
+             flash: assembly.tags.flash,
+             flash_silenced: assembly.tags.flash_silenced,
+             brass: assembly.tags.brass,
+diff --git a/crates/render_anim/src/anim/remote_body.rs b/crates/render_anim/src/anim/remote_body.rs
+index 00af52c..2f497af 100644
+--- a/crates/render_anim/src/anim/remote_body.rs
++++ b/crates/render_anim/src/anim/remote_body.rs
+@@ -694,13 +694,13 @@ pub struct RemoteModelSet<'a> {
+     pub shield: Option<sim::ShieldAttachment>,
+ }
+ 
+-pub(crate) struct WorldAttachment<'a> {
+-    pub(crate) entry: &'a asset_model::WorldWeaponEntry,
+-    pub(crate) index: assets::WorldWeaponIndex,
+-    pub(crate) tag: String,
++pub struct WorldAttachment<'a> {
++    pub entry: &'a asset_model::WorldWeaponEntry,
++    pub index: assets::WorldWeaponIndex,
++    pub tag: String,
+ }
+ 
+-pub(crate) fn world_attachments<'a>(
++pub fn world_attachments<'a>(
+     registry: &asset_game::WeaponRegistry,
+     catalog: &'a asset_model::WorldWeaponCatalog,
+     weapon: u32,
+diff --git a/crates/render_anim/src/draw.rs b/crates/render_anim/src/draw.rs
+index bb337ac..553069a 100644
+--- a/crates/render_anim/src/draw.rs
++++ b/crates/render_anim/src/draw.rs
+@@ -10,6 +10,10 @@ pub struct FpvSurfaceDraw {
+     pub material: u32,
+ 
+     pub is_scope: bool,
++    /// Exact rig-part provenance, not a material-name heuristic.
++    pub is_hands: bool,
++    /// Only the equipped firearm and its attachments, not a stowed melee part.
++    pub is_firearm: bool,
+ }
+ 
+ #[derive(Clone, Copy, Debug, PartialEq)]
+@@ -512,6 +516,15 @@ impl FpvDrawPlan {
+     pub fn packed_vertices(&self) -> &asset_world::PackedVertexPayload {
+         &self.packed_vertices
+     }
++
++    /// IW4's 32-byte vertex rows after the first-person rig has skinned them for this frame.
++    /// CoDCraft consumes these rows to reproduce only the arms and held weapon in its host scene.
++    pub fn iw4_packed_vertices(&self) -> Option<&[[u8; asset_iw4::size::GFX_PACKED_VERTEX]]> {
++        match &self.packed_vertices {
++            asset_world::PackedVertexPayload::Iw4(rows) => Some(rows),
++            asset_world::PackedVertexPayload::Unavailable { .. } => None,
++        }
++    }
+ }
+ 
+ impl RemoteBodyDrawPlan {
+diff --git a/crates/render_frontend/src/lib.rs b/crates/render_frontend/src/lib.rs
+index d61b8c7..b5aa70f 100644
+--- a/crates/render_frontend/src/lib.rs
++++ b/crates/render_frontend/src/lib.rs
+@@ -29,3 +29,11 @@ pub use prepare::worker_cmds::{
+     WorkerCmdBusy, WorkerCmdBusyInput, WorkerCmdError, WorkerCmdQueues, enqueue_cell_frustum_cmds,
+     worker_cmd_dispatch_skips_device_lost,
+ };
++pub fn codcraft_viewmodel_only() -> bool {
++    std::env::var_os("CODCRAFT_STATE")
++        .filter(|path| !path.is_empty())
++        .and_then(|path| std::fs::metadata(path).ok())
++        .and_then(|meta| meta.modified().ok())
++        .and_then(|stamp| stamp.elapsed().ok())
++        .is_some_and(|age| age < std::time::Duration::from_secs(2))
++}
+diff --git a/crates/render_frontend/src/prepare/scene/view_parms.rs b/crates/render_frontend/src/prepare/scene/view_parms.rs
+index 3e82486..b6779ae 100644
+--- a/crates/render_frontend/src/prepare/scene/view_parms.rs
++++ b/crates/render_frontend/src/prepare/scene/view_parms.rs
+@@ -76,17 +76,25 @@ pub(crate) fn stamp_prepared_scene_view(
+         });
+     }
+ 
+-    camera.clear_color = match map_fog
+-        .as_ref()
+-        .map(|f| f.sample(clock.as_ref().map(|c| c.time()).unwrap_or(0)))
+-    {
+-        Some(f) if fog.zfar > 0.0 && f.density() != 0.0 => {
+-            let rgb = f
+-                .color_rgb
+-                .map(|v| (v.clamp(0.0, 1.0) * 255.0 + 0.5).floor() / 255.0);
+-            bevy::camera::ClearColorConfig::Custom(Color::linear_rgba(rgb[0], rgb[1], rgb[2], 1.0))
++    camera.clear_color = if crate::codcraft_viewmodel_only() {
++        // The Windows swapchain readback is opaque even when the clear alpha is zero. Use a
++        // chroma key so the passthrough publisher can recover transparency for the host.
++        bevy::camera::ClearColorConfig::Custom(Color::srgb(1.0, 0.0, 1.0))
++    } else {
++        match map_fog
++            .as_ref()
++            .map(|f| f.sample(clock.as_ref().map(|c| c.time()).unwrap_or(0)))
++        {
++            Some(f) if fog.zfar > 0.0 && f.density() != 0.0 => {
++                let rgb = f
++                    .color_rgb
++                    .map(|v| (v.clamp(0.0, 1.0) * 255.0 + 0.5).floor() / 255.0);
++                bevy::camera::ClearColorConfig::Custom(Color::linear_rgba(
++                    rgb[0], rgb[1], rgb[2], 1.0,
++                ))
++            }
++            _ => bevy::camera::ClearColorConfig::Default,
+         }
+-        _ => bevy::camera::ClearColorConfig::Default,
+     };
+     let dpvs_z_near = hud_iw4::znear_from_refdef(0.0, znear.value);
+     *view = prepare_scene_view(
+diff --git a/crates/render_frontend/src/prepare/scene/world_images.rs b/crates/render_frontend/src/prepare/scene/world_images.rs
+index fc04ec3..49390b0 100644
+--- a/crates/render_frontend/src/prepare/scene/world_images.rs
++++ b/crates/render_frontend/src/prepare/scene/world_images.rs
+@@ -291,7 +291,11 @@ impl WorldImageUpload {
+         self.upload_stage.take()
+     }
+ 
+-    pub fn arm(&mut self, scene: &mut WorldScene, progress: Option<&asset_transport::LoadProgress>) {
++    pub fn arm(
++        &mut self,
++        scene: &mut WorldScene,
++        progress: Option<&asset_transport::LoadProgress>,
++    ) {
+         self.pipeline_world_materials = Arc::new(
+             scene
+                 .batches
+@@ -400,8 +404,10 @@ impl WorldImageUpload {
+             stage.cancel();
+         }
+         if let Some(progress) = progress {
+-            self.upload_stage =
+-                Some(progress.begin(asset_transport::StageId::WorldImages, Some(u64::from(self.total))));
++            self.upload_stage = Some(progress.begin(
++                asset_transport::StageId::WorldImages,
++                Some(u64::from(self.total)),
++            ));
+         }
+     }
+ 
+diff --git a/crates/render_frontend/src/prepare/scene/world_occupancy.rs b/crates/render_frontend/src/prepare/scene/world_occupancy.rs
+index b55dd05..5cd9fc5 100644
+--- a/crates/render_frontend/src/prepare/scene/world_occupancy.rs
++++ b/crates/render_frontend/src/prepare/scene/world_occupancy.rs
+@@ -185,7 +185,9 @@ pub fn place(
+             Some(asset_world::MapXModelSceneAsset::Iw4(_))
+             | Some(asset_world::MapXModelSceneAsset::Iw5(_))
+             | Some(asset_world::MapXModelSceneAsset::T5(_)) => script_ready += 1,
+-            Some(asset_world::MapXModelSceneAsset::Unavailable { .. }) | None => script_unavailable += 1,
++            Some(asset_world::MapXModelSceneAsset::Unavailable { .. }) | None => {
++                script_unavailable += 1
++            }
+         }
+ 
+         if !instance.metadata.gameobject.is_empty() {
+@@ -221,7 +223,9 @@ pub fn place(
+             Some(asset_world::MapXModelSceneAsset::Iw4(_))
+             | Some(asset_world::MapXModelSceneAsset::Iw5(_))
+             | Some(asset_world::MapXModelSceneAsset::T5(_)) => dyn_ready += 1,
+-            Some(asset_world::MapXModelSceneAsset::Unavailable { .. }) | None => dyn_unavailable += 1,
++            Some(asset_world::MapXModelSceneAsset::Unavailable { .. }) | None => {
++                dyn_unavailable += 1
++            }
+         }
+         let transform = instance.transform;
+         commands.spawn((
+diff --git a/crates/render_frontend/src/prepare/scene/world_plan.rs b/crates/render_frontend/src/prepare/scene/world_plan.rs
+index fc891ad..b012c49 100644
+--- a/crates/render_frontend/src/prepare/scene/world_plan.rs
++++ b/crates/render_frontend/src/prepare/scene/world_plan.rs
+@@ -26,7 +26,8 @@ fn log_image_asset_memory(images: &Assets<Image>) {
+         "image asset memory: assets={count} main_world_retained={:.1}MiB uploaded={:.1}MiB rss={:.0}MiB",
+         mib(main_bytes),
+         mib(render_bytes),
+-        asset_transport::process_resident_bytes().map_or(0.0, |bytes| bytes as f64 / (1024.0 * 1024.0)),
++        asset_transport::process_resident_bytes()
++            .map_or(0.0, |bytes| bytes as f64 / (1024.0 * 1024.0)),
+     );
+ }
+ 
+diff --git a/crates/render_gpu/src/drawsurf/colour_submit/prepare_camera.rs b/crates/render_gpu/src/drawsurf/colour_submit/prepare_camera.rs
+index 93028fd..5121f00 100644
+--- a/crates/render_gpu/src/drawsurf/colour_submit/prepare_camera.rs
++++ b/crates/render_gpu/src/drawsurf/colour_submit/prepare_camera.rs
+@@ -1369,6 +1369,9 @@ fn prepare_camera_rows(
+             world_exec_ready_keys.push(item.key);
+         }
+         let viewmodel = is_viewmodel_colour_draw(&item.kind, item.key);
++        if codcraft_viewmodel_only() && !viewmodel {
++            continue;
++        }
+         let binds_sun_shadow =
+             execution_binds_code_texture(execution, super::CODE_TEXTURE_SHADOWMAP_SUN);
+         let binds_spot_shadow =
+@@ -1622,3 +1625,12 @@ fn prepare_camera_rows(
+         arena_pixel_n,
+     }
+ }
++
++fn codcraft_viewmodel_only() -> bool {
++    std::env::var_os("CODCRAFT_STATE")
++        .filter(|path| !path.is_empty())
++        .and_then(|path| std::fs::metadata(path).ok())
++        .and_then(|meta| meta.modified().ok())
++        .and_then(|stamp| stamp.elapsed().ok())
++        .is_some_and(|age| age < std::time::Duration::from_secs(2))
++}
+diff --git a/crates/render_gpu/src/drawsurf/iw_tess.rs b/crates/render_gpu/src/drawsurf/iw_tess.rs
+index 44e86ff..cb65c2a 100644
+--- a/crates/render_gpu/src/drawsurf/iw_tess.rs
++++ b/crates/render_gpu/src/drawsurf/iw_tess.rs
+@@ -252,6 +252,10 @@ fn init_pipeline(
+ }
+ 
+ fn extract_iw_tess(mut extracted: ResMut<ExtractedIwTess>, frame: Extract<Res<HudTessGpuFrame>>) {
++    if codcraft_viewmodel_only() {
++        extracted.0 = ExtractedTessFrame::default();
++        return;
++    }
+     extracted.0 = ExtractedTessFrame {
+         vertices: frame
+             .vertices
+@@ -273,6 +277,15 @@ fn extract_iw_tess(mut extracted: ResMut<ExtractedIwTess>, frame: Extract<Res<Hu
+     };
+ }
+ 
++fn codcraft_viewmodel_only() -> bool {
++    std::env::var_os("CODCRAFT_STATE")
++        .filter(|path| !path.is_empty())
++        .and_then(|path| std::fs::metadata(path).ok())
++        .and_then(|meta| meta.modified().ok())
++        .and_then(|stamp| stamp.elapsed().ok())
++        .is_some_and(|age| age < std::time::Duration::from_secs(2))
++}
++
+ // Batches append to the same backing until rollover. Stage that contiguous
+ // range once, before its buffer is retired or the frame starts drawing it.
+ fn extend_tess_upload(dirty: &mut Option<core::ops::Range<usize>>, start: usize, len: usize) {
+diff --git a/crates/session/src/match_apply.rs b/crates/session/src/match_apply.rs
+index bb8ae13..b797569 100644
+--- a/crates/session/src/match_apply.rs
++++ b/crates/session/src/match_apply.rs
+@@ -1635,11 +1635,15 @@ fn install_clip_and_player(
+                 gamemode_iw4::GameModeKind::Demolition => 0,
+                 _ => sim::FFA.score_limit,
+             }),
+-        time_limit_ms: match kind {
+-            gamemode_iw4::GameModeKind::Domination => gamemode_iw4::dom::TIME_LIMIT_MS,
+-            gamemode_iw4::GameModeKind::Demolition => gamemode_iw4::dd::TIME_LIMIT_MS,
+-            _ => sim::FFA.time_limit_ms,
+-        },
++        time_limit_ms: std::env::var("IW4L_TIME_LIMIT_MS")
++            .ok()
++            .and_then(|raw| raw.parse::<u32>().ok())
++            .filter(|milliseconds| *milliseconds > 0)
++            .unwrap_or(match kind {
++                gamemode_iw4::GameModeKind::Domination => gamemode_iw4::dom::TIME_LIMIT_MS,
++                gamemode_iw4::GameModeKind::Demolition => gamemode_iw4::dd::TIME_LIMIT_MS,
++                _ => sim::FFA.time_limit_ms,
++            }),
+         allow_debug_actions,
+         intermission_view,
+         airstrike_height,
+diff --git a/crates/sim/src/combat.rs b/crates/sim/src/combat.rs
+index 40cff62..ecdfdb7 100644
+--- a/crates/sim/src/combat.rs
++++ b/crates/sim/src/combat.rs
+@@ -5,7 +5,7 @@ use crate::bullet_collision::{
+ };
+ use crate::frame::FrameWorld;
+ use crate::identities::{DamageSource, LifeSequence, MatchRng, PelletId, ShotId};
+-use crate::match_state::{ClientLifecycle, EventAudience};
++use crate::match_state::{ClientLifecycle, EventAudience, codcraft_enabled};
+ use crate::world::{ClientId, Tick};
+ use crate::world_objects::glass_piece_is_solid;
+ use anim_iw4::{
+@@ -486,8 +486,34 @@ pub(crate) fn advance_weapon_command(
+                 }
+             },
+         };
++        // CoDCraft fires the guest weapon into the separate Warcraft simulation.  Keep the
++        // ordinary weapon cadence, recoil, and shot validation, but refill the firearm before
++        // each weapon tick so the bridge never runs out of rounds or enters a dry-fire/reload
++        // loop.  This branch is inert unless the passthrough state bridge is configured.
++        let infinite_codcraft_ammo =
++            codcraft_enabled() && facts.weap_type == weapon_iw4::WEAPTYPE_BULLET && facts.clip_size > 0;
++        if infinite_codcraft_ammo {
++            let clip = facts.clip_size;
++            let stock = facts.max_ammo.max(clip);
++            for hand in &mut hands {
++                if hand.weapon != 0 {
++                    hand.clip = clip;
++                    hand.stock = stock;
++                }
++            }
++        }
+         let clip_before = hands[0].clip;
+         let events = weapon_hands(&mut hands, &facts, &mut wcmd, last_hand);
++        if infinite_codcraft_ammo {
++            let clip = facts.clip_size;
++            let stock = facts.max_ammo.max(clip);
++            for hand in &mut hands {
++                if hand.weapon != 0 {
++                    hand.clip = clip;
++                    hand.stock = stock;
++                }
++            }
++        }
+         let hand0 = hands[0];
+         for &(hand, event) in events.iter().flatten() {
+             if hand != 0 {
+@@ -664,6 +690,12 @@ pub(crate) fn advance_weapon_command(
+                     }
+                 }
+                 WeaponTickEvent::ShotAccepted { ammo_used } => {
++                    let next_codcraft_shot_sequence = world
++                        .client_meta(*id)
++                        .map_or(0, |meta| meta.codcraft_shot_sequence)
++                        .wrapping_add(1);
++                    world.client_meta_mut(*id).codcraft_shot_sequence =
++                        next_codcraft_shot_sequence;
+                     let hand = &hands[_hand_i as usize];
+                     let shot_id = world.alloc_shot_id();
+                     let weapon = hand.weapon;
+diff --git a/crates/sim/src/match_state.rs b/crates/sim/src/match_state.rs
+index fb58af4..fc44468 100644
+--- a/crates/sim/src/match_state.rs
++++ b/crates/sim/src/match_state.rs
+@@ -104,6 +104,10 @@ pub struct ClientMatchState {
+     pub(crate) taped_mag_spent: Vec<u32>,
+ 
+     pub(crate) weapon_shot_count: u8,
++    /// Monotonic CoDCraft bridge counter. This is incremented only for an accepted weapon shot,
++    /// after ammo and fire-rate validation, and is deliberately separate from the retail burst
++    /// shot counter above.
++    pub(crate) codcraft_shot_sequence: u32,
+     pub(crate) burst_latch: bool,
+     pub(crate) burst_latch_secondary: bool,
+ 
+@@ -310,6 +314,12 @@ impl ClientMatchState {
+     }
+ }
+ 
++/// The passthrough launcher sets this only for the CoDCraft guest.  Keep the special ammo rule
++/// out of ordinary IW4 matches and tests.
++pub(crate) fn codcraft_enabled() -> bool {
++    std::env::var_os("CODCRAFT_STATE").is_some_and(|value| !value.is_empty())
++}
++
+ pub fn perk_table_code_from_class_catalog(id: u32) -> u32 {
+     match id {
+         1 => 6,
+diff --git a/crates/sim/src/script/host/natives/iw4.rs b/crates/sim/src/script/host/natives/iw4.rs
+index 895746f..effde82 100644
+--- a/crates/sim/src/script/host/natives/iw4.rs
++++ b/crates/sim/src/script/host/natives/iw4.rs
+@@ -227,6 +227,18 @@ fn dvar(world: &mut World, args: &[Value]) -> Result<String, String> {
+         _ => return Err("wrong number of parameters".into()),
+     };
+     let name = string(args, 0)?.to_ascii_lowercase();
++    // The stock gametype scripts read their own `scr_*_timelimit` dvar to schedule endgame;
++    // MatchBootstrap.time_limit_ms only feeds snapshot/HUD metadata. Keep the script's timer in
++    // sync with the same override, expressed in the minutes these dvars use.
++    if name.contains("timelimit") {
++        if let Some(minutes) = std::env::var("IW4L_TIME_LIMIT_MS")
++            .ok()
++            .and_then(|raw| raw.parse::<u32>().ok())
++            .filter(|milliseconds| *milliseconds > 0)
++        {
++            return Ok((minutes / 60_000).max(1).to_string());
++        }
++    }
+     Ok(runtime(world).dvars.get(&name).cloned().unwrap_or(fallback))
+ }
+ 
+diff --git a/crates/sim/src/world.rs b/crates/sim/src/world.rs
+index 444ecba..599bdbf 100644
+--- a/crates/sim/src/world.rs
++++ b/crates/sim/src/world.rs
+@@ -3016,6 +3016,14 @@ impl SimState {
+         &mut self.clients.last_mut().expect("just pushed").1
+     }
+ 
++    /// Number of authoritative accepted weapon shots for the passthrough bridge.
++    pub fn codcraft_shot_sequence(&self, id: ClientId) -> u32 {
++        self.clients
++            .iter()
++            .find(|(client, _)| *client == id)
++            .map_or(0, |(_, meta)| meta.codcraft_shot_sequence)
++    }
++
+     pub(crate) fn snapshot_with_dynamic_rows(
+         &self,
+         tick: Tick,

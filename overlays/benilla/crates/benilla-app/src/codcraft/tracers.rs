@@ -20,7 +20,6 @@ struct Flight {
     travel: f32,
     width: f32,
     color: [f32; 4],
-    length: f32,
     mesh: Handle<Mesh>,
 }
 
@@ -120,16 +119,11 @@ fn load_asset(
     }));
     asset.fingerprint = Some(fingerprint);
     asset.muzzle = muzzle;
-    // Keep the native beam narrow. The previous 0.10 minimum made the tracer
-    // substantially wider than the weapon's actual tracer art at normal range.
-    asset.width = (width * 0.65).clamp(0.008, 0.035);
+    // Deliberate readability overrides: every NPC shot is visible, with a minimum
+    // on-screen width and a 180ms minimum travel instead of near-instant native speed.
+    asset.width = width.max(0.10);
     asset.speed = speed;
-    asset.color = [
-        color[0] * 1.25,
-        color[1] * 1.25,
-        color[2] * 1.25,
-        color[3],
-    ];
+    asset.color = [color[0] * 3.0, color[1] * 3.0, color[2] * 3.0, color[3]];
     info!("CoDCraft: native incoming tracer texture ready, muzzle={muzzle:?}");
 }
 
@@ -194,14 +188,16 @@ fn spawn_shots(
             bevy::mesh::PrimitiveTopology::TriangleList,
             bevy::asset::RenderAssetUsages::default(),
         );
-        mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vec![[0.0; 3]; 4]);
-        mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, vec![[0.0, 1.0, 0.0]; 4]);
+        mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vec![[0.0; 3]; 16]);
+        mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, vec![[0.0, 1.0, 0.0]; 16]);
         mesh.insert_attribute(
             Mesh::ATTRIBUTE_UV_0,
-            vec![[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]],
+            vec![[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]].repeat(4),
         );
-        mesh.insert_attribute(Mesh::ATTRIBUTE_COLOR, vec![asset.color; 4]);
-        mesh.insert_indices(bevy::mesh::Indices::U32(vec![0, 1, 2, 0, 2, 3]));
+        mesh.insert_attribute(Mesh::ATTRIBUTE_COLOR, vec![asset.color; 16]);
+        mesh.insert_indices(bevy::mesh::Indices::U32(vec![
+            0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11, 12, 13, 14, 12, 14, 15,
+        ]));
         let mesh = meshes.add(mesh);
         commands.spawn((
             Name::new(format!("CoDCraft incoming bullet from {guid:#x}")),
@@ -212,7 +208,6 @@ fn spawn_shots(
                 travel: (start.distance(end) / asset.speed).clamp(0.25, 0.35),
                 width: asset.width,
                 color: asset.color,
-                length: 0.38,
                 mesh: mesh.clone(),
             },
             bevy::mesh::Mesh3d(mesh),
@@ -236,32 +231,56 @@ fn animate(
     let eye = camera.translation();
     for (entity, flight) in &flights {
         let age = time.elapsed_secs() - flight.born;
-        if !world.0 || age > flight.travel {
+        if !world.0 || age > 0.45 {
             commands.entity(entity).despawn();
             meshes.remove(flight.mesh.id());
             continue;
         }
         let delta = flight.end - flight.start;
         let direction = delta.normalize();
+        let side = beam_side(direction, eye, flight.start, flight.width);
         let head = (age / flight.travel).clamp(0.0, 1.0);
+        let tail = (head - 0.25).max(0.0);
+        let a = flight.start + delta * tail;
         let b = flight.start + delta * head;
-        let trail_length = flight.length.min(delta.length() * head);
-        let a = b - direction * trail_length;
-        let side = beam_side(direction, eye, b, flight.width);
+        let flash_right = camera.right().as_vec3() * 0.18;
+        let flash_up = camera.up().as_vec3() * 0.18;
+        let head_right = camera.right().as_vec3() * flight.width;
+        let head_up = camera.up().as_vec3() * flight.width;
         let positions = [
+            flight.start - side,
+            flight.end - side,
+            flight.end + side,
+            flight.start + side,
             a - side,
             b - side,
             b + side,
             a + side,
+            flight.start - flash_right - flash_up,
+            flight.start + flash_right - flash_up,
+            flight.start + flash_right + flash_up,
+            flight.start - flash_right + flash_up,
+            b - head_right - head_up,
+            b + head_right - head_up,
+            b + head_right + head_up,
+            b - head_right + head_up,
         ]
         .map(|p| p.to_array())
         .to_vec();
-        let fade = ((flight.travel - age) / 0.025).clamp(0.0, 1.0);
-        let mut tail_color = flight.color;
-        tail_color[3] *= 0.08 * fade;
-        let mut head_color = flight.color;
-        head_color[3] *= fade;
-        let colors = vec![tail_color, head_color, head_color, tail_color];
+        let fade = (1.0 - age / 0.45).clamp(0.0, 1.0);
+        let mut colors = Vec::new();
+        for alpha in [
+            0.75 * fade,
+            if age <= flight.travel { 1.0 } else { 0.0 },
+            (1.0 - age / 0.16).clamp(0.0, 1.0),
+            if age <= flight.travel { 1.0 } else { 0.0 },
+        ] {
+            let mut color = flight.color;
+            for value in &mut color {
+                *value *= alpha;
+            }
+            colors.extend_from_slice(&[color; 4]);
+        }
         if let Some(mesh) = meshes.get_mut(&flight.mesh) {
             mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions);
             mesh.insert_attribute(Mesh::ATTRIBUTE_COLOR, colors);

@@ -33,10 +33,11 @@ fn beam_side(direction: Vec3, eye: Vec3, start: Vec3, width: f32) -> Vec3 {
 
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<TracerAsset>()
-        .add_systems(Update, load_asset)
+        .init_resource::<kobold_pose::RifleAims>()
+        .add_systems(Update, (load_asset, kobold_pose::cache_barrels))
         .add_systems(
             PostUpdate,
-            (spawn_shots, animate)
+            (kobold_pose::measure_rifles, spawn_shots, animate)
                 .chain()
                 .after(benilla_world::rig_anim::finalize_rig_worlds),
         );
@@ -119,11 +120,11 @@ fn load_asset(
     }));
     asset.fingerprint = Some(fingerprint);
     asset.muzzle = muzzle;
-    // Deliberate readability overrides: every NPC shot is visible, with a minimum
-    // on-screen width and a 180ms minimum travel instead of near-instant native speed.
-    asset.width = width.max(0.10);
+    // Preserve the camera-facing head for shots seen down their flight axis.
+    // A narrower beam and restrained gain avoid the oversized washed-out streak.
+    asset.width = width.clamp(0.045, 0.065);
     asset.speed = speed;
-    asset.color = [color[0] * 3.0, color[1] * 3.0, color[2] * 3.0, color[3]];
+    asset.color = [color[0] * 2.0, color[1] * 2.0, color[2] * 2.0, color[3]];
     info!("CoDCraft: native incoming tracer texture ready, muzzle={muzzle:?}");
 }
 
@@ -134,12 +135,7 @@ fn spawn_shots(
     asset: Res<TracerAsset>,
     stage: Res<ViewmodelStage>,
     mut ai: ResMut<CodcraftKoboldAi>,
-    units: Query<(
-        &crate::net::Guid,
-        &benilla_world::rig_anim::RigPose,
-        &crate::entities::BoneAttach,
-    )>,
-    frames: Query<&GlobalTransform>,
+    aims: Res<kobold_pose::RifleAims>,
     mut meshes: ResMut<Assets<Mesh>>,
     collision: benilla_world::collision::WorldCollision,
 ) {
@@ -157,16 +153,7 @@ fn spawn_shots(
         if time.elapsed_secs() - born > 0.25 {
             continue;
         }
-        let Some(start) =
-            units
-                .iter()
-                .find(|(g, _, _)| g.0 == guid)
-                .and_then(|(_, rig, attach)| {
-                    let &(bone, offset) =
-                        attach.points.get(&crate::entities::attach_id::HAND_RIGHT)?;
-                    rig.posed_point(frames.get(rig.joints_root).ok()?, bone, offset)
-                })
-        else {
+        let Some(start) = aims.0.get(&guid).map(|aim| aim.muzzle) else {
             continue;
         };
         let mut end = endpoint;
@@ -240,13 +227,13 @@ fn animate(
         let direction = delta.normalize();
         let side = beam_side(direction, eye, flight.start, flight.width);
         let head = (age / flight.travel).clamp(0.0, 1.0);
-        let tail = (head - 0.25).max(0.0);
+        let tail = (head - 0.18).max(0.0);
         let a = flight.start + delta * tail;
         let b = flight.start + delta * head;
-        let flash_right = camera.right().as_vec3() * 0.18;
-        let flash_up = camera.up().as_vec3() * 0.18;
-        let head_right = camera.right().as_vec3() * flight.width;
-        let head_up = camera.up().as_vec3() * flight.width;
+        let flash_right = camera.right().as_vec3() * 0.10;
+        let flash_up = camera.up().as_vec3() * 0.10;
+        let head_right = camera.right().as_vec3() * flight.width * 0.8;
+        let head_up = camera.up().as_vec3() * flight.width * 0.8;
         let positions = [
             flight.start - side,
             flight.end - side,
@@ -270,7 +257,7 @@ fn animate(
         let fade = (1.0 - age / 0.45).clamp(0.0, 1.0);
         let mut colors = Vec::new();
         for alpha in [
-            0.75 * fade,
+            0.22 * fade,
             if age <= flight.travel { 1.0 } else { 0.0 },
             (1.0 - age / 0.16).clamp(0.0, 1.0),
             if age <= flight.travel { 1.0 } else { 0.0 },

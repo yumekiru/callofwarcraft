@@ -1722,6 +1722,7 @@ fn drive_kobold_ai(
     link: Res<GuestLink>,
     input: Res<GuestInputPublisher>,
     player: Res<crate::player::Player>,
+    rifle_aims: Res<kobold_pose::RifleAims>,
     self_guid: Res<crate::net::SelfGuid>,
     mut ai: ResMut<CodcraftKoboldAi>,
     net: Option<Res<crate::net::NetCommands>>,
@@ -1981,21 +1982,32 @@ fn drive_kobold_ai(
         let Some((_, _, _, transform)) = kobolds.iter().find(|(g, _, _, _)| g.0 == guid) else {
             continue;
         };
+        let aim = rifle_aims.0.get(&guid).copied();
+        let muzzle = aim
+            .map(|a| a.muzzle)
+            .unwrap_or(transform.translation + Vec3::Y * 1.1);
+        let target = player.pos + Vec3::Y * 1.2;
+        let can_fire = aim.is_some_and(|a| a.aligned(target, now))
+            && ai.clear_shooters.contains(&guid)
+            && Dir3::new(target - muzzle).ok().is_some_and(|dir| {
+                collision
+                    .ray_los(muzzle, dir, muzzle.distance(target))
+                    .is_none()
+            });
         let (hit, endpoint) = shot_math::shot(
             guid,
             shot_sequence,
             transform.translation.distance(player.pos),
-            transform.translation + Vec3::Y * 1.1,
-            player.pos + Vec3::Y * 1.2,
+            muzzle,
+            target,
         );
         let shot = ai.shots.entry(guid).or_insert((0, -1.0));
-        if shot_sequence != shot.0 {
+        let fired = shot_sequence != 0 && shot_sequence != shot.0 && can_fire;
+        if fired {
             *shot = (shot_sequence, now);
-            if shot_sequence != 0 && ai.clear_shooters.contains(&guid) {
-                ai.pending_shots.push_back((guid, now, endpoint));
-                if ai.pending_shots.len() > 128 {
-                    ai.pending_shots.pop_front();
-                }
+            ai.pending_shots.push_back((guid, now, endpoint));
+            if ai.pending_shots.len() > 128 {
+                ai.pending_shots.pop_front();
             }
         }
         let mut forward = le32(&bytes, at + 12) as i32;
@@ -2042,7 +2054,9 @@ fn drive_kobold_ai(
             yaw: yaw.to_radians(),
             forward,
             right,
-            shot_sequence: if hit || shot_sequence == 0 {
+            shot_sequence: if !fired {
+                0
+            } else if hit {
                 shot_sequence
             } else {
                 shot_sequence | 0x80000000

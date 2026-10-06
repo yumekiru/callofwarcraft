@@ -12,7 +12,7 @@
           "path": "crates/benilla-app/src/codcraft_aim.rs"
         },
         {
-          "sha256": "005f3eb6273a515949bba9ebb1e05837ff4737c48edb4de18eb0dc626512054f",
+          "sha256": "325ac3686279b24eb93d1d76f034ccf0dc7b78e80af3a76053dc257d003b409c",
           "path": "crates/benilla-app/src/codcraft.rs"
         },
         {
@@ -24,7 +24,7 @@
           "path": "crates/benilla-app/src/codcraft/damage_direction.rs"
         },
         {
-          "sha256": "2d1cfbf29b6bffa88d007d0557def37fd11ebbc4b37f6a2ebd7ea832ceb1bda6",
+          "sha256": "a46c733b373eef2a33d9a5900aaabcdf6b67fe83390ea9b59ff9c3435513d475",
           "path": "crates/benilla-app/src/codcraft/kobold_pose.rs"
         },
         {
@@ -40,7 +40,7 @@
           "path": "crates/benilla-app/src/codcraft/shot_math.rs"
         },
         {
-          "sha256": "3307e6803fd623e88945c00aaffed20bf37db644e152a6df44a9b7b2e18640a5",
+          "sha256": "94bba89e56248b3b3d2dc1146f544a8d92a945e1dd26a9d65db8f6e966f02976",
           "path": "crates/benilla-app/src/codcraft/tracers.rs"
         },
         {

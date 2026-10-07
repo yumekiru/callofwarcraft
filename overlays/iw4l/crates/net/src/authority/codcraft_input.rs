@@ -192,8 +192,64 @@ pub(crate) fn apply(
     time: Res<Time<Real>>,
     mut link: ResMut<GuestInputLink>,
     mut actions: ResMut<ClientActionInput>,
+    weapons: Option<Res<crate::authority::runtime::AuthorityWorld>>,
+    local: Res<crate::client::presentation::presented::LocalPresentClient>,
+    presented: Res<crate::client::presentation::presented::PresentedSnapshot>,
+    mut inbox: ResMut<crate::authority::inbox::ClientActionInbox>,
+    mut requests: ResMut<crate::ActionRequestIds>,
+    mut gear_retry: Local<(u32, f32)>,
 ) {
     let now = time.elapsed_secs();
+    if let (Some(path), Some(weapons), Some(ps)) = (
+        link.path.as_ref(),
+        weapons.as_ref(),
+        presented.player(local.0),
+    ) {
+        if let Some(code) = read_gear(&path.with_extension("gear")) {
+            if code > 0 {
+                let names = [
+                    "ak47_mp",
+                    "masada_mp",
+                    "fn2000_mp",
+                    "fal_mp",
+                    "m16_mp",
+                    "rpg_mp",
+                    "scar_mp",
+                    "ump45_mp",
+                    "usp_mp",
+                ];
+                let name = names[(code - 1) as usize];
+                let catalog = weapons.0.weapon_script_names();
+                let weapon = catalog.iter().position(|candidate| candidate == name)
+                    .or_else(|| catalog.iter().position(|candidate| candidate == name.trim_end_matches("_mp")))
+                    .and_then(|index| u32::try_from(index).ok());
+                if let Some(weapon) = weapon.filter(|w| *w != 0) {
+                    if playerstate_iw4::get_viewmodel_weapon_index(ps) != weapon
+                        && (gear_retry.0 != code || now >= gear_retry.1)
+                    {
+                        let request_id = requests.allocate();
+                        if inbox
+                            .push(
+                                local.0,
+                                sim::ClientAction::GiveWeapon { request_id, weapon },
+                            )
+                            .is_ok()
+                        {
+                            info!(
+                                "CoDCraft: equipment requested native weapon {name} (id {weapon})"
+                            );
+                            *gear_retry = (code, now + 1.0);
+                        }
+                    }
+                } else if gear_retry.0 != code || now >= gear_retry.1 {
+                    warn!(
+                        "CoDCraft: equipped weapon {name} is not present in the loaded MW2 catalog"
+                    );
+                    *gear_retry = (code, now + 5.0);
+                }
+            }
+        }
+    }
     if let Some(packet) = link.path.as_deref().and_then(read_packet) {
         let wall_now_us = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
@@ -231,6 +287,26 @@ pub(crate) fn apply(
     );
     link.applied_buttons = current;
     input_iw4::set_ads(&mut actions.client, current & INPUT_AIM != 0);
+}
+
+fn read_gear(path: &std::path::Path) -> Option<u32> {
+    let bytes = std::fs::read(path).ok()?;
+    if bytes.len() != 24 || &bytes[..4] != b"CCGE" || u32_at(&bytes, 4) != 1 {
+        return None;
+    }
+    let code = u32_at(&bytes, 16);
+    if code > 9 || code != u32_at(&bytes, 20) {
+        return None;
+    }
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .ok()?
+        .as_micros() as u64;
+    let stamp = u64_at(&bytes, 8);
+    if stamp > now.saturating_add(100_000) || now.saturating_sub(stamp) > 1_000_000 {
+        return None;
+    }
+    Some(code)
 }
 
 #[cfg(test)]

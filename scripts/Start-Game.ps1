@@ -9,10 +9,14 @@ $hostRootTask = Join-Path $rootTask 'sources/benilla'
 $guestRootTask = Join-Path $rootTask 'sources/iw4l'
 $hostExeTask = Join-Path $hostRootTask 'target/release/benilla.exe'
 $guestExeTask = Join-Path $guestRootTask 'target/release/iw4l.exe'
+$gearRootTask = if ($configTask.GearRoot) {[string]$configTask.GearRoot} else {Join-Path $rootTask 'assets/gear'}
 foreach ($pathTask in @($configTask.GamesRoot,$configTask.WoWData,$hostExeTask,$guestExeTask)) {
     if (-not $pathTask -or -not (Test-Path -LiteralPath $pathTask)) {throw "Missing local dependency: $pathTask. Build the clients and configure your own game data."}
 }
 if ($configTask.GuestMap -notmatch '^[A-Za-z0-9_]+$') {throw 'GuestMap must be a map identifier.'}
+foreach ($gearFileTask in @('gear-name-map.tsv','gear-display-map.tsv','icons/knife.tga','icons/ump.tga')) {
+    if (-not (Test-Path -LiteralPath (Join-Path $gearRootTask $gearFileTask) -PathType Leaf)) {throw "Missing custom gear file: $gearFileTask"}
+}
 if ($CheckOnly) {Write-Host 'Client binaries and owned-game data paths are present.'; exit 0}
 $bridgeTask = Join-Path $rootTask 'runtime/bridge'
 $logsTask = Join-Path $rootTask 'runtime/logs'
@@ -39,6 +43,7 @@ while ([DateTime]::UtcNow -lt $deadlineTask) {
 }
 if (-not $readyTask) {throw 'The Warcraft login server is unavailable. Start your configured database and patched server first.'}
 $envTask = @{
+    CODCRAFT_GEAR_ROOT=$gearRootTask
     IW4L_GAMES=[string]$configTask.GamesRoot; IW4L_NO_DIAGNOSTIC='1'; IW4L_TIME_LIMIT_MS='86400000'
     IW4L_LOG=(Join-Path $logsTask 'iw4l-live.log')
     CODCRAFT_STATE=(Join-Path $bridgeTask 'codcraft-state.bin'); CODCRAFT_FRAME=(Join-Path $bridgeTask 'codcraft-frame.bin')

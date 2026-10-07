@@ -2,7 +2,7 @@
 
 An experimental two-process passthrough mod: MW2 (2009) supplies the live gun, arms, animation and weapon simulation; Benilla draws the Warcraft world and UI. Both game processes must run at the same time.
 
-**You must own both games and supply your own files.** This repository contains source patches, new source files and setup scripts. It does not contain retail game clients, game archives, extracted models/textures/sounds, bridge model captures, server map data, accounts or personal databases. It does not download either game.
+**You must own both games and supply your own files.** This repository contains source patches, new source files, setup scripts, and user-supplied custom equipment icons. It does not contain retail game clients, game archives, extracted retail models/textures/sounds, bridge model captures, server map data, accounts or personal databases. It does not download either game.
 
 The Warcraft data must be compatible with **1.12.1 (build 5875)**. A current retail WoW installation is not a replacement for that data. MW2 requires the original **2009 multiplayer data**. No game-data download links are provided.
 
@@ -14,6 +14,8 @@ The Warcraft data must be compatible with **1.12.1 (build 5875)**. A current ret
 - Hostile humanoids wield Warcraft rifles and use the guest FPS controller with movement and LOS checks.
 - Remote auto-loot for bullet kills and 64 carried inventory slots using the backpack plus four bags.
 - Ray-sampled world lighting with optimized shader reads.
+- Custom equipment icons, distinct military-themed gear names, and equipped-item selection of native MW2 firearms. Throwing weapons use knife artwork rather than a firearm icon. Existing Warcraft rarity and stats remain intact.
+- Hidden MW2 map ambience and spatial impact audio are suppressed; native gun and host hit-feedback audio remain.
 - New client-side skeletal death physics. IW4L's ragdoll API is a stub, so this feature uses the included PBD solver; its first live visual test is still pending.
 
 ## Setup on Windows
@@ -30,6 +32,8 @@ Controls: mouse look; left click fires; right click aims; WASD moves; Space jump
 ## Source layout and licensing
 
 `patches/` contains tracked changes against pinned upstream revisions. `overlays/` contains newly added source files. `sources.json` identifies every changed file and its SHA-256 checksum. The unused early standalone prototype is not part of this package.
+
+`assets/gear/` contains only the project's supplied custom icon artwork and mod-authored equipment name/display mappings. The runtime icons are 128×128 RGBA TGA files; no original retail icons are included. `GearRoot` can point to a replacement folder with the same layout. Knife artwork does not add a native knife model or a throwing-knife attack system. Artwork provenance is separate from upstream source licensing; no ownership of Blizzard or Activision assets is claimed.
 
 The original projects and their notices remain attributable to their authors: [Benilla](https://github.com/samwhosung/benilla) (MIT OR Apache-2.0), [IW4L](https://github.com/vladtrc/iw4L) (Apache-2.0), and [vMaNGOS](https://github.com/vmangos/core) (GPL-2.0). Component patches and overlays follow their respective upstream licenses; copies are in `licenses/`. Packaging scripts are MIT licensed. This project is not affiliated with Blizzard, Activision, or the upstream projects.
 

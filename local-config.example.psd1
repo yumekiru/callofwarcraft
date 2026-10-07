@@ -6,6 +6,8 @@
     Window = '1280x720'
     Lighting = '1'
     GuestMap = 'mp_boneyard'
+    # Blank uses this repository's supplied custom gear art and naming maps.
+    GearRoot = ''
     # Optional: start an already configured, patched local server. Leave blank to start it yourself.
     RealmServerExe = ''
     WorldServerExe = ''

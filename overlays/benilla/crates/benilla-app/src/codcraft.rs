@@ -20,6 +20,7 @@ use std::{
 };
 mod combat_math;
 mod damage_direction;
+pub(crate) mod gear;
 mod kobold_pose;
 mod ragdoll;
 mod shot_math;
@@ -349,6 +350,7 @@ fn publish_guest_input(
     typing: Res<crate::ui_script::UiKeyboardCapture>,
     windows: Query<&Window, With<PrimaryWindow>>,
     mut input: ResMut<GuestInputPublisher>,
+    gear: Res<gear::GearState>,
 ) {
     let Some(path) = input.path.clone() else {
         return;
@@ -363,6 +365,7 @@ fn publish_guest_input(
         input.alt_interact = !input.alt_interact;
     }
     let mouse_gameplay = active && !typing.typing && !input.alt_interact && !over_ui.0;
+    let armed = !gear::enabled() || gear.code != 0;
     let mut buttons = 0;
     let mut set = |condition, bit| {
         if condition {
@@ -382,13 +385,16 @@ fn publish_guest_input(
         INPUT_SPRINT,
     );
     set(
-        mouse_gameplay && mouse.pressed(MouseButton::Left),
+        mouse_gameplay && armed && mouse.pressed(MouseButton::Left),
         INPUT_FIRE,
     );
-    if mouse_gameplay && mouse.just_pressed(MouseButton::Left) {
+    if mouse_gameplay && armed && mouse.just_pressed(MouseButton::Left) {
         input.fire_latch_until = now + 0.08;
     }
-    set(mouse_gameplay && input.fire_latch_until > now, INPUT_FIRE);
+    set(
+        mouse_gameplay && armed && input.fire_latch_until > now,
+        INPUT_FIRE,
+    );
     set(
         mouse_gameplay && mouse.pressed(MouseButton::Right),
         INPUT_AIM,
@@ -1671,6 +1677,7 @@ fn present_viewmodel(
     cameras: Query<Entity, With<benilla_world::view::WorldCamera>>,
     mut viewmodel_entities: Query<(&mut Transform, &mut Visibility), With<CodcraftViewmodel>>,
     mut smoothing: Local<PoseBlend>,
+    gear: Res<gear::GearState>,
 ) {
     if !capture.typing && keys.just_pressed(KeyCode::KeyQ) {
         view.shown = !view.shown;
@@ -1680,7 +1687,7 @@ fn present_viewmodel(
         );
     }
     let Some(paths) = paths else { return };
-    if !world_live.0 {
+    if !world_live.0 || (gear::enabled() && gear.code == 0) {
         *smoothing = PoseBlend::default();
         hide_viewmodel(&stage, &mut viewmodel_entities);
         return;
@@ -2564,6 +2571,7 @@ fn auto_loot_confirmed_kills(
 impl Plugin for CodcraftPlugin {
     fn build(&self, app: &mut App) {
         ragdoll::plugin(app);
+        gear::plugin(app);
         tracers::plugin(app);
         damage_direction::plugin(app);
         app.init_resource::<GuestLink>()

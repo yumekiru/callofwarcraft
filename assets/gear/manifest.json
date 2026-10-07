@@ -1,0 +1,94 @@
+{
+  "provenance": "User-supplied custom artwork and mod-authored equipment mappings; no retail game assets",
+  "format": 1,
+  "files": [
+    {
+      "path": "assets/gear/gear-display-map.tsv",
+      "sha256": "089f9b7d1ad6167e28f0bd0ccac0271111647f91f67ee62c6cc4ddd516fa95be"
+    },
+    {
+      "path": "assets/gear/gear-name-map.tsv",
+      "sha256": "88b46906e70dcea6b49cfc13f3fdd5c1187d941c6d141dc94aa4bc46d42c17f6"
+    },
+    {
+      "path": "assets/gear/icons/acr.tga",
+      "sha256": "3ab78a67ac44dc56bbe4929c35b6d7a2e2f1471beec8cc5aac3ca949770278e2"
+    },
+    {
+      "path": "assets/gear/icons/ak47.tga",
+      "sha256": "77bb4aba9b0b06180b7af0247b3cda87412b724aa24d179caa75125269776eb3"
+    },
+    {
+      "path": "assets/gear/icons/back.tga",
+      "sha256": "e43e5b154d893379579ef1207910332d9be4781c76fb6bb88b95a25a4b28d0bd"
+    },
+    {
+      "path": "assets/gear/icons/belt.tga",
+      "sha256": "4a35904d15c9d2792c41702762b96de9d0fac9628a8987a356fa64b6d1b9fcae"
+    },
+    {
+      "path": "assets/gear/icons/f2000.tga",
+      "sha256": "9e8c77a2cfb49fe8a493d73c00b87a67801dfc11a3d66fc4142ae8c270f76925"
+    },
+    {
+      "path": "assets/gear/icons/fal.tga",
+      "sha256": "73ae00af8ce89e8e9f6070e893a1022b277ba3ff82876a1a4c28651b8bc3cdfa"
+    },
+    {
+      "path": "assets/gear/icons/gloves.tga",
+      "sha256": "4b95cc71468cdcd49bcdc57aac028b036805d9f8a0fd19de0d19ec4f687e886e"
+    },
+    {
+      "path": "assets/gear/icons/helmet.tga",
+      "sha256": "3bda2c82df1c8c601ab8dcc8eec34e4feaf546f068f9a2138cbc7efa265d7a1f"
+    },
+    {
+      "path": "assets/gear/icons/knife.tga",
+      "sha256": "ba6e326b262a3f8d9aea2ec23b319d20f12974e4c6c5910fac5a02b5958d1413"
+    },
+    {
+      "path": "assets/gear/icons/m16.tga",
+      "sha256": "3de064241536a4f10229d71b139d7b996b3b1dcedf709c6b0ecba6c3f14bbd1f"
+    },
+    {
+      "path": "assets/gear/icons/necklace.tga",
+      "sha256": "d522a2ccbf018c85d1e992ccb843dce5b4d53ea48d7cf0137100ff78831bbbcb"
+    },
+    {
+      "path": "assets/gear/icons/pants.tga",
+      "sha256": "991b95344dd9539cf0946fd5ec2ccb8df08d3d534ddc56914a1aac605ea8e8ca"
+    },
+    {
+      "path": "assets/gear/icons/rpg.tga",
+      "sha256": "3cc3fefa01f16a21d8c63d0c00780a6af4e9af3eda32978fd84d510ff969cd4d"
+    },
+    {
+      "path": "assets/gear/icons/scar.tga",
+      "sha256": "5ca42a747a183ccb8b55bf42e1ae3c38e7c94f6ac57dab8dd1824ee7f018a86c"
+    },
+    {
+      "path": "assets/gear/icons/shoes.tga",
+      "sha256": "a02f96df46b7f38307725ade9a9cde9a067cf3f48c4b5e5085445542e407992f"
+    },
+    {
+      "path": "assets/gear/icons/shoulder.tga",
+      "sha256": "b1eb2ce3471750b47ef4248ef4d57ec7a15ed1dade7621b16c0f94f7816d3a91"
+    },
+    {
+      "path": "assets/gear/icons/torso.tga",
+      "sha256": "e7b372e1ab182104a579918fae99daacd15f55362faee33a5fe8528df926d826"
+    },
+    {
+      "path": "assets/gear/icons/ump.tga",
+      "sha256": "a00e6c636c78498b23f9d115dd78d1eef2e81df0eeda6198746deb1a7987a0ef"
+    },
+    {
+      "path": "assets/gear/icons/usp.tga",
+      "sha256": "fc986bfc355cea745caa7b0248c25a16c03fbeb43b08e499efa8ac0119fd2198"
+    },
+    {
+      "path": "assets/gear/icons/wrist.tga",
+      "sha256": "df64129ed3b70e9147b80978def68944d5b23e904ef486a0d059c6c949236585"
+    }
+  ]
+}

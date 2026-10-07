@@ -12,7 +12,7 @@
           "path": "crates/benilla-app/src/codcraft_aim.rs"
         },
         {
-          "sha256": "9dd28409517e7fcdcaa58ccd7084deb73d6bef72168857912b94f0aa06fb6b6f",
+          "sha256": "941e42c8512b0a2e2b4ab36d5d12b617fc37da7fe025e2981ec8829c49439c84",
           "path": "crates/benilla-app/src/codcraft.rs"
         },
         {
@@ -286,6 +286,22 @@
         {
           "sha256": "9aa780ee75821cd9f8e7bec56ffbb1af986cbc5ddddefa1e7ac60e8714aa0bfc",
           "path": "crates/benilla-world/src/world_plugins.rs"
+        },
+        {
+          "sha256": "dae12bb266217584365e227e39bdf4461af5f54dcc8f3beb55741aaa6563f90f",
+          "path": "crates/benilla-app/src/codcraft/gear.rs"
+        },
+        {
+          "sha256": "76c5119bd28c5ebfa3b138c2e1b7f42194de544ef360e9c3643b57e307172197",
+          "path": "crates/benilla-app/src/items.rs"
+        },
+        {
+          "sha256": "5f98f6cbea1e89dc58becf20eb8a0cd39ec6a54880b4818ffa010531041daead",
+          "path": "crates/benilla-assets/src/world_assets/mod.rs"
+        },
+        {
+          "sha256": "17902d0af469b12ff047ac2bf8bb2ef82a23e7655296cbd824c55aea9334718d",
+          "path": "crates/benilla-app/src/ui_script/lifecycle.rs"
         }
       ],
       "patch": "patches/benilla.patch",
@@ -346,7 +362,7 @@
           "path": "crates/console/src/plugin/mod.rs"
         },
         {
-          "sha256": "89cca64cee1f0e6e87d8f0aabf75978957f402a2745cea5323ed3c06dc80fd83",
+          "sha256": "7167630ad64d33a0869e8a2d13a5cb0161b1931f5eb78d47bc1b626c7dfdfd27",
           "path": "crates/net/src/authority/codcraft_input.rs"
         },
         {
@@ -448,6 +464,10 @@
         {
           "sha256": "ade443f901929329cbe02b8ac14447d6e64a21ba365e47eb0cda7efb35673631",
           "path": "crates/sim/src/world.rs"
+        },
+        {
+          "sha256": "a45cdede2aec95dc5c4a7e57ac98d43fb0489456465c9343ede49e954cf1aa51",
+          "path": "crates/audio/src/playback.rs"
         }
       ],
       "patch": "patches/iw4l.patch",

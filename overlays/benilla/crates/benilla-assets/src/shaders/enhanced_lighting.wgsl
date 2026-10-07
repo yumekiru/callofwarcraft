@@ -99,6 +99,14 @@ fn shade_surface(albedo: vec3<f32>, normal: vec3<f32>, to_eye: vec3<f32>,
     let ambient = albedo * (1.0 - metal) * max(ambient_linear, vec3<f32>(0.0)) / pi;
     return direct + ambient;
 }
+// Bounded live particle lights are evaluated at their current location, not stored in probes.
+fn live_light_energy(position: vec3<f32>, normal: vec3<f32>, source: vec4<f32>, colour: vec3<f32>) -> vec3<f32> {
+    let delta = source.xyz - position;
+    let d2 = dot(delta, delta);
+    if (source.w <= 0.0 || d2 >= source.w * source.w || d2 < 0.0001) { return vec3<f32>(0.0); }
+    let edge = pow(max(1.0 - pow(sqrt(d2) / source.w, 4.0), 0.0), 2.0);
+    return colour * (edge * max(dot(normalize(normal), delta * inverseSqrt(d2)), 0.0) / max(d2, 0.25));
+}
 fn shade_grid_surface(albedo: vec3<f32>, normal: vec3<f32>, to_eye: vec3<f32>,
     to_sun: vec3<f32>, sun_linear: vec3<f32>, ambient_linear: vec3<f32>,
     roughness: f32, metalness: f32, grid: GridLight) -> vec3<f32> {

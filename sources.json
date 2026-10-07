@@ -12,7 +12,7 @@
           "path": "crates/benilla-app/src/codcraft_aim.rs"
         },
         {
-          "sha256": "325ac3686279b24eb93d1d76f034ccf0dc7b78e80af3a76053dc257d003b409c",
+          "sha256": "9dd28409517e7fcdcaa58ccd7084deb73d6bef72168857912b94f0aa06fb6b6f",
           "path": "crates/benilla-app/src/codcraft.rs"
         },
         {
@@ -132,19 +132,19 @@
           "path": "crates/benilla-assets/src/model.rs"
         },
         {
-          "sha256": "57c99f848e01ec61c309683058a6b8b28bd8d480bf27138ad6818138fcb82c20",
+          "sha256": "346bf09e29dd0a9588cd572cd55c84fdba4339289ee19f94645d3f9638901422",
           "path": "crates/benilla-assets/src/shaders/enhanced_lighting.wgsl"
         },
         {
-          "sha256": "263d3bd5e5db3a1acd2e3a2c4e5b812db3158c35a2ed6a1f01613625fd6fc83a",
+          "sha256": "7cd4e92d2d230098cf6e17ec472892758c7157831a8712d9c8a696b5a8a48bf7",
           "path": "crates/benilla-assets/src/shaders/liquid.wgsl"
         },
         {
-          "sha256": "0379440076ee5f9fa959ce1b8294e69b6dd8747359c66ffd73c4bc85d268d46a",
+          "sha256": "628fe42e0bbc95666caa8c5ad5e630f9104ff03d8fa2d1fa2101a9710e09301c",
           "path": "crates/benilla-assets/src/shaders/terrain.wgsl"
         },
         {
-          "sha256": "5b458edea18a1cff5c003d657b54ed7829434e9f5adce2fabaa15668619d80bf",
+          "sha256": "49bfd0f6ca06d7e33824284ffcf162c44b2247ff6aee9271b1b3bae60b4939bc",
           "path": "crates/benilla-assets/src/shaders/wow_model.wgsl"
         },
         {
@@ -196,7 +196,7 @@
           "path": "crates/benilla-world/src/lighting_scene_textures.rs"
         },
         {
-          "sha256": "e9233e1b26d3e861d6fe1128f0032ecdeda60adef5343269e53a27956998a713",
+          "sha256": "671b59b0b99e959627ac33bafd5ece29f93663b7f1904abb097e1df94bb094e6",
           "path": "crates/benilla-world/src/lighting_scene.rs"
         },
         {
@@ -204,7 +204,7 @@
           "path": "crates/benilla-world/src/lighting_transport.rs"
         },
         {
-          "sha256": "79e9b5932418635f58269a83b23a9f4e3d9b63311114df289081d801381bfd2f",
+          "sha256": "536cf154df5d47e50e8064069ecdd4634e2219b45778e42d42cf321ffb085ba0",
           "path": "crates/benilla-world/src/lighting/global_light.rs"
         },
         {
@@ -212,7 +212,7 @@
           "path": "crates/benilla-world/src/model_render/batch.rs"
         },
         {
-          "sha256": "3da17e427072a698585f1c9001b7008d4d355578a3b57b4cf3393ac7c2741016",
+          "sha256": "fa5d70db3e1d2dd8a337ebc5543174b6fff66ab0eec4ce1488d624aedb096ca6",
           "path": "crates/benilla-world/src/particles.rs"
         },
         {
@@ -248,7 +248,7 @@
           "path": "crates/benilla-world/src/shaders/sky.wgsl"
         },
         {
-          "sha256": "e40fb019901d553b5dbb0555960968c3c3aaa1d776247111af37d450b9965e84",
+          "sha256": "9d69377e8597118b8ccd2a012bf45493506a9b87c77dbde27196e26c12611dcd",
           "path": "crates/benilla-world/src/shaders/static_gx.wgsl"
         },
         {

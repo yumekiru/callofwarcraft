@@ -9,8 +9,8 @@ use crate::{
     view::WorldCamera,
 };
 use benilla_assets::{
-    ATTRIBUTE_WOW_JOINT_INDEX, ATTRIBUTE_WOW_JOINT_WEIGHT,
     materials::{TerrainMaterial, WowModelMaterial},
+    ATTRIBUTE_WOW_JOINT_INDEX, ATTRIBUTE_WOW_JOINT_WEIGHT,
 };
 use bevy::{
     asset::RenderAssetUsages,
@@ -83,13 +83,11 @@ pub enum GeometryProvenance {
 
 impl SceneBatch {
     pub fn casts_world_shadows(&self) -> bool {
-        matches!(
-            self.category,
-            SceneCategory::World
-        ) && matches!(
-            self.class,
-            SurfaceClass::Terrain | SurfaceClass::Opaque | SurfaceClass::Cutout
-        )
+        matches!(self.category, SceneCategory::World)
+            && matches!(
+                self.class,
+                SurfaceClass::Terrain | SurfaceClass::Opaque | SurfaceClass::Cutout
+            )
     }
 }
 
@@ -176,6 +174,23 @@ impl Plugin for LightingScenePlugin {
 
 const RADIUS: f32 = 768.0;
 const MAX_TRIANGLES: usize = 1_000_000;
+
+pub(crate) fn attached_light(
+    mut entity: Entity,
+    hierarchy: &Query<(Option<&ChildOf>, Option<&Visibility>)>,
+    rigs: &Query<(), With<crate::rig_anim::RigPose>>,
+) -> bool {
+    for _ in 0..64 {
+        if rigs.contains(entity) {
+            return true;
+        }
+        let Ok((Some(parent), _)) = hierarchy.get(entity) else {
+            return false;
+        };
+        entity = parent.parent();
+    }
+    true // Cyclic/malformed hierarchy must not be frozen into the static field.
+}
 
 fn classify(alpha: AlphaMode, emissive: bool, deforming: bool) -> SurfaceClass {
     if deforming {
@@ -361,8 +376,8 @@ fn capture(
     terrain_materials: Res<Assets<TerrainMaterial>>,
     model_materials: Res<Assets<WowModelMaterial>>,
     sources: (
-        Query<(&WorldPointLight, &GlobalTransform)>,
-        Query<&crate::particles::ParticleEmitter>,
+        Query<(Entity, &WorldPointLight, &GlobalTransform)>,
+        Query<(), With<crate::rig_anim::RigPose>>,
     ),
     palettes: Option<Res<RigPalettes>>,
     rigs: Query<&RigSkin>,
@@ -418,7 +433,10 @@ fn capture(
     scene.lights = sources
         .0
         .iter()
-        .filter_map(|(source, transform)| {
+        .filter_map(|(entity, source, transform)| {
+            if attached_light(entity, &hierarchy, &sources.1) {
+                return None;
+            }
             let position = transform.translation();
             if position.distance(origin) > RADIUS + source.range {
                 return None;
@@ -427,28 +445,8 @@ fn capture(
         })
         .collect();
     let authored_lights = scene.lights.len();
-    for emitter in &sources.1 {
-        let Some((position, radiance, range)) = emitter.emitted_light() else {
-            continue;
-        };
-        if position.distance(origin) > RADIUS + range {
-            continue;
-        }
-        let position = position - origin;
-        // A flame can already have an authored MOLT source. Do not double it.
-        if scene
-            .lights
-            .iter()
-            .any(|light| light.position.distance(position) < 1.)
-        {
-            continue;
-        }
-        scene.lights.push(SceneLight {
-            position,
-            radiance,
-            range,
-        });
-    }
+    // Particle flames/glows move and disappear: their direct light is packed every frame,
+    // not baked into this slow static geometry/fixture snapshot.
     let mut failure = None;
     // Cache each palette once per snapshot, shared by body/gear submeshes, not every frame.
     let mut pose_cache: HashMap<u16, (Vec<Mat4>, Vec3)> = HashMap::new();
@@ -790,17 +788,15 @@ mod tests {
     #[test]
     fn invalid_active_bones_and_weights_reject_pose() {
         for weights in [[1., 0., 0., 0.], [f32::NAN, 0., 0., 0.], [-1., 0., 0., 0.]] {
-            assert!(
-                pose_positions(
-                    &TRI,
-                    &[[9, 0, 0, 0]; 3],
-                    &[weights; 3],
-                    &[Mat4::IDENTITY],
-                    Vec3::ZERO,
-                    Vec3::ZERO
-                )
-                .is_err()
-            );
+            assert!(pose_positions(
+                &TRI,
+                &[[9, 0, 0, 0]; 3],
+                &[weights; 3],
+                &[Mat4::IDENTITY],
+                Vec3::ZERO,
+                Vec3::ZERO
+            )
+            .is_err());
         }
         assert!(pose_positions(&TRI, &[], &[], &[Mat4::IDENTITY], Vec3::ZERO, Vec3::ZERO).is_err());
     }

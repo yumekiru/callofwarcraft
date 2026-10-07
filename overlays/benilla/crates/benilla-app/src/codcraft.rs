@@ -1396,6 +1396,96 @@ struct PoseWire {
     normals: Vec<[f32; 3]>,
 }
 
+#[derive(Default)]
+struct PoseBlend {
+    previous: Option<PoseWire>,
+    current: Option<PoseWire>,
+    stamp: Option<std::time::SystemTime>,
+    received_at: f32,
+    interval: f32,
+}
+
+impl PoseBlend {
+    fn receive(&mut self, pose: PoseWire, stamp: Option<std::time::SystemTime>, now: f32) {
+        if stamp.is_some() && stamp == self.stamp {
+            return;
+        }
+        let compatible = self.current.as_ref().is_some_and(|p| {
+            p.fingerprint == pose.fingerprint
+                && p.positions.len() == pose.positions.len()
+                && p.visible
+                && pose.visible
+        });
+        self.previous = if compatible {
+            self.current.take()
+        } else {
+            None
+        };
+        let dt = now - self.received_at;
+        self.interval = if compatible && dt > 0.0 && dt < 0.1 {
+            dt.clamp(1.0 / 240.0, 1.0 / 30.0)
+        } else {
+            0.0
+        };
+        self.current = Some(pose);
+        self.received_at = now;
+        self.stamp = stamp;
+    }
+
+    fn sample(&self, now: f32) -> Option<PoseWire> {
+        let current = self.current.as_ref()?;
+        let previous = self
+            .previous
+            .as_ref()
+            .filter(|_| self.interval > 0.0 && current.visible);
+        let alpha = if self.interval > 0.0 {
+            ((now - self.received_at) / self.interval).clamp(0.0, 1.0)
+        } else {
+            1.0
+        };
+        let mix =
+            |a: &[f32; 3], b: &[f32; 3]| Vec3::from_array(*a).lerp(Vec3::from_array(*b), alpha);
+        let positions = match previous {
+            Some(p) => p
+                .positions
+                .iter()
+                .zip(&current.positions)
+                .map(|(a, b)| mix(a, b).to_array())
+                .collect(),
+            None => current.positions.clone(),
+        };
+        let normals = match previous {
+            Some(p) => p
+                .normals
+                .iter()
+                .zip(&current.normals)
+                .map(|(a, b)| mix(a, b).normalize_or_zero().to_array())
+                .collect(),
+            None => current.normals.clone(),
+        };
+        let transform = match previous {
+            Some(p) => {
+                let a = Transform::from_matrix(p.transform);
+                let b = Transform::from_matrix(current.transform);
+                Transform {
+                    translation: a.translation.lerp(b.translation, alpha),
+                    rotation: a.rotation.slerp(b.rotation, alpha),
+                    scale: a.scale.lerp(b.scale, alpha),
+                }
+                .to_matrix()
+            }
+            None => current.transform,
+        };
+        Some(PoseWire {
+            fingerprint: current.fingerprint,
+            visible: current.visible,
+            transform,
+            positions,
+            normals,
+        })
+    }
+}
+
 fn parse_pose(payload: &[u8]) -> Result<PoseWire, String> {
     let mut reader = WireReader {
         bytes: payload,
@@ -1580,6 +1670,7 @@ fn present_viewmodel(
     mut batch: benilla_world::model_render::M2BatchMaterials,
     cameras: Query<Entity, With<benilla_world::view::WorldCamera>>,
     mut viewmodel_entities: Query<(&mut Transform, &mut Visibility), With<CodcraftViewmodel>>,
+    mut smoothing: Local<PoseBlend>,
 ) {
     if !capture.typing && keys.just_pressed(KeyCode::KeyQ) {
         view.shown = !view.shown;
@@ -1590,6 +1681,7 @@ fn present_viewmodel(
     }
     let Some(paths) = paths else { return };
     if !world_live.0 {
+        *smoothing = PoseBlend::default();
         hide_viewmodel(&stage, &mut viewmodel_entities);
         return;
     }
@@ -1606,21 +1698,31 @@ fn present_viewmodel(
         .and_then(|stamp| stamp.elapsed().ok())
         .is_some_and(|age| age <= std::time::Duration::from_secs(2));
     if !guest_live || !pose_fresh {
+        *smoothing = PoseBlend::default();
         hide_viewmodel(&stage, &mut viewmodel_entities);
         return;
     }
 
-    let pose = match read_packet(&paths.pose, POSE_MAGIC).and_then(|packet| parse_pose(&packet)) {
-        Ok(pose) => pose,
+    let pose_stamp = std::fs::metadata(&paths.pose)
+        .ok()
+        .and_then(|m| m.modified().ok());
+    match read_packet(&paths.pose, POSE_MAGIC).and_then(|packet| parse_pose(&packet)) {
+        Ok(pose) => smoothing.receive(pose, pose_stamp, time.elapsed_secs()),
         Err(error) => {
-            if view.error.as_deref() != Some(error.as_str()) {
+            if smoothing.current.is_none() && view.error.as_deref() != Some(error.as_str()) {
                 warn!("CoDCraft: FPV pose: {error}");
                 view.error = Some(error);
             }
             // The guest is writing the next pose now; keep the last complete GPU pose for this
             // frame. The freshness gate above still hides it if the guest actually stops.
-            return;
+            if smoothing.current.is_none() {
+                return;
+            }
         }
+    }
+    // Animate between complete native poses at the host frame rate, including write-race frames.
+    let Some(pose) = smoothing.sample(time.elapsed_secs()) else {
+        return;
     };
     if !pose.visible || !view.shown {
         hide_viewmodel(&stage, &mut viewmodel_entities);
@@ -2521,6 +2623,36 @@ impl Plugin for CodcraftPlugin {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn viewmodel_interpolates_between_native_pose_packets() {
+        let pose = |x| PoseWire {
+            fingerprint: 7,
+            visible: true,
+            transform: Mat4::IDENTITY,
+            positions: vec![[x, 0.0, 0.0]],
+            normals: vec![[0.0, 1.0, 0.0]],
+        };
+        let mut blend = PoseBlend::default();
+        let first = std::time::SystemTime::UNIX_EPOCH;
+        let second = first + std::time::Duration::from_millis(16);
+        blend.receive(pose(0.0), Some(first), 1.0);
+        blend.receive(pose(1.0), Some(second), 1.016);
+        assert!((blend.sample(1.024).unwrap().positions[0][0] - 0.5).abs() < 0.001);
+        // Re-reading the same native frame must not restart the interpolation.
+        blend.receive(pose(1.0), Some(second), 1.024);
+        assert!((blend.sample(1.032).unwrap().positions[0][0] - 1.0).abs() < 0.001);
+        let hidden = PoseWire {
+            visible: false,
+            ..pose(1.0)
+        };
+        blend.receive(
+            hidden,
+            Some(second + std::time::Duration::from_millis(16)),
+            1.032,
+        );
+        assert!(!blend.sample(1.032).unwrap().visible);
+    }
 
     #[test]
     fn auto_loot_retries_without_consuming_confirmed_kill() {

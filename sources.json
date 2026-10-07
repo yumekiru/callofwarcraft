@@ -4,6 +4,10 @@
     {
       "files": [
         {
+          "sha256": "c4405616981f458703b4117002b92a090f6fb3fb11dfe229793ebc5d053d0c8d",
+          "path": "crates/benilla-app/src/nameplates.rs"
+        },
+        {
           "sha256": "12d7a56edb90ec2dd5ea967d11b91b645c56d68ff4acc352421717d49ec17ffb",
           "path": "Cargo.lock"
         },

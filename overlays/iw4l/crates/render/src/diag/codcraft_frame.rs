@@ -15,6 +15,8 @@ const STATIC_MAGIC: &[u8; 4] = b"CODM";
 const POSE_MAGIC: &[u8; 4] = b"CODP";
 const VERSION: u32 = 2;
 const HEADER: usize = 4 + 4 + 8;
+#[path = "codcraft_fx.rs"]
+mod codcraft_fx;
 
 struct BridgePaths {
     model: std::path::PathBuf,
@@ -56,6 +58,80 @@ struct Publisher {
     world_fingerprint: Option<u64>,
     world_next_poll: f32,
     world_wait: String,
+    frag_fingerprint: Option<u64>,
+    frag_next_poll: f32,
+}
+
+fn publish_frag_model(
+    time: Res<Time>, catalog: Option<Res<assets::PreparedWorldWeapons>>,
+    materials: Res<render_anim::anim::model_materials::PreparedModelMaterials>,
+    tess: Option<Res<render_scene::TessMaterials>>, images: Res<Assets<Image>>,
+    mut publisher: ResMut<Publisher>,
+) {
+    if time.elapsed_secs() < publisher.frag_next_poll { return; }
+    publisher.frag_next_poll = time.elapsed_secs() + 0.5;
+    let Some(paths) = paths() else { return };
+    let (Some(catalog), Some(tess)) = (catalog, tess) else { return };
+    let Some(model) = (0..catalog.0.len()).filter_map(|i| catalog.0.get_at(i))
+        .find(|m| m.skel.name == "weapon_m67_grenade") else { return };
+    let mut hash = std::collections::hash_map::DefaultHasher::new();
+    model.skel.name.hash(&mut hash); catalog.0.identity().hash(&mut hash);
+    let fingerprint = hash.finish();
+    if publisher.frag_fingerprint == Some(fingerprint) { return; }
+    let decoded = (|| -> Option<(Vec<u8>, Vec<u8>)> {
+        let dobj = xmodel_runtime::DObj::build(&[(model.skel.pose.as_ref()?, None)]).ok()?;
+        let request = xmodel_runtime::DObjPoseRequest::bind_pose();
+        let (surfaces, _) = render_anim::occupancy::script_model::pose_script_dobj_with_materials(
+            None, &[&model.skel], &dobj, &request, None, &[])?;
+        let mut rows = Vec::new();
+        let mut groups = Vec::new();
+        for surface in surfaces {
+            let name = model.material_present_name(surface.surface_index)?;
+            let material = materials.material(&tess.catalog, name)?.clone();
+            let authored = model.material_edges.get(surface.surface_index)?.bound_index()?;
+            let maps = render_scene::runtime_maps(Some(assets::MaterialIndex::from_order(authored)), &tess.catalog, tess.material_images.as_ref());
+            let image = images.get(maps.color.as_ref()?)?;
+            let texture = asset_material::decoded_image_top_level_rgba8(image).ok()?;
+            let base = rows.len() as u32;
+            let indices: Vec<u32> = surface.mesh.indices()?.iter().map(|i| base+i as u32).collect();
+            rows.extend_from_slice(&surface.packed_vertices);
+            groups.push((material, image, texture, indices));
+        }
+        if rows.is_empty() { return None; }
+        let mut mesh = Vec::new();
+        push_u64(&mut mesh, fingerprint); push_u32(&mut mesh, rows.len() as u32);
+        push_u32(&mut mesh, groups.len() as u32);
+        for row in &rows {
+            push_vec(&mut mesh, asset_model::unpack_packed_tex_coords(packed_u32(row,20)));
+            push_vec(&mut mesh, asset_model::unpack_color(packed_u32(row,16)));
+        }
+        for (material,image,(width,height,rgba),indices) in groups {
+            push_u32(&mut mesh,alpha_code(&material)); push_u32(&mut mesh,1);
+            push_f32(&mut mesh,alpha_cutoff(&material));
+            push_u32(&mut mesh,u32::from(image.texture_descriptor.format.is_srgb()));
+            push_u32(&mut mesh,width); push_u32(&mut mesh,height);
+            push_u32(&mut mesh,rgba.len() as u32); mesh.extend_from_slice(&rgba);
+            push_u32(&mut mesh,indices.len() as u32);
+            for index in indices { push_u32(&mut mesh,index); }
+        }
+        let mut pose = Vec::new();
+        push_u64(&mut pose,fingerprint); push_u32(&mut pose,1); push_u32(&mut pose,rows.len() as u32);
+        for value in Mat4::IDENTITY.to_cols_array() { push_f32(&mut pose,value); }
+        for row in rows {
+            let p: [f32;3] = core::array::from_fn(|i| f32::from_le_bytes(row[i*4..i*4+4].try_into().unwrap()));
+            let n = asset_model::unpack_unit_vec(packed_u32(&row,24));
+            push_vec(&mut pose,[-p[1]/36.0,p[2]/36.0,-p[0]/36.0]);
+            push_vec(&mut pose,[-n[1],n[2],-n[0]]);
+        }
+        Some((mesh,pose))
+    })();
+    if let Some((mesh,pose)) = decoded {
+        if write_packet(&paths.model.with_extension("fragmesh"),STATIC_MAGIC,&mesh).is_ok()
+            && write_packet(&paths.model.with_extension("fragpose"),POSE_MAGIC,&pose).is_ok() {
+            publisher.frag_fingerprint=Some(fingerprint);
+            diag::info!(World,"CoDCraft: exported native M67 frag world model");
+        }
+    }
 }
 
 fn publish_world_weapon(
@@ -554,6 +630,7 @@ impl Plugin for CodcraftFramePlugin {
             return;
         }
         let paths = paths().expect("enabled publisher has paths");
+        codcraft_fx::plugin(app);
         info!(
             "CoDCraft: publishing live FPV model to {} and {}",
             paths.model.display(),
@@ -561,7 +638,7 @@ impl Plugin for CodcraftFramePlugin {
         );
         app.init_resource::<Publisher>().add_systems(
             PostUpdate,
-            (publish_viewmodel, publish_tracer_asset, publish_world_weapon).chain().after(frame::RenderSet::FrontendAssemble),
+            (publish_viewmodel, publish_tracer_asset, publish_world_weapon, publish_frag_model).chain().after(frame::RenderSet::FrontendAssemble),
         );
     }
 }

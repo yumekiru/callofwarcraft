@@ -22,6 +22,9 @@ const INPUT_SPRINT: u32 = 1 << 5;
 const INPUT_FIRE: u32 = 1 << 6;
 const INPUT_AIM: u32 = 1 << 7;
 const INPUT_RELOAD: u32 = 1 << 8;
+const INPUT_CROUCH: u32 = 1 << 9;
+const INPUT_PRONE: u32 = 1 << 10;
+const INPUT_FRAG: u32 = 1 << 11;
 const STALE_AFTER_SECS: f32 = 0.25;
 
 #[derive(Clone, Copy, Debug)]
@@ -162,7 +165,7 @@ fn press_changes(
     now_msec: i32,
     frame_msec: u32,
 ) {
-    const BUTTONS: [(u32, u32, u32); 8] = [
+    const BUTTONS: [(u32, u32, u32); 9] = [
         (INPUT_FIRE, 1, 2),
         (INPUT_FORWARD, 27, 28),
         (INPUT_BACK, 29, 30),
@@ -171,7 +174,13 @@ fn press_changes(
         (INPUT_JUMP, 25, 26),
         (INPUT_SPRINT, 59, 60),
         (INPUT_RELOAD, 51, 52),
+        (INPUT_FRAG, 5, 6),
     ];
+    for (bit, cmd) in [(INPUT_CROUCH, 72), (INPUT_PRONE, 73)] {
+        if new & bit != 0 && old & bit == 0 {
+            input_iw4::input_cmd(&mut input.client, cmd, input_iw4::SCRIPT_KEYNUM, now_msec, frame_msec);
+        }
+    }
     for (bit, down, up) in BUTTONS {
         let was_down = old & bit != 0;
         let is_down = new & bit != 0;
@@ -198,6 +207,7 @@ pub(crate) fn apply(
     mut inbox: ResMut<crate::authority::inbox::ClientActionInbox>,
     mut requests: ResMut<crate::ActionRequestIds>,
     mut gear_retry: Local<(u32, f32)>,
+    mut frag_retry_at: Local<f32>,
 ) {
     let now = time.elapsed_secs();
     if let (Some(path), Some(weapons), Some(ps)) = (
@@ -205,6 +215,22 @@ pub(crate) fn apply(
         weapons.as_ref(),
         presented.player(local.0),
     ) {
+        // The bridge's lethal button must use a frag, not the map's default C4.
+        // Never replace equipment during a pullback/throw animation.
+        let offhand_active = ps.weap_flags & playerstate_iw4::weap_flags::OFFHAND_VIEW != 0;
+        if ps.offhand_primary != 1 && !offhand_active && now >= *frag_retry_at {
+            if let Some(weapon) = weapons.0.weapon_script_names().iter()
+                .position(|name| name == "frag_grenade_mp")
+                .and_then(|index| u32::try_from(index).ok())
+                .filter(|weapon| *weapon != 0)
+            {
+                let request_id = requests.allocate();
+                if inbox.push(local.0, sim::ClientAction::GiveWeapon { request_id, weapon }).is_ok() {
+                    info!("CoDCraft: requested native frag grenade (id {weapon})");
+                }
+            }
+            *frag_retry_at = now + 1.0;
+        }
         if let Some(code) = read_gear(&path.with_extension("gear")) {
             if code > 0 {
                 let names = [
@@ -224,7 +250,7 @@ pub(crate) fn apply(
                     .or_else(|| catalog.iter().position(|candidate| candidate == name.trim_end_matches("_mp")))
                     .and_then(|index| u32::try_from(index).ok());
                 if let Some(weapon) = weapon.filter(|w| *w != 0) {
-                    if playerstate_iw4::get_viewmodel_weapon_index(ps) != weapon
+                    if ps.weapon != weapon && !offhand_active
                         && (gear_retry.0 != code || now >= gear_retry.1)
                     {
                         let request_id = requests.allocate();

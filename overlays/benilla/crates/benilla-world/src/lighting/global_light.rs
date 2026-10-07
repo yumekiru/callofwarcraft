@@ -96,6 +96,9 @@ fn apply_world_linear_header(rows: &mut [[f32; 4]; LIGHT_HEADER_ROWS], enhanced:
     if !enhanced {
         return;
     }
+    // The retail storm's negative fog start puts a veil at the camera itself.
+    // In the reconstructed HDR scene preserve distant storm haze, not that veil.
+    rows[5][0] = rows[5][0].max(12.0).min(rows[5][1] * 0.5);
     for row in [0, 1, 3, 4, 18] {
         for channel in 0..3 {
             rows[row][channel] = decode_scene_channel(rows[row][channel]);

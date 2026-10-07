@@ -20,6 +20,8 @@ use std::{
 };
 mod combat_math;
 mod damage_direction;
+mod effects;
+mod grenades;
 pub(crate) mod gear;
 mod kobold_pose;
 mod ragdoll;
@@ -55,6 +57,9 @@ pub(crate) const INPUT_SPRINT: u32 = 1 << 5;
 const INPUT_FIRE: u32 = 1 << 6;
 const INPUT_AIM: u32 = 1 << 7;
 const INPUT_RELOAD: u32 = 1 << 8;
+const INPUT_CROUCH: u32 = 1 << 9;
+const INPUT_PRONE: u32 = 1 << 10;
+const INPUT_FRAG: u32 = 1 << 11;
 
 /// Host-to-guest controls. Mouse motion is cumulative so the guest can recover motion even when
 /// its render rate briefly misses a host frame.
@@ -94,6 +99,7 @@ pub(crate) fn passthrough_enabled() -> bool {
 #[derive(Resource, Default)]
 pub(crate) struct CodcraftCombatState {
     pending: VecDeque<PendingCodcraftShot>,
+    grenade_pending: HashMap<u64, f32>,
     confirmed_bullet_hits: HashMap<u64, f32>,
     requested_loot: HashMap<u64, f32>,
     pub(crate) marker_until: f32,
@@ -121,6 +127,8 @@ impl CodcraftCombatState {
     }
 
     pub(crate) fn take_for_response(&mut self, guid: u64, now: f32) -> Option<u64> {
+        self.grenade_pending.retain(|_,deadline| *deadline > now);
+        if self.grenade_pending.remove(&guid).is_some() { return Some(guid); }
         self.pending.retain(|shot| shot.expires_at > now);
         if let Some(index) = self.pending.iter().position(|shot| shot.guid == guid) {
             return self.pending.remove(index).map(|shot| shot.guid);
@@ -135,6 +143,10 @@ impl CodcraftCombatState {
     pub(crate) fn confirm_bullet_hit(&mut self, guid: u64, now: f32) {
         self.confirmed_bullet_hits
             .insert(guid, now + Self::CONFIRMED_HIT_LIFETIME);
+    }
+
+    fn queue_grenade(&mut self, guid: u64, now: f32) {
+        self.grenade_pending.insert(guid,now+Self::PENDING_TIMEOUT);
     }
 
     fn take_recent_kill_candidate(&mut self, guid: u64, now: f32) -> bool {
@@ -403,6 +415,9 @@ fn publish_guest_input(
         keyboard_enabled && keys.pressed(KeyCode::KeyR),
         INPUT_RELOAD,
     );
+    set(keyboard_enabled && keys.pressed(KeyCode::KeyC), INPUT_CROUCH);
+    set(keyboard_enabled && keys.pressed(KeyCode::KeyZ), INPUT_PRONE);
+    set(keyboard_enabled && keys.pressed(KeyCode::KeyG), INPUT_FRAG);
     input.buttons = buttons;
 
     // CoD owns the view direction: do not require WoW's own mouse-look drag gesture. Preserve UI
@@ -875,7 +890,7 @@ fn apply_guest_player(
     let current_yaw = player.face_yaw();
     player.turn_aim(wrap_pi(yaw - current_yaw));
     player.aim_pitch(pitch);
-    camera_control.codcraft_first_person();
+    camera_control.codcraft_first_person(guest.pm_flags);
     let shot = map
         .last_shot
         .is_some_and(|last| last != guest.shot_sequence);
@@ -1779,6 +1794,17 @@ fn present_viewmodel(
                 commands.entity(entity).despawn();
             }
         }
+        // Only the camera-attached first-person weapon bypasses distance fog;
+        // world rifles and thrown grenades retain their scene fog policy.
+        for handle in &material_handles {
+            if let Some(asset) = batch.materials().get_mut(handle) {
+                asset.extension.clutter_fade.z = benilla_world::model_render::replace_fog_policy(
+                    asset.extension.clutter_fade.z,
+                    benilla_formats::FogPolicy::Off,
+                );
+                asset.extension.clutter_fade.z = ((asset.extension.clutter_fade.z as u32) | 0x8000) as f32;
+            }
+        }
         stage.entities = entities;
         stage.meshes = mesh_handles;
         stage.materials = material_handles;
@@ -2574,6 +2600,8 @@ impl Plugin for CodcraftPlugin {
         gear::plugin(app);
         tracers::plugin(app);
         damage_direction::plugin(app);
+        grenades::plugin(app);
+        effects::plugin(app);
         app.init_resource::<GuestLink>()
             .init_resource::<GuestView>()
             .init_resource::<ViewmodelStage>()

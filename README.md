@@ -27,7 +27,7 @@ The Warcraft data must be compatible with **1.12.1 (build 5875)**. A current ret
 5. Copy `local-config.example.psd1` to `local-config.psd1`, and enter the paths to your owned games and the configured server. Your local configuration is ignored by Git. Create your own server account; no shared account is bundled.
 6. Start your database and server, then double-click `Start CallOfWarcraft.cmd`. Log into Benilla normally. MW2's level may take 2–3 minutes to load; keep both clients running and play from Benilla.
 
-Controls: mouse look; left click fires; right click aims; WASD moves; Space jumps; Left Shift sprints; Left Alt toggles the free cursor. With the cursor free, right click interacts with Warcraft objects.
+Controls: mouse look; left click fires; right click aims; WASD moves; Space jumps; Left Shift sprints; R reloads; hold G to prepare/cook a frag and release G to throw; Left Alt toggles the free cursor. With the cursor free, right click interacts with Warcraft objects. Magazines are finite with unlimited reserve ammo; frag supply is unlimited. C/Z stance controls are experimental and awaiting the player-model integration.
 
 ## Source layout and licensing
 

@@ -26,7 +26,7 @@ pub fn shot(guid: u64, sequence: u32, distance: f32, origin: Vec3, target: Vec3)
     seed = (seed ^ (seed >> 30)).wrapping_mul(0xbf58476d1ce4e5b9);
     seed = (seed ^ (seed >> 27)).wrapping_mul(0x94d049bb133111eb);
     seed ^= seed >> 31;
-    let probability = (0.94 - distance.clamp(0.0, 30.0) * 0.016).clamp(0.46, 0.86);
+    let probability = (0.99 - distance.clamp(0.0, 30.0) * 0.008).clamp(0.75, 0.97);
     let hit = (seed as u32 as f64 / u32::MAX as f64) < probability as f64;
     let lateral = (target - origin).cross(Vec3::Y).normalize_or(Vec3::X);
     let side = if seed & (1 << 40) == 0 { 1.0 } else { -1.0 };
@@ -52,7 +52,9 @@ mod tests {
         };
         assert!(count(5.0) > count(15.0));
         assert!(count(15.0) > count(25.0));
-        assert!((6500..7500).contains(&count(15.0)));
+        assert!((8300..9100).contains(&count(15.0)));
+        assert!((9400..9900).contains(&count(0.0)));
+        assert!((7100..7900).contains(&count(30.0)));
         for s in 1..100 {
             let (hit, end) = shot(257, s, 15.0, Vec3::ZERO, Vec3::Z * 10.0);
             if !hit {

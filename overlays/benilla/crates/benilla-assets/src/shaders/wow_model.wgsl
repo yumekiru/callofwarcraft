@@ -439,6 +439,12 @@ fn vertex(vertex: WowVertex) -> WowVsOut {
         view.view_from_world[2].xyz,
     );
     out.position = view.clip_from_view * vec4<f32>(view_rot * p_cam, 1.0);
+    // Camera-attached CoDCraft geometry only: depth-clamp the close face instead
+    // of slicing the stock during ADS. Reverse-Z near plane is z=w. Keep the
+    // world camera's precision and ordinary world-model clipping unchanged.
+    if ((u32(m.clutter_fade.z) & 0x8000u) != 0u && out.position.w > 0.0) {
+        out.position.z = min(out.position.z, out.position.w * 0.999999);
+    }
     // WMO batch order (`sun_scale.y`, 0 off WMO): the reference layers coplanar batches by MOBA
     // draw order under depth-write + LEQUAL; Bevy reorders draws, so a later batch must win the
     // reverse-Z GreaterEqual test. Scaling clip z by (1 + n·2⁻²³) raises z/w by n ULPs. Uniform

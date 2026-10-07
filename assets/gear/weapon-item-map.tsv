@@ -1,0 +1,2390 @@
+25	2	famas_mp	Assault Rifle	f2000	Northwatch Convoy Escort FAMAS	1542
+35	3	scar_mp	Assault Rifle	scar	Northwatch Convoy Escort SCAR-H	472
+36	4	tavor_mp	Assault Rifle	f2000	Northwatch Checkpoint TAR-21	5194
+37	5	fal_mp	Assault Rifle	fal	Northwatch Convoy Escort FAL	14029
+192	36	beretta393_mp	Machine Pistol	usp	Northwatch Security Detail M93 Raffica	5279
+647	24	spas12_mp	Shotgun	fal	Oath of Northwatch - SPAS-12	20190
+727	43	deserteaglegold_mp	Handgun	usp	Northwatch Assault Pioneer Gold Desert Eagle	26577
+751	24	spas12_mp	Shotgun	fal	Northwatch Battered SPAS-12	1515
+753	2	famas_mp	Assault Rifle	f2000	Northwatch Raid Support FAMAS	20094
+754	1	m4_mp	Assault Rifle	acr	Northwatch Cold Frontier M4A1	20218
+756	8	fn2000_mp	Assault Rifle	f2000	Northwatch Counter-Ambush F2000	6264
+766	19	m240_mp	Light Machine Gun	scar	Northwatch Security Detail M240	19621
+767	28	m1014_mp	Shotgun	fal	Northwatch Outpost M1014	20443
+768	39	m79_mp	Launcher	rpg	Northwatch Rifle Section Thumper	5012
+776	25	aa12_mp	Shotgun	acr	Northwatch Iron Battalion AA-12	6452
+778	20	cheytac_mp	Sniper Rifle	fal	Northwatch Convoy Escort Intervention	6259
+781	40	stinger_mp	Launcher	rpg	Northwatch Rifle Section Stinger	19644
+788	37	tmp_mp	Machine Pistol	ump	Northwatch Security Detail TMP	5750
+789	23	m21_mp	Sniper Rifle	fal	Northwatch Counter-Ambush M21 EBR	19699
+790	33	beretta_mp	Handgun	usp	Northwatch Counter-Ambush M9	19401
+791	26	striker_mp	Shotgun	ump	Northwatch Iron Battalion Striker	20334
+809	14	uzi_mp	Submachine Gun	ump	Oath of Northwatch - Mini-Uzi	20033
+810	18	aug_mp	Light Machine Gun	f2000	Oath of Northwatch - AUG HBAR	19726
+811	25	aa12_mp	Shotgun	acr	Oath of Northwatch - AA-12	19137
+812	19	m240_mp	Light Machine Gun	scar	Oath of Northwatch - M240	20257
+816	6	m16_mp	Assault Rifle	m16	Northwatch Ranger Company M16A4	6472
+820	6	m16_mp	Assault Rifle	m16	Northwatch Assault Pioneer M16A4	6470
+826	27	ranger_mp	Shotgun	fal	Northwatch Combat Engineer Ranger	19271
+827	7	masada_mp	Assault Rifle	acr	Northwatch Assault Pioneer ACR	3498
+851	2	famas_mp	Assault Rifle	f2000	Northwatch Border Patrol FAMAS	22077
+852	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Border Patrol WA2000	8287
+853	6	m16_mp	Assault Rifle	m16	Northwatch Border Patrol M16A4	22102
+854	10	mp5k_mp	Submachine Gun	ump	Northwatch Border Patrol MP5K	22147
+863	16	rpd_mp	Light Machine Gun	ak47	Northwatch Mountain Scout RPD	19213
+864	21	barrett_mp	Sniper Rifle	m16	Northwatch Urban Interdiction Barrett .50 Cal	26579
+865	23	m21_mp	Sniper Rifle	fal	Northwatch Mountain Scout M21 EBR	5212
+866	43	deserteaglegold_mp	Handgun	usp	Northwatch Urban Interdiction Gold Desert Eagle	20357
+868	6	m16_mp	Assault Rifle	m16	Judgment of Northwatch - M16A4	19713
+869	4	tavor_mp	Assault Rifle	f2000	Oath of Northwatch - TAR-21	5163
+870	2	famas_mp	Assault Rifle	f2000	Oath of Northwatch - FAMAS	33458
+871	10	mp5k_mp	Submachine Gun	ump	Oath of Northwatch - MP5K	19235
+872	12	kriss_mp	Submachine Gun	ump	Northwatch Forward Observer Vector	19242
+873	3	scar_mp	Assault Rifle	scar	Oath of Northwatch - SCAR-H	20298
+880	34	pp2000_mp	Machine Pistol	ump	Northwatch Counter-Ambush PP2000	20382
+885	1	m4_mp	Assault Rifle	acr	Northwatch Counter-Ambush M4A1	14036
+886	23	m21_mp	Sniper Rifle	fal	Northwatch Raid Support M21 EBR	20093
+890	17	mg4_mp	Light Machine Gun	scar	Northwatch Ghost Detachment MG4	20386
+899	30	usp_mp	Handgun	usp	Northwatch Forward Observer USP .45	6459
+911	10	mp5k_mp	Submachine Gun	ump	Northwatch Counter-Ambush MP5K	28628
+913	9	ak47_mp	Assault Rifle	ak47	Northwatch Counter-Ambush AK-47	20170
+920	11	ump45_mp	Submachine Gun	ump	Northwatch Counter-Ambush UMP45	19703
+922	8	fn2000_mp	Assault Rifle	f2000	Northwatch Border Patrol F2000	22097
+923	9	ak47_mp	Assault Rifle	ak47	Northwatch Border Patrol AK-47	22080
+924	11	ump45_mp	Submachine Gun	ump	Northwatch Border Patrol UMP45	22131
+925	43	deserteaglegold_mp	Handgun	usp	Northwatch Checkpoint Gold Desert Eagle	4351
+926	13	p90_mp	Submachine Gun	f2000	Northwatch Depot Guard P90	22108
+927	40	stinger_mp	Launcher	rpg	Northwatch Checkpoint Stinger	22106
+928	21	barrett_mp	Sniper Rifle	m16	Northwatch Depot Guard Barrett .50 Cal	22151
+934	26	striker_mp	Shotgun	ump	Northwatch Crimson Watch Striker	19405
+935	37	tmp_mp	Machine Pistol	ump	Northwatch Black Squadron TMP	8274
+936	36	beretta393_mp	Machine Pistol	usp	Northwatch Crimson Watch M93 Raffica	5215
+937	37	tmp_mp	Machine Pistol	ump	Northwatch Crimson Watch TMP	20329
+943	11	ump45_mp	Submachine Gun	ump	Oath of Northwatch - UMP45	20256
+944	29	model1887_mp	Shotgun	fal	Oath of Northwatch - Model 1887	20253
+945	6	m16_mp	Assault Rifle	m16	Northwatch Convoy Escort M16A4	859
+948	7	masada_mp	Assault Rifle	acr	Northwatch Checkpoint ACR	859
+997	8	fn2000_mp	Assault Rifle	f2000	Northwatch Checkpoint F2000	859
+1008	1	m4_mp	Assault Rifle	acr	Standard Issue M4	1550
+1009	1	m4_mp	Assault Rifle	acr	Mercenary's M4 of the Bear	8583
+1010	9	ak47_mp	Assault Rifle	ak47	Militia AK	20440
+1011	6	m16_mp	Assault Rifle	m16	Recruit's Rifle	19273
+1018	9	ak47_mp	Assault Rifle	ak47	Northwatch Checkpoint AK-47	1121
+1046	10	mp5k_mp	Submachine Gun	ump	Northwatch Convoy Escort MP5K	6596
+1047	11	ump45_mp	Submachine Gun	ump	Northwatch Checkpoint UMP45	6595
+1117	25	aa12_mp	Shotgun	acr	Northwatch Battered AA-12	7453
+1155	16	rpd_mp	Light Machine Gun	ak47	Northwatch Iron Battalion RPD	20327
+1157	26	striker_mp	Shotgun	ump	Northwatch Battered Striker	5066
+1158	2	famas_mp	Assault Rifle	f2000	Field FAMAS	19643
+1159	11	ump45_mp	Submachine Gun	ump	Soldier's UMP	4994
+1161	10	mp5k_mp	Submachine Gun	ump	Training MP5K	1544
+1194	29	model1887_mp	Shotgun	fal	Northwatch Border Patrol Model 1887	22093
+1195	29	model1887_mp	Shotgun	fal	Northwatch Garrison Reserve Model 1887	7495
+1196	26	striker_mp	Shotgun	ump	Northwatch Border Patrol Striker	22114
+1197	3	scar_mp	Assault Rifle	scar	Northwatch Border Patrol SCAR-H	5226
+1198	5	fal_mp	Assault Rifle	fal	Northwatch Border Patrol FAL	22095
+1207	25	aa12_mp	Shotgun	acr	Northwatch Urban Interdiction AA-12	5223
+1214	8	fn2000_mp	Assault Rifle	f2000	Northwatch Assault Pioneer F2000	19625
+1218	13	p90_mp	Submachine Gun	f2000	Northwatch Forward Observer P90	5527
+1219	42	rpg_mp	Launcher	rpg	Northwatch Combat Engineer RPG-7	20122
+1220	3	scar_mp	Assault Rifle	scar	Northwatch Combat Engineer SCAR-H	19232
+1259	10	mp5k_mp	Submachine Gun	ump	Northwatch Battered MP5K	30392
+1263	27	ranger_mp	Shotgun	fal	Oath of Northwatch - Ranger	22215
+1264	2	famas_mp	Assault Rifle	f2000	Scout's FAMAS of the Eagle	5530
+1265	43	deserteaglegold_mp	Handgun	usp	Northwatch Silent Company Gold Desert Eagle	20156
+1266	11	ump45_mp	Submachine Gun	ump	Northwatch Battered UMP45	4909
+1287	28	m1014_mp	Shotgun	fal	Northwatch Assault Pioneer M1014	6447
+1292	26	striker_mp	Shotgun	ump	Northwatch Ghost Detachment Striker	8466
+1296	14	uzi_mp	Submachine Gun	ump	Northwatch Forward Observer Mini-Uzi	5195
+1300	4	tavor_mp	Assault Rifle	f2000	Northwatch Combat Engineer TAR-21	20391
+1311	12	kriss_mp	Submachine Gun	ump	Northwatch Battered Vector	8513
+1312	13	p90_mp	Submachine Gun	f2000	Northwatch Battered P90	8576
+1313	14	uzi_mp	Submachine Gun	ump	Northwatch Battered Mini-Uzi	6458
+1317	9	ak47_mp	Assault Rifle	ak47	Veteran's AK of the Wolf	20377
+1318	7	masada_mp	Assault Rifle	acr	Northwatch Ghost Detachment ACR	19290
+1382	12	kriss_mp	Submachine Gun	ump	Basic Vector	19636
+1383	32	deserteagle_mp	Handgun	usp	Service Desert Eagle	8495
+1384	12	kriss_mp	Submachine Gun	ump	Northwatch Convoy Escort Vector	1546
+1385	27	ranger_mp	Shotgun	fal	Northwatch Battered Ranger	8593
+1386	27	ranger_mp	Shotgun	fal	Hunter's Ranger	19247
+1387	31	coltanaconda_mp	Handgun	usp	Northwatch Combat Engineer .44 Magnum	20087
+1388	13	p90_mp	Submachine Gun	f2000	Northwatch Security Detail P90	20450
+1389	21	barrett_mp	Sniper Rifle	m16	Northwatch Security Detail Barrett .50 Cal	8575
+1391	17	mg4_mp	Light Machine Gun	scar	Northwatch Combat Engineer MG4	20410
+1394	29	model1887_mp	Shotgun	fal	Northwatch Combat Engineer Model 1887	5204
+1405	9	ak47_mp	Assault Rifle	ak47	Northwatch Assault Pioneer AK-47	5540
+1406	12	kriss_mp	Submachine Gun	ump	Northwatch Counter-Ambush Vector	5638
+1411	27	ranger_mp	Shotgun	fal	Salvaged Ranger	20442
+1412	9	ak47_mp	Assault Rifle	ak47	Cracked-Stock AK	20074
+1413	10	mp5k_mp	Submachine Gun	ump	Taped-Up MP5K	1547
+1414	31	coltanaconda_mp	Handgun	usp	Corroded .44	19525
+1415	11	ump45_mp	Submachine Gun	ump	Dented UMP	19613
+1416	4	tavor_mp	Assault Rifle	f2000	Cheap Knockoff Bullpup	8495
+1417	5	fal_mp	Assault Rifle	fal	Warped FAL	8501
+1440	32	deserteagle_mp	Handgun	usp	Northwatch Combat Engineer Desert Eagle	8570
+1454	2	famas_mp	Assault Rifle	f2000	Northwatch Iron Battalion FAMAS	8457
+1455	2	famas_mp	Assault Rifle	f2000	Northwatch Counter-Ambush FAMAS	22214
+1457	24	spas12_mp	Shotgun	fal	Northwatch Counter-Ambush SPAS-12	19683
+1458	35	glock_mp	Machine Pistol	usp	Northwatch Counter-Ambush G18	8601
+1459	3	scar_mp	Assault Rifle	scar	Northwatch Forward Observer SCAR-H	19136
+1460	5	fal_mp	Assault Rifle	fal	Northwatch Combat Engineer FAL	20109
+1461	13	p90_mp	Submachine Gun	f2000	Northwatch Counter-Ambush P90	19375
+1465	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Urban Interdiction WA2000	20594
+1469	33	beretta_mp	Handgun	usp	Northwatch Forward Observer M9	20154
+1473	34	pp2000_mp	Machine Pistol	ump	Northwatch Forward Observer PP2000	20402
+1480	6	m16_mp	Assault Rifle	m16	Sergeant's M16 of Striking	9381
+1481	27	ranger_mp	Shotgun	fal	Northwatch Ghost Detachment Ranger	25595
+1482	18	aug_mp	Light Machine Gun	f2000	Northwatch Ghost Detachment AUG HBAR	20089
+1483	43	deserteaglegold_mp	Handgun	usp	Northwatch Ghost Detachment Gold Desert Eagle	9117
+1484	5	fal_mp	Assault Rifle	fal	Northwatch Iron Battalion FAL	9122
+1485	28	m1014_mp	Shotgun	fal	Northwatch Duct-Taped M1014	7464
+1493	3	scar_mp	Assault Rifle	scar	Northwatch Crimson Watch SCAR-H	5165
+1510	15	sa80_mp	Light Machine Gun	f2000	Frayed-Sling LSW	19775
+1511	32	deserteagle_mp	Handgun	usp	Wobbly Desert Eagle	20173
+1512	16	rpd_mp	Light Machine Gun	ak47	Mud-Caked RPD	19226
+1513	20	cheytac_mp	Sniper Rifle	fal	Cracked-Scope Intervention	20092
+1514	24	spas12_mp	Shotgun	fal	Pawn Shop SPAS	19533
+1515	7	masada_mp	Assault Rifle	acr	Gutted ACR	20421
+1516	43	deserteaglegold_mp	Handgun	usp	Northwatch Loose-Sighted Gold Desert Eagle	8498
+1521	7	masada_mp	Assault Rifle	acr	Northwatch Mountain Scout ACR	19306
+1522	7	masada_mp	Assault Rifle	acr	Northwatch Raid Support ACR	22239
+1523	8	fn2000_mp	Assault Rifle	f2000	Northwatch Raid Support F2000	5534
+1539	35	glock_mp	Machine Pistol	usp	Northwatch Forward Observer G18	20395
+1566	3	scar_mp	Assault Rifle	scar	Marauder's SCAR of the Boar	20078
+1602	1	m4_mp	Assault Rifle	acr	Northwatch Silent Company M4A1	8489
+1604	14	uzi_mp	Submachine Gun	ump	Northwatch Urban Interdiction Mini-Uzi	20188
+1607	24	spas12_mp	Shotgun	fal	Northwatch Blue Sentinel SPAS-12	20272
+1608	31	coltanaconda_mp	Handgun	usp	Northwatch Urban Interdiction .44 Magnum	19743
+1613	8	fn2000_mp	Assault Rifle	f2000	Northwatch Mountain Scout F2000	28470
+1625	36	beretta393_mp	Machine Pistol	usp	Northwatch Urban Interdiction M93 Raffica	26586
+1639	39	m79_mp	Launcher	rpg	Northwatch Strike Platoon Thumper	5128
+1640	1	m4_mp	Assault Rifle	acr	Northwatch Urban Interdiction M4A1	8526
+1664	37	tmp_mp	Machine Pistol	ump	Northwatch Urban Interdiction TMP	18289
+1679	9	ak47_mp	Assault Rifle	ak47	Northwatch Raid Support AK-47	5137
+1680	9	ak47_mp	Assault Rifle	ak47	Northwatch Mountain Scout AK-47	19304
+1719	14	uzi_mp	Submachine Gun	ump	Northwatch Checkpoint Mini-Uzi	7429
+1720	41	javelin_mp	Launcher	rpg	Northwatch Silent Company Javelin	21460
+1721	25	aa12_mp	Shotgun	acr	Northwatch Blue Sentinel AA-12	8581
+1722	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Silent Company WA2000	15467
+1726	18	aug_mp	Light Machine Gun	f2000	Northwatch Crimson Watch AUG HBAR	20749
+1727	9	ak47_mp	Assault Rifle	ak47	Northwatch Iron Battalion AK-47	12827
+1728	1	m4_mp	Assault Rifle	acr	Oath of Northwatch - M4A1	19997
+1811	4	tavor_mp	Assault Rifle	f2000	Northwatch Loose-Sighted TAR-21	20037
+1812	5	fal_mp	Assault Rifle	fal	Northwatch Loose-Sighted FAL	19245
+1813	7	masada_mp	Assault Rifle	acr	Northwatch Loose-Sighted ACR	20413
+1814	10	mp5k_mp	Submachine Gun	ump	Northwatch Duct-Taped MP5K	19534
+1815	6	m16_mp	Assault Rifle	m16	Northwatch Loose-Sighted M16A4	5217
+1816	11	ump45_mp	Submachine Gun	ump	Northwatch Duct-Taped UMP45	8495
+1817	12	kriss_mp	Submachine Gun	ump	Northwatch Duct-Taped Vector	20164
+1818	25	aa12_mp	Shotgun	acr	Northwatch Duct-Taped AA-12	20183
+1819	17	mg4_mp	Light Machine Gun	scar	Northwatch Duct-Taped MG4	14039
+1820	18	aug_mp	Light Machine Gun	f2000	Northwatch Duct-Taped AUG HBAR	19535
+1821	26	striker_mp	Shotgun	ump	Northwatch Duct-Taped Striker	5151
+1822	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Duct-Taped WA2000	20385
+1823	19	m240_mp	Light Machine Gun	scar	Northwatch Duct-Taped M240	6794
+1824	23	m21_mp	Sniper Rifle	fal	Northwatch Duct-Taped M21 EBR	19292
+1825	37	tmp_mp	Machine Pistol	ump	Northwatch Duct-Taped TMP	19784
+1826	34	pp2000_mp	Machine Pistol	ump	Northwatch Duct-Taped PP2000	8587
+1827	35	glock_mp	Machine Pistol	usp	Northwatch Duct-Taped G18	8482
+1828	36	beretta393_mp	Machine Pistol	usp	Northwatch Duct-Taped M93 Raffica	19369
+1829	42	rpg_mp	Launcher	rpg	Northwatch Duct-Taped RPG-7	15591
+1830	38	at4_mp	Launcher	rpg	Northwatch Duct-Taped AT4-HS	4129
+1831	39	m79_mp	Launcher	rpg	Northwatch Duct-Taped Thumper	20361
+1893	10	mp5k_mp	Submachine Gun	ump	Courier's MP5K of Agility	19234
+1895	28	m1014_mp	Shotgun	fal	Northwatch Battered M1014	7488
+1896	29	model1887_mp	Shotgun	fal	Northwatch Battered Model 1887	7487
+1897	30	usp_mp	Handgun	usp	Northwatch Battered USP .45	7485
+1899	31	coltanaconda_mp	Handgun	usp	Northwatch Battered .44 Magnum	7483
+1900	32	deserteagle_mp	Handgun	usp	Northwatch Battered Desert Eagle	7492
+1901	33	beretta_mp	Handgun	usp	Northwatch Battered M9	7440
+1902	34	pp2000_mp	Machine Pistol	ump	Northwatch Battered PP2000	7441
+1903	35	glock_mp	Machine Pistol	usp	Northwatch Battered G18	7439
+1904	36	beretta393_mp	Machine Pistol	usp	Northwatch Battered M93 Raffica	7429
+1905	37	tmp_mp	Machine Pistol	ump	Northwatch Battered TMP	7428
+1906	38	at4_mp	Launcher	rpg	Northwatch Battered AT4-HS	12236
+1907	39	m79_mp	Launcher	rpg	Northwatch Battered Thumper	10654
+1908	40	stinger_mp	Launcher	rpg	Northwatch Battered Stinger	1600
+1909	41	javelin_mp	Launcher	rpg	Northwatch Battered Javelin	7426
+1910	42	rpg_mp	Launcher	rpg	Northwatch Battered RPG-7	7493
+1911	43	deserteaglegold_mp	Handgun	usp	Northwatch Battered Gold Desert Eagle	7494
+1913	12	kriss_mp	Submachine Gun	ump	Northwatch Outpost Vector	5009
+1917	1	m4_mp	Assault Rifle	acr	Northwatch Assault Pioneer M4A1	20435
+1925	43	deserteaglegold_mp	Handgun	usp	Northwatch Combat Engineer Gold Desert Eagle	20114
+1926	30	usp_mp	Handgun	usp	Northwatch Combat Engineer USP .45	5225
+1927	31	coltanaconda_mp	Handgun	usp	Northwatch Assault Pioneer .44 Magnum	19276
+1928	1	m4_mp	Assault Rifle	acr	Northwatch Combat Engineer M4A1	20415
+1933	32	deserteagle_mp	Handgun	usp	Northwatch Assault Pioneer Desert Eagle	20418
+1935	19	m240_mp	Light Machine Gun	scar	Northwatch Ghost Detachment M240	20471
+1936	18	aug_mp	Light Machine Gun	f2000	Northwatch Combat Engineer AUG HBAR	20399
+1937	15	sa80_mp	Light Machine Gun	f2000	Northwatch Forward Observer L86 LSW	5040
+1938	25	aa12_mp	Shotgun	acr	Northwatch Counter-Ambush AA-12	8565
+1948	2	famas_mp	Assault Rifle	f2000	Northwatch Loose-Sighted FAMAS	1661
+1951	36	beretta393_mp	Machine Pistol	usp	Northwatch Forward Observer M93 Raffica	8279
+1958	10	mp5k_mp	Submachine Gun	ump	Northwatch Combat Engineer MP5K	1515
+1959	11	ump45_mp	Submachine Gun	ump	Northwatch Combat Engineer UMP45	14038
+1975	10	mp5k_mp	Submachine Gun	ump	Northwatch Iron Battalion MP5K	20179
+1976	17	mg4_mp	Light Machine Gun	scar	Northwatch Iron Battalion MG4	8590
+1982	7	masada_mp	Assault Rifle	acr	Judgment of Northwatch - ACR	20191
+1983	1	m4_mp	Assault Rifle	acr	Northwatch Battered M4A1	7490
+1986	38	at4_mp	Launcher	rpg	Northwatch Urban Interdiction AT4-HS	20638
+1990	10	mp5k_mp	Submachine Gun	ump	Northwatch Mountain Scout MP5K	5533
+1991	38	at4_mp	Launcher	rpg	Northwatch Mountain Scout AT4-HS	18269
+1994	26	striker_mp	Shotgun	ump	Northwatch Strike Platoon Striker	19129
+1998	34	pp2000_mp	Machine Pistol	ump	Northwatch Mountain Scout PP2000	20356
+2000	12	kriss_mp	Submachine Gun	ump	Smuggler's Vector of Speed	20251
+2011	36	beretta393_mp	Machine Pistol	usp	Northwatch Ghost Detachment M93 Raffica	20120
+2013	24	spas12_mp	Shotgun	fal	Northwatch Raid Support SPAS-12	20373
+2014	10	mp5k_mp	Submachine Gun	ump	Northwatch Raid Support MP5K	5176
+2015	3	scar_mp	Assault Rifle	scar	Northwatch Counter-Ambush SCAR-H	19255
+2018	34	pp2000_mp	Machine Pistol	ump	Northwatch Raid Support PP2000	20088
+2020	19	m240_mp	Light Machine Gun	scar	Northwatch Combat Engineer M240	20492
+2023	2	famas_mp	Assault Rifle	f2000	Northwatch Battered FAMAS	7481
+2024	25	aa12_mp	Shotgun	acr	Northwatch Border Patrol AA-12	22096
+2025	19	m240_mp	Light Machine Gun	scar	Northwatch Border Patrol M240	22115
+2026	27	ranger_mp	Shotgun	fal	Northwatch Border Patrol Ranger	8593
+2027	15	sa80_mp	Light Machine Gun	f2000	Northwatch Border Patrol L86 LSW	22079
+2028	1	m4_mp	Assault Rifle	acr	Northwatch Border Patrol M4A1	22119
+2029	23	m21_mp	Sniper Rifle	fal	Northwatch Border Patrol M21 EBR	19281
+2030	24	spas12_mp	Shotgun	fal	Northwatch Border Patrol SPAS-12	22146
+2035	4	tavor_mp	Assault Rifle	f2000	Northwatch Forward Observer TAR-21	5161
+2042	3	scar_mp	Assault Rifle	scar	Blackwater Contract SCAR	20379
+2044	27	ranger_mp	Shotgun	fal	Trapper's Ranger of the Falcon	19220
+2046	5	fal_mp	Assault Rifle	fal	Northwatch Forward Observer FAL	22226
+2047	28	m1014_mp	Shotgun	fal	Garrison M1014	8473
+2048	5	fal_mp	Assault Rifle	fal	Infantry FAL	19770
+2054	15	sa80_mp	Light Machine Gun	f2000	Northwatch Convoy Escort L86 LSW	19299
+2055	16	rpd_mp	Light Machine Gun	ak47	Northwatch Convoy Escort RPD	8579
+2056	41	javelin_mp	Launcher	rpg	Northwatch Loose-Sighted Javelin	1758
+2057	17	mg4_mp	Light Machine Gun	scar	Northwatch Outpost MG4	20175
+2058	35	glock_mp	Machine Pistol	usp	Northwatch Raid Support G18	19611
+2064	19	m240_mp	Light Machine Gun	scar	Northwatch Outpost M240	19650
+2065	41	javelin_mp	Launcher	rpg	Northwatch Rifle Section Javelin	20212
+2066	30	usp_mp	Handgun	usp	Northwatch Garrison Reserve USP .45	19203
+2067	13	p90_mp	Submachine Gun	f2000	Northwatch Garrison Reserve P90	20431
+2072	36	beretta393_mp	Machine Pistol	usp	Northwatch Raid Support M93 Raffica	20363
+2073	33	beretta_mp	Handgun	usp	Northwatch Combat Engineer M9	19134
+2074	32	deserteagle_mp	Handgun	usp	Sheriff's Desert Eagle of Power	20168
+2075	12	kriss_mp	Submachine Gun	ump	Northwatch Assault Pioneer Vector	5218
+2077	11	ump45_mp	Submachine Gun	ump	Northwatch Raid Support UMP45	28578
+2078	20	cheytac_mp	Sniper Rifle	fal	Northwatch Combat Engineer Intervention	20157
+2079	12	kriss_mp	Submachine Gun	ump	Northwatch Combat Engineer Vector	19637
+2080	39	m79_mp	Launcher	rpg	Northwatch Mountain Scout Thumper	19400
+2084	18	aug_mp	Light Machine Gun	f2000	Northwatch Raid Support AUG HBAR	20152
+2088	34	pp2000_mp	Machine Pistol	ump	Northwatch Combat Engineer PP2000	6455
+2089	31	coltanaconda_mp	Handgun	usp	Marshal's .44 of the Tiger	20407
+2092	18	aug_mp	Light Machine Gun	f2000	Northwatch Security Detail AUG HBAR	6442
+2098	4	tavor_mp	Assault Rifle	f2000	Northwatch Crimson Watch TAR-21	28718
+2099	26	striker_mp	Shotgun	ump	Oath of Northwatch - Striker	28636
+2100	12	kriss_mp	Submachine Gun	ump	Oath of Northwatch - Vector	8258
+2128	19	m240_mp	Light Machine Gun	scar	Northwatch Convoy Escort M240	2380
+2130	30	usp_mp	Handgun	usp	Northwatch Border Patrol USP .45	22118
+2131	33	beretta_mp	Handgun	usp	Northwatch Border Patrol M9	22075
+2132	34	pp2000_mp	Machine Pistol	ump	Northwatch Border Patrol PP2000	22149
+2134	35	glock_mp	Machine Pistol	usp	Northwatch Border Patrol G18	22101
+2137	3	scar_mp	Assault Rifle	scar	Standard SCAR	6437
+2138	14	uzi_mp	Submachine Gun	ump	Jammed Mini-Uzi	6460
+2139	36	beretta393_mp	Machine Pistol	usp	Northwatch Border Patrol M93 Raffica	22135
+2140	7	masada_mp	Assault Rifle	acr	Northwatch Ranger Company ACR	6440
+2147	3	scar_mp	Assault Rifle	scar	Northwatch Battered SCAR-H	7419
+2163	16	rpd_mp	Light Machine Gun	ak47	Oath of Northwatch - RPD	20291
+2164	8	fn2000_mp	Assault Rifle	f2000	Judgment of Northwatch - F2000	20312
+2169	32	deserteagle_mp	Handgun	usp	Northwatch Convoy Escort Desert Eagle	20347
+2175	36	beretta393_mp	Machine Pistol	usp	Northwatch Counter-Ambush M93 Raffica	8534
+2176	4	tavor_mp	Assault Rifle	f2000	Northwatch Battered TAR-21	1926
+2177	5	fal_mp	Assault Rifle	fal	Northwatch Battered FAL	1927
+2178	6	m16_mp	Assault Rifle	m16	Northwatch Battered M16A4	7482
+2179	7	masada_mp	Assault Rifle	acr	Northwatch Battered ACR	7420
+2180	8	fn2000_mp	Assault Rifle	f2000	Northwatch Battered F2000	7486
+2181	9	ak47_mp	Assault Rifle	ak47	Northwatch Battered AK-47	7489
+2182	10	mp5k_mp	Submachine Gun	ump	Northwatch Sand-Choked MP5K	7438
+2183	11	ump45_mp	Submachine Gun	ump	Northwatch Sand-Choked UMP45	7427
+2184	12	kriss_mp	Submachine Gun	ump	Northwatch Sand-Choked Vector	7434
+2189	25	aa12_mp	Shotgun	acr	Last Light of Northwatch - AA-12	1938
+2194	28	m1014_mp	Shotgun	fal	Northwatch Ghost Detachment M1014	8567
+2195	4	tavor_mp	Assault Rifle	f2000	Quartermaster's TAR	6432
+2196	13	p90_mp	Submachine Gun	f2000	Northwatch Sand-Choked P90	7462
+2197	14	uzi_mp	Submachine Gun	ump	Northwatch Sand-Choked Mini-Uzi	7443
+2198	15	sa80_mp	Light Machine Gun	f2000	Northwatch Sand-Choked L86 LSW	7465
+2199	16	rpd_mp	Light Machine Gun	ak47	Northwatch Sand-Choked RPD	7474
+2200	17	mg4_mp	Light Machine Gun	scar	Northwatch Sand-Choked MG4	7466
+2201	18	aug_mp	Light Machine Gun	f2000	Northwatch Sand-Choked AUG HBAR	7473
+2202	19	m240_mp	Light Machine Gun	scar	Northwatch Sand-Choked M240	7463
+2203	37	tmp_mp	Machine Pistol	ump	Northwatch Forward Observer TMP	8506
+2204	13	p90_mp	Submachine Gun	f2000	Northwatch Combat Engineer P90	20038
+2205	29	model1887_mp	Shotgun	fal	Northwatch Ghost Detachment Model 1887	20153
+2206	20	cheytac_mp	Sniper Rifle	fal	Northwatch Duct-Taped Intervention	6445
+2207	12	kriss_mp	Submachine Gun	ump	Northwatch Border Patrol Vector	22137
+2208	16	rpd_mp	Light Machine Gun	ak47	Northwatch Border Patrol RPD	22142
+2209	42	rpg_mp	Launcher	rpg	Northwatch Checkpoint RPG-7	22139
+2218	5	fal_mp	Assault Rifle	fal	Rifleman's FAL of the Whale	20451
+2224	7	masada_mp	Assault Rifle	acr	Barracks ACR	6432
+2225	8	fn2000_mp	Assault Rifle	f2000	Reserve F2000	20470
+2226	37	tmp_mp	Machine Pistol	ump	Northwatch Raid Support TMP	20372
+2227	38	at4_mp	Launcher	rpg	Northwatch Raid Support AT4-HS	22219
+2235	38	at4_mp	Launcher	rpg	Northwatch Forward Observer AT4-HS	20598
+2236	30	usp_mp	Handgun	usp	Northwatch Ghost Detachment USP .45	20345
+2243	30	usp_mp	Handgun	usp	Oath of Northwatch - USP .45	19729
+2244	23	m21_mp	Sniper Rifle	fal	Oath of Northwatch - M21 EBR	8090
+2254	13	p90_mp	Submachine Gun	f2000	Northwatch Assault Pioneer P90	19612
+2256	20	cheytac_mp	Sniper Rifle	fal	Northwatch Ghost Detachment Intervention	5221
+2257	14	uzi_mp	Submachine Gun	ump	Northwatch Security Detail Mini-Uzi	20429
+2258	31	coltanaconda_mp	Handgun	usp	Northwatch Convoy Escort .44 Magnum	4260
+2259	32	deserteagle_mp	Handgun	usp	Northwatch Checkpoint Desert Eagle	19623
+2260	42	rpg_mp	Launcher	rpg	Northwatch Rifle Section RPG-7	8470
+2263	11	ump45_mp	Submachine Gun	ump	Duelist's UMP of Precision	5170
+2265	18	aug_mp	Light Machine Gun	f2000	Northwatch Assault Pioneer AUG HBAR	19297
+2266	19	m240_mp	Light Machine Gun	scar	Northwatch Assault Pioneer M240	20427
+2267	35	glock_mp	Machine Pistol	usp	Northwatch Combat Engineer G18	5208
+2268	15	sa80_mp	Light Machine Gun	f2000	Northwatch Outpost L86 LSW	20213
+2271	8	fn2000_mp	Assault Rifle	f2000	Northwatch Ghost Detachment F2000	20346
+2280	39	m79_mp	Launcher	rpg	Northwatch Raid Support Thumper	20370
+2281	8	fn2000_mp	Assault Rifle	f2000	Northwatch Ranger Company F2000	19297
+2282	16	rpd_mp	Light Machine Gun	ak47	Northwatch Outpost RPD	20211
+2291	13	p90_mp	Submachine Gun	f2000	Oath of Northwatch - P90	19305
+2299	40	stinger_mp	Launcher	rpg	Northwatch Iron Battalion Stinger	19389
+2361	20	cheytac_mp	Sniper Rifle	fal	Northwatch Checkpoint Intervention	8690
+2479	37	tmp_mp	Machine Pistol	ump	Northwatch Border Patrol TMP	8512
+2480	38	at4_mp	Launcher	rpg	Northwatch Border Patrol AT4-HS	19601
+2481	21	barrett_mp	Sniper Rifle	m16	Northwatch Convoy Escort Barrett .50 Cal	16155
+2482	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Convoy Escort WA2000	8488
+2483	23	m21_mp	Sniper Rifle	fal	Northwatch Checkpoint M21 EBR	19243
+2484	24	spas12_mp	Shotgun	fal	Northwatch Checkpoint SPAS-12	6442
+2485	25	aa12_mp	Shotgun	acr	Northwatch Checkpoint AA-12	5219
+2486	26	striker_mp	Shotgun	ump	Northwatch Convoy Escort Striker	19627
+2487	27	ranger_mp	Shotgun	fal	Northwatch Checkpoint Ranger	20448
+2488	13	p90_mp	Submachine Gun	f2000	Northwatch Border Patrol P90	22078
+2489	39	m79_mp	Launcher	rpg	Northwatch Depot Guard Thumper	22094
+2490	17	mg4_mp	Light Machine Gun	scar	Northwatch Depot Guard MG4	8488
+2491	41	javelin_mp	Launcher	rpg	Northwatch Depot Guard Javelin	22112
+2492	40	stinger_mp	Launcher	rpg	Northwatch Depot Guard Stinger	12992
+2493	18	aug_mp	Light Machine Gun	f2000	Northwatch Border Patrol AUG HBAR	22121
+2494	42	rpg_mp	Launcher	rpg	Northwatch Depot Guard RPG-7	22136
+2495	43	deserteaglegold_mp	Handgun	usp	Northwatch Depot Guard Gold Desert Eagle	7310
+2496	33	beretta_mp	Handgun	usp	Northwatch Garrison Reserve M9	2398
+2497	43	deserteaglegold_mp	Handgun	usp	Northwatch Rifle Section Gold Desert Eagle	2399
+2498	34	pp2000_mp	Machine Pistol	ump	Northwatch Garrison Reserve PP2000	19299
+2499	1	m4_mp	Assault Rifle	acr	Northwatch Security Detail M4A1	8511
+2500	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Security Detail WA2000	19626
+2501	2	famas_mp	Assault Rifle	f2000	Northwatch Outpost FAMAS	19614
+2502	23	m21_mp	Sniper Rifle	fal	Northwatch Convoy Escort M21 EBR	6444
+2503	35	glock_mp	Machine Pistol	usp	Northwatch Garrison Reserve G18	20436
+2504	39	m79_mp	Launcher	rpg	Northwatch Border Patrol Thumper	8106
+2505	40	stinger_mp	Launcher	rpg	Northwatch Border Patrol Stinger	20723
+2506	35	glock_mp	Machine Pistol	usp	Northwatch Depot Guard G18	20722
+2507	34	pp2000_mp	Machine Pistol	ump	Northwatch Checkpoint PP2000	20714
+2508	41	javelin_mp	Launcher	rpg	Northwatch Border Patrol Javelin	6606
+2509	21	barrett_mp	Sniper Rifle	m16	Northwatch Border Patrol Barrett .50 Cal	6607
+2510	42	rpg_mp	Launcher	rpg	Northwatch Border Patrol RPG-7	6594
+2511	28	m1014_mp	Shotgun	fal	Northwatch Border Patrol M1014	20728
+2520	3	scar_mp	Assault Rifle	scar	Northwatch Depot Guard SCAR-H	22085
+2521	6	m16_mp	Assault Rifle	m16	Northwatch Depot Guard M16A4	22084
+2522	33	beretta_mp	Handgun	usp	Northwatch Convoy Escort M9	8485
+2523	36	beretta393_mp	Machine Pistol	usp	Northwatch Convoy Escort M93 Raffica	22216
+2524	29	model1887_mp	Shotgun	fal	Northwatch Convoy Escort Model 1887	8803
+2525	37	tmp_mp	Machine Pistol	ump	Northwatch Convoy Escort TMP	22133
+2526	34	pp2000_mp	Machine Pistol	ump	Northwatch Convoy Escort PP2000	22141
+2527	2	famas_mp	Assault Rifle	f2000	Northwatch Depot Guard FAMAS	22150
+2528	13	p90_mp	Submachine Gun	f2000	Northwatch Checkpoint P90	22081
+2529	19	m240_mp	Light Machine Gun	scar	Northwatch Depot Guard M240	22098
+2530	15	sa80_mp	Light Machine Gun	f2000	Northwatch Depot Guard L86 LSW	22105
+2531	42	rpg_mp	Launcher	rpg	Northwatch Convoy Escort RPG-7	22111
+2532	16	rpd_mp	Light Machine Gun	ak47	Northwatch Depot Guard RPD	22120
+2533	5	fal_mp	Assault Rifle	fal	Northwatch Depot Guard FAL	22134
+2534	43	deserteaglegold_mp	Handgun	usp	Northwatch Convoy Escort Gold Desert Eagle	22140
+2535	12	kriss_mp	Submachine Gun	ump	Northwatch Depot Guard Vector	20389
+2549	5	fal_mp	Assault Rifle	fal	Northwatch Crimson Watch FAL	20330
+2550	20	cheytac_mp	Sniper Rifle	fal	Northwatch Sand-Choked Intervention	8106
+2551	21	barrett_mp	Sniper Rifle	m16	Northwatch Sand-Choked Barrett .50 Cal	10671
+2552	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Sand-Choked WA2000	6593
+2557	23	m21_mp	Sniper Rifle	fal	Northwatch Sand-Choked M21 EBR	2466
+2558	24	spas12_mp	Shotgun	fal	Northwatch Sand-Choked SPAS-12	7442
+2559	25	aa12_mp	Shotgun	acr	Northwatch Sand-Choked AA-12	2469
+2567	9	ak47_mp	Assault Rifle	ak47	Northwatch Ghost Detachment AK-47	20590
+2632	24	spas12_mp	Shotgun	fal	Northwatch Combat Engineer SPAS-12	20473
+2664	21	barrett_mp	Sniper Rifle	m16	Northwatch Forward Observer Barrett .50 Cal	20441
+2695	26	striker_mp	Shotgun	ump	Northwatch Sand-Choked Striker	7432
+2703	27	ranger_mp	Shotgun	fal	Northwatch Sand-Choked Ranger	24596
+2704	28	m1014_mp	Shotgun	fal	Northwatch Sand-Choked M1014	24594
+2705	29	model1887_mp	Shotgun	fal	Northwatch Sand-Choked Model 1887	24595
+2706	30	usp_mp	Handgun	usp	Northwatch Sand-Choked USP .45	7454
+2707	31	coltanaconda_mp	Handgun	usp	Northwatch Sand-Choked .44 Magnum	7456
+2708	32	deserteagle_mp	Handgun	usp	Northwatch Sand-Choked Desert Eagle	7448
+2709	33	beretta_mp	Handgun	usp	Northwatch Sand-Choked M9	7455
+2710	34	pp2000_mp	Machine Pistol	ump	Northwatch Sand-Choked PP2000	7447
+2711	35	glock_mp	Machine Pistol	usp	Northwatch Sand-Choked G18	7433
+2714	36	beretta393_mp	Machine Pistol	usp	Northwatch Sand-Choked M93 Raffica	7461
+2715	37	tmp_mp	Machine Pistol	ump	Northwatch Sand-Choked TMP	7460
+2716	38	at4_mp	Launcher	rpg	Northwatch Sand-Choked AT4-HS	7446
+2717	39	m79_mp	Launcher	rpg	Northwatch Sand-Choked Thumper	7445
+2718	40	stinger_mp	Launcher	rpg	Northwatch Sand-Choked Stinger	7457
+2754	28	m1014_mp	Shotgun	fal	Northwatch Security Detail M1014	20117
+2763	1	m4_mp	Assault Rifle	acr	Northwatch Loose-Sighted M4A1	6437
+2764	8	fn2000_mp	Assault Rifle	f2000	Northwatch Loose-Sighted F2000	6444
+2765	24	spas12_mp	Shotgun	fal	Northwatch Duct-Taped SPAS-12	20383
+2766	43	deserteaglegold_mp	Handgun	usp	Northwatch Duct-Taped Gold Desert Eagle	6445
+2773	26	striker_mp	Shotgun	ump	Scrap-Welded Striker	2786
+2774	6	m16_mp	Assault Rifle	m16	Pitted M16	20654
+2777	2	famas_mp	Assault Rifle	f2000	Scratched FAMAS	2787
+2778	19	m240_mp	Light Machine Gun	scar	Leaking M240	20654
+2780	13	p90_mp	Submachine Gun	f2000	Northwatch Duct-Taped P90	20712
+2781	9	ak47_mp	Assault Rifle	ak47	Northwatch Loose-Sighted AK-47	20979
+2782	27	ranger_mp	Shotgun	fal	Northwatch Duct-Taped Ranger	20671
+2783	21	barrett_mp	Sniper Rifle	m16	Northwatch Duct-Taped Barrett .50 Cal	20717
+2785	40	stinger_mp	Launcher	rpg	Northwatch Duct-Taped Stinger	20668
+2786	1	m4_mp	Assault Rifle	acr	Northwatch Duct-Taped M4A1	20718
+2787	29	model1887_mp	Shotgun	fal	Northwatch Outpost Model 1887	20534
+2801	42	rpg_mp	Launcher	rpg	Oath of Northwatch - RPG-7	5193
+2807	10	mp5k_mp	Submachine Gun	ump	Northwatch Ghost Detachment MP5K	9118
+2808	38	at4_mp	Launcher	rpg	Northwatch Security Detail AT4-HS	3947
+2809	41	javelin_mp	Launcher	rpg	Northwatch Sand-Choked Javelin	7476
+2810	42	rpg_mp	Launcher	rpg	Northwatch Sand-Choked RPG-7	7479
+2811	39	m79_mp	Launcher	rpg	Northwatch Security Detail Thumper	7308
+2812	40	stinger_mp	Launcher	rpg	Northwatch Security Detail Stinger	6448
+2813	43	deserteaglegold_mp	Handgun	usp	Northwatch Sand-Choked Gold Desert Eagle	7478
+2814	41	javelin_mp	Launcher	rpg	Northwatch Security Detail Javelin	3151
+2815	36	beretta393_mp	Machine Pistol	usp	Northwatch Silent Company M93 Raffica	8467
+2816	41	javelin_mp	Launcher	rpg	Northwatch Iron Battalion Javelin	19669
+2819	4	tavor_mp	Assault Rifle	f2000	Northwatch Counter-Ambush TAR-21	6443
+2821	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Forward Observer WA2000	19633
+2822	23	m21_mp	Sniper Rifle	fal	Northwatch Forward Observer M21 EBR	20091
+2823	39	m79_mp	Launcher	rpg	Northwatch Forward Observer Thumper	19236
+2824	17	mg4_mp	Light Machine Gun	scar	Oath of Northwatch - MG4	20554
+2825	5	fal_mp	Assault Rifle	fal	Oath of Northwatch - FAL	20552
+2827	1	m4_mp	Assault Rifle	acr	Northwatch Sand-Choked M4A1	7431
+2844	3	scar_mp	Assault Rifle	scar	Northwatch Outpost SCAR-H	2861
+2845	4	tavor_mp	Assault Rifle	f2000	Northwatch Security Detail TAR-21	14035
+2847	5	fal_mp	Assault Rifle	fal	Northwatch Outpost FAL	4805
+2848	34	pp2000_mp	Machine Pistol	ump	Northwatch Rifle Section PP2000	5198
+2849	35	glock_mp	Machine Pistol	usp	Northwatch Rifle Section G18	19929
+2850	37	tmp_mp	Machine Pistol	ump	Northwatch Watch Officer TMP	3855
+2877	42	rpg_mp	Launcher	rpg	Northwatch Iron Battalion RPG-7	20151
+2878	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Iron Battalion WA2000	8456
+2884	2	famas_mp	Assault Rifle	f2000	Northwatch Sand-Choked FAMAS	26367
+2901	43	deserteaglegold_mp	Handgun	usp	Northwatch Border Patrol Gold Desert Eagle	6568
+2903	16	rpd_mp	Light Machine Gun	ak47	Gunner's RPD of Endurance	8107
+2904	15	sa80_mp	Light Machine Gun	f2000	Defender's LSW of the Bear	20732
+2907	23	m21_mp	Sniper Rifle	fal	Sniper's EBR of the Eagle	19227
+2908	20	cheytac_mp	Sniper Rifle	fal	Lookout's Intervention of Piercing	20605
+2912	32	deserteagle_mp	Handgun	usp	Northwatch Iron Battalion Desert Eagle	20320
+2915	15	sa80_mp	Light Machine Gun	f2000	Oath of Northwatch - L86 LSW	19664
+2941	37	tmp_mp	Machine Pistol	ump	Northwatch Ghost Detachment TMP	20359
+2942	38	at4_mp	Launcher	rpg	Northwatch Ghost Detachment AT4-HS	3007
+2945	30	usp_mp	Handgun	usp	Northwatch Outpost USP .45	16754
+2946	36	beretta393_mp	Machine Pistol	usp	Northwatch Depot Guard M93 Raffica	16752
+2947	17	mg4_mp	Light Machine Gun	scar	Northwatch Border Patrol MG4	16754
+2950	7	masada_mp	Assault Rifle	acr	Trooper's ACR of the Monkey	20378
+3021	31	coltanaconda_mp	Handgun	usp	Northwatch Ghost Detachment .44 Magnum	20673
+3023	36	beretta393_mp	Machine Pistol	usp	Northwatch Checkpoint M93 Raffica	20727
+3024	26	striker_mp	Shotgun	ump	Northwatch Depot Guard Striker	20726
+3025	40	stinger_mp	Launcher	rpg	Northwatch Convoy Escort Stinger	20725
+3026	41	javelin_mp	Launcher	rpg	Northwatch Checkpoint Javelin	20675
+3027	17	mg4_mp	Light Machine Gun	scar	Northwatch Checkpoint MG4	20670
+3028	3	scar_mp	Assault Rifle	scar	Northwatch Garrison Reserve SCAR-H	8104
+3036	36	beretta393_mp	Machine Pistol	usp	Northwatch Combat Engineer M93 Raffica	5392
+3037	40	stinger_mp	Launcher	rpg	Northwatch Mountain Scout Stinger	20653
+3038	14	uzi_mp	Submachine Gun	ump	Northwatch Counter-Ambush Mini-Uzi	3185
+3039	37	tmp_mp	Machine Pistol	ump	Northwatch Counter-Ambush TMP	20672
+3040	40	stinger_mp	Launcher	rpg	Northwatch Forward Observer Stinger	20740
+3041	24	spas12_mp	Shotgun	fal	Northwatch Mountain Scout SPAS-12	20729
+3042	35	glock_mp	Machine Pistol	usp	Northwatch Mountain Scout G18	20734
+3044	3	scar_mp	Assault Rifle	scar	Northwatch Sand-Choked SCAR-H	3191
+3071	13	p90_mp	Submachine Gun	f2000	Standard P90	19209
+3078	25	aa12_mp	Shotgun	acr	Northwatch Raid Support AA-12	20669
+3079	25	aa12_mp	Shotgun	acr	Raider's AA-12 of the Boar	20738
+3103	13	p90_mp	Submachine Gun	f2000	Driller's P90 of Quickness	8588
+3104	26	striker_mp	Shotgun	ump	Northwatch Outpost Striker	3155
+3105	30	usp_mp	Handgun	usp	Northwatch Rifle Section USP .45	3155
+3106	38	at4_mp	Launcher	rpg	Northwatch Watch Officer AT4-HS	3155
+3107	35	glock_mp	Machine Pistol	usp	Northwatch Checkpoint G18	20779
+3108	39	m79_mp	Launcher	rpg	Northwatch Convoy Escort Thumper	20773
+3109	41	javelin_mp	Launcher	rpg	Northwatch Watch Officer Javelin	16753
+3111	29	model1887_mp	Shotgun	fal	Northwatch Depot Guard Model 1887	20777
+3128	31	coltanaconda_mp	Handgun	usp	Northwatch Checkpoint .44 Magnum	16755
+3131	37	tmp_mp	Machine Pistol	ump	Northwatch Depot Guard TMP	16760
+3135	38	at4_mp	Launcher	rpg	Northwatch Checkpoint AT4-HS	20782
+3136	29	model1887_mp	Shotgun	fal	Northwatch Rifle Section Model 1887	16758
+3137	14	uzi_mp	Submachine Gun	ump	Northwatch Border Patrol Mini-Uzi	20783
+3145	32	deserteagle_mp	Handgun	usp	Northwatch Depot Guard Desert Eagle	3288
+3154	24	spas12_mp	Shotgun	fal	Enforcer's SPAS of Stamina	18340
+3184	6	m16_mp	Assault Rifle	m16	Northwatch Combat Engineer M16A4	20396
+3185	41	javelin_mp	Launcher	rpg	Northwatch Mountain Scout Javelin	20362
+3186	19	m240_mp	Light Machine Gun	scar	Northwatch Raid Support M240	26576
+3187	10	mp5k_mp	Submachine Gun	ump	Northwatch Urban Interdiction MP5K	20573
+3188	37	tmp_mp	Machine Pistol	ump	Northwatch Combat Engineer TMP	20072
+3189	36	beretta393_mp	Machine Pistol	usp	Northwatch Rifle Section M93 Raffica	8525
+3190	37	tmp_mp	Machine Pistol	ump	Northwatch Rifle Section TMP	6799
+3191	26	striker_mp	Shotgun	ump	Northwatch Raid Support Striker	11165
+3192	14	uzi_mp	Submachine Gun	ump	Northwatch Assault Pioneer Mini-Uzi	26590
+3193	16	rpd_mp	Light Machine Gun	ak47	Northwatch Forward Observer RPD	19545
+3194	1	m4_mp	Assault Rifle	acr	Northwatch Ghost Detachment M4A1	19622
+3195	24	spas12_mp	Shotgun	fal	Northwatch Forward Observer SPAS-12	8499
+3196	25	aa12_mp	Shotgun	acr	Northwatch Forward Observer AA-12	26585
+3197	1	m4_mp	Assault Rifle	acr	Northwatch Mountain Scout M4A1	20184
+3198	38	at4_mp	Launcher	rpg	Northwatch Counter-Ambush AT4-HS	8585
+3199	26	striker_mp	Shotgun	ump	Northwatch Counter-Ambush Striker	19372
+3201	5	fal_mp	Assault Rifle	fal	Northwatch Counter-Ambush FAL	19283
+3203	11	ump45_mp	Submachine Gun	ump	Northwatch Iron Battalion UMP45	5228
+3206	6	m16_mp	Assault Rifle	m16	Northwatch Counter-Ambush M16A4	20186
+3208	35	glock_mp	Machine Pistol	usp	Northwatch Strike Platoon G18	5232
+3209	28	m1014_mp	Shotgun	fal	Warden's M1014 of the Gorilla	20250
+3210	20	cheytac_mp	Sniper Rifle	fal	Northwatch Raid Support Intervention	19275
+3222	41	javelin_mp	Launcher	rpg	Northwatch Forward Observer Javelin	20607
+3223	9	ak47_mp	Assault Rifle	ak47	Northwatch Ranger Company AK-47	19624
+3225	6	m16_mp	Assault Rifle	m16	Northwatch Outpost M16A4	6437
+3227	39	m79_mp	Launcher	rpg	Northwatch Counter-Ambush Thumper	20381
+3262	33	beretta_mp	Handgun	usp	Northwatch Outpost M9	21052
+3267	14	uzi_mp	Submachine Gun	ump	Street Mini-Uzi	20176
+3268	15	sa80_mp	Light Machine Gun	f2000	Platoon LSW	6432
+3269	16	rpd_mp	Light Machine Gun	ak47	Squad RPD	19772
+3277	18	aug_mp	Light Machine Gun	f2000	Basic AUG HBAR	20444
+3278	2	famas_mp	Assault Rifle	f2000	Northwatch Duct-Taped FAMAS	3447
+3293	34	pp2000_mp	Machine Pistol	ump	Northwatch Outpost PP2000	19281
+3294	35	glock_mp	Machine Pistol	usp	Northwatch Outpost G18	5203
+3295	36	beretta393_mp	Machine Pistol	usp	Northwatch Garrison Reserve M93 Raffica	3434
+3296	37	tmp_mp	Machine Pistol	ump	Northwatch Garrison Reserve TMP	6442
+3319	7	masada_mp	Assault Rifle	acr	Northwatch Security Detail ACR	5007
+3325	8	fn2000_mp	Assault Rifle	f2000	Northwatch Security Detail F2000	19252
+3326	4	tavor_mp	Assault Rifle	f2000	Northwatch Sand-Choked TAR-21	3502
+3327	9	ak47_mp	Assault Rifle	ak47	Northwatch Security Detail AK-47	20434
+3329	20	cheytac_mp	Sniper Rifle	fal	Northwatch Security Detail Intervention	5204
+3334	24	spas12_mp	Shotgun	fal	Northwatch Convoy Escort SPAS-12	7495
+3335	38	at4_mp	Launcher	rpg	Northwatch Rifle Section AT4-HS	3509
+3336	12	kriss_mp	Submachine Gun	ump	Northwatch Raid Support Vector	20341
+3346	5	fal_mp	Assault Rifle	fal	Northwatch Sand-Choked FAL	7495
+3350	6	m16_mp	Assault Rifle	m16	Northwatch Sand-Choked M16A4	7444
+3351	7	masada_mp	Assault Rifle	acr	Northwatch Sand-Choked ACR	7468
+3359	38	at4_mp	Launcher	rpg	Northwatch Garrison Reserve AT4-HS	1115
+3361	8	fn2000_mp	Assault Rifle	f2000	Northwatch Sand-Choked F2000	7477
+3362	9	ak47_mp	Assault Rifle	ak47	Northwatch Sand-Choked AK-47	7449
+3364	10	mp5k_mp	Submachine Gun	ump	Northwatch Chipped MP5K	7484
+3366	11	ump45_mp	Submachine Gun	ump	Northwatch Chipped UMP45	7491
+3367	12	kriss_mp	Submachine Gun	ump	Northwatch Chipped Vector	7464
+3368	13	p90_mp	Submachine Gun	f2000	Northwatch Chipped P90	7459
+3398	9	ak47_mp	Assault Rifle	ak47	Northwatch Outpost AK-47	3746
+3400	8	fn2000_mp	Assault Rifle	f2000	Ambusher's F2000 of the Tiger	20110
+3413	32	deserteagle_mp	Handgun	usp	Northwatch Ghost Detachment Desert Eagle	20589
+3414	6	m16_mp	Assault Rifle	m16	Northwatch Iron Battalion M16A4	6796
+3415	21	barrett_mp	Sniper Rifle	m16	Northwatch Ghost Detachment Barrett .50 Cal	20339
+3417	39	m79_mp	Launcher	rpg	Northwatch Ghost Detachment Thumper	20174
+3430	11	ump45_mp	Submachine Gun	ump	Northwatch Urban Interdiction UMP45	6612
+3432	14	uzi_mp	Submachine Gun	ump	Northwatch Chipped Mini-Uzi	7437
+3433	15	sa80_mp	Light Machine Gun	f2000	Northwatch Chipped L86 LSW	7480
+3440	4	tavor_mp	Assault Rifle	f2000	Ranger's TAR-21 of the Wolf	6806
+3443	20	cheytac_mp	Sniper Rifle	fal	Standard Intervention	8495
+3445	23	m21_mp	Sniper Rifle	fal	Sentry EBR	20599
+3446	10	mp5k_mp	Submachine Gun	ump	Northwatch Pathfinder MP5K	20419
+3452	11	ump45_mp	Submachine Gun	ump	Northwatch Pathfinder UMP45	5120
+3455	31	coltanaconda_mp	Handgun	usp	Basic .44 Magnum	20015
+3462	12	kriss_mp	Submachine Gun	ump	Northwatch Pathfinder Vector	28607
+3463	13	p90_mp	Submachine Gun	f2000	Northwatch Pathfinder P90	20772
+3487	42	rpg_mp	Launcher	rpg	Northwatch Forward Observer RPG-7	20196
+3488	20	cheytac_mp	Sniper Rifle	fal	Northwatch Assault Pioneer Intervention	8516
+3489	14	uzi_mp	Submachine Gun	ump	Northwatch Combat Engineer Mini-Uzi	8496
+3490	15	sa80_mp	Light Machine Gun	f2000	Northwatch Counter-Ambush L86 LSW	6445
+3491	16	rpd_mp	Light Machine Gun	ak47	Northwatch Counter-Ambush RPD	5211
+3492	21	barrett_mp	Sniper Rifle	m16	Northwatch Mountain Scout Barrett .50 Cal	3780
+3493	14	uzi_mp	Submachine Gun	ump	Northwatch Pathfinder Mini-Uzi	20664
+3494	16	rpd_mp	Light Machine Gun	ak47	Northwatch Chipped RPD	7430
+3567	15	sa80_mp	Light Machine Gun	f2000	Northwatch Pathfinder L86 LSW	6601
+3570	16	rpd_mp	Light Machine Gun	ak47	Northwatch Pathfinder RPD	5197
+3571	17	mg4_mp	Light Machine Gun	scar	Northwatch Forward Observer MG4	19546
+3572	17	mg4_mp	Light Machine Gun	scar	Northwatch Pathfinder MG4	5151
+3581	18	aug_mp	Light Machine Gun	f2000	Northwatch Pathfinder AUG HBAR	20414
+3586	19	m240_mp	Light Machine Gun	scar	Northwatch Pathfinder M240	19231
+3661	39	m79_mp	Launcher	rpg	Northwatch Garrison Reserve Thumper	18530
+3687	21	barrett_mp	Sniper Rifle	m16	Last Light of Northwatch - Barrett .50 Cal	3092
+3696	17	mg4_mp	Light Machine Gun	scar	Northwatch Chipped MG4	7475
+3699	18	aug_mp	Light Machine Gun	f2000	Northwatch Chipped AUG HBAR	7467
+3738	20	cheytac_mp	Sniper Rifle	fal	Northwatch Pathfinder Intervention	20374
+3740	6	m16_mp	Assault Rifle	m16	Northwatch Forward Observer M16A4	22226
+3742	21	barrett_mp	Sniper Rifle	m16	Northwatch Recon Section Barrett .50 Cal	20667
+3755	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Recon Section WA2000	19228
+3774	19	m240_mp	Light Machine Gun	scar	Northwatch Chipped M240	26366
+3778	3	scar_mp	Assault Rifle	scar	Northwatch Duct-Taped SCAR-H	20660
+3779	4	tavor_mp	Assault Rifle	f2000	Northwatch Duct-Taped TAR-21	19287
+3780	5	fal_mp	Assault Rifle	fal	Northwatch Duct-Taped FAL	20717
+3781	6	m16_mp	Assault Rifle	m16	Northwatch Duct-Taped M16A4	20150
+3782	8	fn2000_mp	Assault Rifle	f2000	Northwatch Duct-Taped F2000	19532
+3783	9	ak47_mp	Assault Rifle	ak47	Northwatch Duct-Taped AK-47	20216
+3784	10	mp5k_mp	Submachine Gun	ump	Northwatch Smoke-Stained MP5K	20350
+3785	11	ump45_mp	Submachine Gun	ump	Northwatch Smoke-Stained UMP45	8480
+3786	12	kriss_mp	Submachine Gun	ump	Northwatch Smoke-Stained Vector	6468
+3787	14	uzi_mp	Submachine Gun	ump	Northwatch Smoke-Stained Mini-Uzi	19694
+3822	23	m21_mp	Sniper Rifle	fal	Northwatch Recon Section M21 EBR	20180
+3848	7	masada_mp	Assault Rifle	acr	Northwatch Combat Engineer ACR	6434
+3849	29	model1887_mp	Shotgun	fal	Northwatch Mountain Scout Model 1887	5153
+3850	2	famas_mp	Assault Rifle	f2000	Northwatch Mountain Scout FAMAS	20215
+3851	25	aa12_mp	Shotgun	acr	Northwatch Mountain Scout AA-12	19647
+3852	42	rpg_mp	Launcher	rpg	Northwatch Mountain Scout RPG-7	15468
+3853	11	ump45_mp	Submachine Gun	ump	Northwatch Mountain Scout UMP45	7324
+3854	29	model1887_mp	Shotgun	fal	Northwatch Urban Interdiction Model 1887	20252
+3855	17	mg4_mp	Light Machine Gun	scar	Northwatch Mountain Scout MG4	8528
+3856	30	usp_mp	Handgun	usp	Northwatch Urban Interdiction USP .45	8533
+3865	40	stinger_mp	Launcher	rpg	Northwatch Garrison Reserve Stinger	6474
+3895	7	masada_mp	Assault Rifle	acr	Fury of Northwatch - ACR	6262
+3902	26	striker_mp	Shotgun	ump	Northwatch Forward Observer Striker	20412
+3933	11	ump45_mp	Submachine Gun	ump	Northwatch Ghost Detachment UMP45	7312
+3934	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Ghost Detachment WA2000	4291
+3935	39	m79_mp	Launcher	rpg	Northwatch Watch Officer Thumper	4800
+4017	20	cheytac_mp	Sniper Rifle	fal	Northwatch Smoke-Stained Intervention	20225
+4018	16	rpd_mp	Light Machine Gun	ak47	Northwatch Smoke-Stained RPD	20195
+4019	23	m21_mp	Sniper Rifle	fal	Northwatch Smoke-Stained M21 EBR	8478
+4020	24	spas12_mp	Shotgun	fal	Northwatch Smoke-Stained SPAS-12	19374
+4021	21	barrett_mp	Sniper Rifle	m16	Northwatch Smoke-Stained Barrett .50 Cal	19716
+4022	25	aa12_mp	Shotgun	acr	Northwatch Smoke-Stained AA-12	19526
+4023	18	aug_mp	Light Machine Gun	f2000	Northwatch Smoke-Stained AUG HBAR	4119
+4024	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Smoke-Stained WA2000	20309
+4025	19	m240_mp	Light Machine Gun	scar	Northwatch Smoke-Stained M240	20550
+4026	17	mg4_mp	Light Machine Gun	scar	Northwatch Smoke-Stained MG4	20721
+4086	24	spas12_mp	Shotgun	fal	Northwatch Recon Section SPAS-12	20736
+4087	39	m79_mp	Launcher	rpg	Northwatch Urban Interdiction Thumper	4426
+4088	32	deserteagle_mp	Handgun	usp	Northwatch Urban Interdiction Desert Eagle	28520
+4089	36	beretta393_mp	Machine Pistol	usp	Northwatch Strike Platoon M93 Raffica	6592
+4090	42	rpg_mp	Launcher	rpg	Northwatch Silent Company RPG-7	18496
+4091	2	famas_mp	Assault Rifle	f2000	Northwatch Cold Frontier FAMAS	20380
+4110	25	aa12_mp	Shotgun	acr	Northwatch Recon Section AA-12	20555
+4111	26	striker_mp	Shotgun	ump	Northwatch Recon Section Striker	8095
+4116	27	ranger_mp	Shotgun	fal	Northwatch Recon Section Ranger	20223
+4122	28	m1014_mp	Shotgun	fal	Northwatch Pathfinder M1014	3498
+4126	29	model1887_mp	Shotgun	fal	Northwatch Recon Section Model 1887	19217
+4127	30	usp_mp	Handgun	usp	Northwatch Recon Section USP .45	20662
+4128	31	coltanaconda_mp	Handgun	usp	Northwatch Pathfinder .44 Magnum	18269
+4134	32	deserteagle_mp	Handgun	usp	Northwatch Pathfinder Desert Eagle	20294
+4302	17	mg4_mp	Light Machine Gun	scar	Northwatch Rifle Section MG4	3006
+4303	15	sa80_mp	Light Machine Gun	f2000	Northwatch Assault Pioneer L86 LSW	19615
+4362	2	famas_mp	Assault Rifle	f2000	Northwatch Assault Pioneer FAMAS	6600
+4369	18	aug_mp	Light Machine Gun	f2000	Northwatch Forward Observer AUG HBAR	20743
+4372	7	masada_mp	Assault Rifle	acr	Northwatch Forward Observer ACR	6594
+4379	27	ranger_mp	Shotgun	fal	Northwatch Raid Support Ranger	15835
+4383	13	p90_mp	Submachine Gun	f2000	Northwatch Raid Support P90	8257
+4437	8	fn2000_mp	Assault Rifle	f2000	Northwatch Combat Engineer F2000	20390
+4439	27	ranger_mp	Shotgun	fal	Northwatch Counter-Ambush Ranger	6795
+4445	40	stinger_mp	Launcher	rpg	Northwatch Counter-Ambush Stinger	19398
+4446	40	stinger_mp	Launcher	rpg	Northwatch Ghost Detachment Stinger	20369
+4449	40	stinger_mp	Launcher	rpg	Northwatch Raid Support Stinger	20439
+4454	41	javelin_mp	Launcher	rpg	Northwatch Ghost Detachment Javelin	20592
+4474	30	usp_mp	Handgun	usp	Northwatch Mountain Scout USP .45	12883
+4511	33	beretta_mp	Handgun	usp	Northwatch Recon Section M9	19783
+4547	34	pp2000_mp	Machine Pistol	ump	Northwatch Recon Section PP2000	21016
+4548	35	glock_mp	Machine Pistol	usp	Northwatch Recon Section G18	3151
+4560	41	javelin_mp	Launcher	rpg	Northwatch Garrison Reserve Javelin	4788
+4561	10	mp5k_mp	Submachine Gun	ump	Northwatch Assault Pioneer MP5K	19299
+4562	3	scar_mp	Assault Rifle	scar	Northwatch Ranger Company SCAR-H	8531
+4563	10	mp5k_mp	Submachine Gun	ump	Northwatch Outpost MP5K	4609
+4564	21	barrett_mp	Sniper Rifle	m16	Northwatch Combat Engineer Barrett .50 Cal	6813
+4565	30	usp_mp	Handgun	usp	Northwatch Depot Guard USP .45	6433
+4566	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Combat Engineer WA2000	20420
+4567	2	famas_mp	Assault Rifle	f2000	Northwatch Combat Engineer FAMAS	20111
+4568	19	m240_mp	Light Machine Gun	scar	Northwatch Forward Observer M240	22478
+4569	25	aa12_mp	Shotgun	acr	Northwatch Combat Engineer AA-12	19778
+4570	38	at4_mp	Launcher	rpg	Northwatch Combat Engineer AT4-HS	8586
+4571	15	sa80_mp	Light Machine Gun	f2000	Northwatch Combat Engineer L86 LSW	20430
+4575	43	deserteaglegold_mp	Handgun	usp	Northwatch Forward Observer Gold Desert Eagle	20401
+4576	20	cheytac_mp	Sniper Rifle	fal	Northwatch Forward Observer Intervention	20674
+4577	23	m21_mp	Sniper Rifle	fal	Northwatch Combat Engineer M21 EBR	6592
+4616	42	rpg_mp	Launcher	rpg	Northwatch Security Detail RPG-7	6589
+4704	43	deserteaglegold_mp	Handgun	usp	Northwatch Security Detail Gold Desert Eagle	6567
+4730	39	m79_mp	Launcher	rpg	Northwatch Loose-Sighted Thumper	6261
+4763	42	rpg_mp	Launcher	rpg	Northwatch Assault Pioneer RPG-7	3186
+4765	23	m21_mp	Sniper Rifle	fal	Northwatch Pathfinder M21 EBR	7313
+4766	21	barrett_mp	Sniper Rifle	m16	Northwatch Pathfinder Barrett .50 Cal	7314
+4777	24	spas12_mp	Shotgun	fal	Northwatch Pathfinder SPAS-12	19538
+4778	25	aa12_mp	Shotgun	acr	Northwatch Pathfinder AA-12	6808
+4817	29	model1887_mp	Shotgun	fal	Northwatch Pathfinder Model 1887	7319
+4818	30	usp_mp	Handgun	usp	Northwatch Pathfinder USP .45	20155
+4824	33	beretta_mp	Handgun	usp	Northwatch Pathfinder M9	8459
+4825	34	pp2000_mp	Machine Pistol	ump	Northwatch Pathfinder PP2000	8461
+4826	26	striker_mp	Shotgun	ump	Northwatch Pathfinder Striker	19224
+4840	1	m4_mp	Assault Rifle	acr	Northwatch Depot Guard M4A1	13908
+4899	29	model1887_mp	Shotgun	fal	Northwatch Duct-Taped Model 1887	10672
+4900	30	usp_mp	Handgun	usp	Northwatch Duct-Taped USP .45	5289
+4901	31	coltanaconda_mp	Handgun	usp	Northwatch Duct-Taped .44 Magnum	5290
+4902	42	rpg_mp	Launcher	rpg	Northwatch Garrison Reserve RPG-7	6098
+4912	32	deserteagle_mp	Handgun	usp	Northwatch Duct-Taped Desert Eagle	6109
+4923	2	famas_mp	Assault Rifle	f2000	Northwatch Checkpoint FAMAS	8498
+4924	3	scar_mp	Assault Rifle	scar	Northwatch Checkpoint SCAR-H	19634
+4925	4	tavor_mp	Assault Rifle	f2000	Northwatch Depot Guard TAR-21	6457
+4931	5	fal_mp	Assault Rifle	fal	Northwatch Checkpoint FAL	7603
+4932	6	m16_mp	Assault Rifle	m16	Northwatch Checkpoint M16A4	20013
+4938	7	masada_mp	Assault Rifle	acr	Northwatch Depot Guard ACR	20423
+4939	36	beretta393_mp	Machine Pistol	usp	Northwatch Recon Section M93 Raffica	20112
+4943	8	fn2000_mp	Assault Rifle	f2000	Northwatch Depot Guard F2000	8691
+4947	37	tmp_mp	Machine Pistol	ump	Northwatch Recon Section TMP	20603
+4948	38	at4_mp	Launcher	rpg	Northwatch Recon Section AT4-HS	5009
+4949	21	barrett_mp	Sniper Rifle	m16	Northwatch Counter-Ambush Barrett .50 Cal	19214
+4956	25	aa12_mp	Shotgun	acr	Northwatch Convoy Escort AA-12	6566
+4959	9	ak47_mp	Assault Rifle	ak47	Northwatch Depot Guard AK-47	16760
+4961	10	mp5k_mp	Submachine Gun	ump	Northwatch Checkpoint MP5K	20426
+4964	39	m79_mp	Launcher	rpg	Northwatch Recon Section Thumper	19544
+4965	11	ump45_mp	Submachine Gun	ump	Northwatch Depot Guard UMP45	8490
+4971	40	stinger_mp	Launcher	rpg	Northwatch Recon Section Stinger	8572
+4974	41	javelin_mp	Launcher	rpg	Northwatch Recon Section Javelin	3006
+4977	42	rpg_mp	Launcher	rpg	Northwatch Recon Section RPG-7	20009
+4978	43	deserteaglegold_mp	Handgun	usp	Northwatch Recon Section Gold Desert Eagle	19741
+4983	1	m4_mp	Assault Rifle	acr	Northwatch Recon Section M4A1	19596
+4985	33	beretta_mp	Handgun	usp	Northwatch Duct-Taped M9	6109
+4987	2	famas_mp	Assault Rifle	f2000	Northwatch Recon Section FAMAS	20083
+4991	20	cheytac_mp	Sniper Rifle	fal	Northwatch Chipped Intervention	5175
+4993	21	barrett_mp	Sniper Rifle	m16	Northwatch Chipped Barrett .50 Cal	7469
+4994	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Chipped WA2000	5569
+4996	42	rpg_mp	Launcher	rpg	Northwatch Loose-Sighted RPG-7	6798
+5031	35	glock_mp	Machine Pistol	usp	Northwatch Black Squadron G18	5536
+5032	15	sa80_mp	Light Machine Gun	f2000	Northwatch Urban Interdiction L86 LSW	5125
+5033	16	rpd_mp	Light Machine Gun	ak47	Northwatch Urban Interdiction RPD	5125
+5034	17	mg4_mp	Light Machine Gun	scar	Northwatch Urban Interdiction MG4	5125
+5035	18	aug_mp	Light Machine Gun	f2000	Northwatch Urban Interdiction AUG HBAR	5125
+5036	36	beretta393_mp	Machine Pistol	usp	Northwatch Black Squadron M93 Raffica	5536
+5037	19	m240_mp	Light Machine Gun	scar	Northwatch Urban Interdiction M240	5125
+5039	20	cheytac_mp	Sniper Rifle	fal	Northwatch Urban Interdiction Intervention	5125
+5040	1	m4_mp	Assault Rifle	acr	Northwatch Outpost M4A1	20321
+5069	16	rpd_mp	Light Machine Gun	ak47	Northwatch Assault Pioneer RPD	6097
+5070	43	deserteaglegold_mp	Handgun	usp	Northwatch Garrison Reserve Gold Desert Eagle	5291
+5071	26	striker_mp	Shotgun	ump	Northwatch Combat Engineer Striker	18356
+5092	36	beretta393_mp	Machine Pistol	usp	Northwatch Watch Officer M93 Raffica	6101
+5093	33	beretta_mp	Handgun	usp	Northwatch Rifle Section M9	20392
+5112	39	m79_mp	Launcher	rpg	Northwatch Combat Engineer Thumper	20491
+5182	9	ak47_mp	Assault Rifle	ak47	Northwatch Combat Engineer AK-47	8000
+5187	31	coltanaconda_mp	Handgun	usp	Northwatch Security Detail .44 Magnum	8600
+5191	23	m21_mp	Sniper Rifle	fal	Northwatch Ghost Detachment M21 EBR	7311
+5192	28	m1014_mp	Shotgun	fal	Northwatch Forward Observer M1014	5144
+5194	12	kriss_mp	Submachine Gun	ump	Northwatch Ghost Detachment Vector	19296
+5196	29	model1887_mp	Shotgun	fal	Northwatch Counter-Ambush Model 1887	13913
+5197	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Counter-Ambush WA2000	20953
+5198	6	m16_mp	Assault Rifle	m16	Northwatch Ghost Detachment M16A4	21011
+5200	17	mg4_mp	Light Machine Gun	scar	Northwatch Counter-Ambush MG4	5949
+5201	13	p90_mp	Submachine Gun	f2000	Northwatch Ghost Detachment P90	20340
+5207	10	mp5k_mp	Submachine Gun	ump	Northwatch Forward Observer MP5K	20903
+5208	29	model1887_mp	Shotgun	fal	Northwatch Checkpoint Model 1887	20829
+5209	37	tmp_mp	Machine Pistol	ump	Northwatch Checkpoint TMP	6099
+5210	18	aug_mp	Light Machine Gun	f2000	Northwatch Depot Guard AUG HBAR	20787
+5211	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Depot Guard WA2000	20852
+5212	16	rpd_mp	Light Machine Gun	ak47	Northwatch Combat Engineer RPD	6081
+5213	3	scar_mp	Assault Rifle	scar	Northwatch Raid Support SCAR-H	20907
+5214	31	coltanaconda_mp	Handgun	usp	Northwatch Raid Support .44 Magnum	21020
+5215	40	stinger_mp	Launcher	rpg	Northwatch Urban Interdiction Stinger	20815
+5216	21	barrett_mp	Sniper Rifle	m16	Northwatch Strike Platoon Barrett .50 Cal	20790
+5235	12	kriss_mp	Submachine Gun	ump	Northwatch Checkpoint Vector	6081
+5236	30	usp_mp	Handgun	usp	Northwatch Convoy Escort USP .45	20916
+5238	10	mp5k_mp	Submachine Gun	ump	Northwatch Depot Guard MP5K	20787
+5239	17	mg4_mp	Light Machine Gun	scar	Northwatch Convoy Escort MG4	20776
+5240	3	scar_mp	Assault Rifle	scar	Northwatch Pathfinder SCAR-H	6101
+5241	4	tavor_mp	Assault Rifle	f2000	Northwatch Pathfinder TAR-21	6097
+5242	5	fal_mp	Assault Rifle	fal	Northwatch Pathfinder FAL	6093
+5243	38	at4_mp	Launcher	rpg	Northwatch Black Squadron AT4-HS	12601
+5244	6	m16_mp	Assault Rifle	m16	Northwatch Pathfinder M16A4	21024
+5245	43	deserteaglegold_mp	Handgun	usp	Northwatch Mountain Scout Gold Desert Eagle	21019
+5246	7	masada_mp	Assault Rifle	acr	Northwatch Pathfinder ACR	6093
+5247	8	fn2000_mp	Assault Rifle	f2000	Northwatch Pathfinder F2000	20828
+5248	9	ak47_mp	Assault Rifle	ak47	Northwatch Pathfinder AK-47	21023
+5249	10	mp5k_mp	Submachine Gun	ump	Northwatch Recon Section MP5K	20793
+5250	11	ump45_mp	Submachine Gun	ump	Northwatch Recon Section UMP45	6140
+5252	12	kriss_mp	Submachine Gun	ump	Northwatch Recon Section Vector	20825
+5253	13	p90_mp	Submachine Gun	f2000	Northwatch Recon Section P90	20801
+5255	40	stinger_mp	Launcher	rpg	Northwatch Combat Engineer Stinger	8472
+5256	4	tavor_mp	Assault Rifle	f2000	Northwatch Raid Support TAR-21	19673
+5258	23	m21_mp	Sniper Rifle	fal	Northwatch Chipped M21 EBR	6231
+5259	24	spas12_mp	Shotgun	fal	Northwatch Chipped SPAS-12	6232
+5260	25	aa12_mp	Shotgun	acr	Northwatch Chipped AA-12	6233
+5261	26	striker_mp	Shotgun	ump	Northwatch Chipped Striker	6234
+5262	27	ranger_mp	Shotgun	fal	Northwatch Chipped Ranger	6235
+5267	1	m4_mp	Assault Rifle	acr	Northwatch Storm Division M4A1	3363
+5276	28	m1014_mp	Shotgun	fal	Northwatch Chipped M1014	5010
+5277	29	model1887_mp	Shotgun	fal	Northwatch Chipped Model 1887	5542
+5278	30	usp_mp	Handgun	usp	Northwatch Chipped USP .45	6434
+5279	14	uzi_mp	Submachine Gun	ump	Northwatch Recon Section Mini-Uzi	20411
+5280	31	coltanaconda_mp	Handgun	usp	Northwatch Chipped .44 Magnum	6441
+5281	32	deserteagle_mp	Handgun	usp	Northwatch Chipped Desert Eagle	6443
+5282	33	beretta_mp	Handgun	usp	Northwatch Chipped M9	6447
+5283	34	pp2000_mp	Machine Pistol	ump	Northwatch Chipped PP2000	6448
+5284	35	glock_mp	Machine Pistol	usp	Northwatch Chipped G18	6454
+5285	36	beretta393_mp	Machine Pistol	usp	Northwatch Chipped M93 Raffica	6469
+5286	37	tmp_mp	Machine Pistol	ump	Northwatch Chipped TMP	7508
+5287	38	at4_mp	Launcher	rpg	Northwatch Chipped AT4-HS	3385
+5288	39	m79_mp	Launcher	rpg	Northwatch Chipped Thumper	5128
+5289	40	stinger_mp	Launcher	rpg	Northwatch Chipped Stinger	3797
+5290	41	javelin_mp	Launcher	rpg	Northwatch Chipped Javelin	4441
+5291	42	rpg_mp	Launcher	rpg	Northwatch Chipped RPG-7	5224
+5292	43	deserteaglegold_mp	Handgun	usp	Northwatch Chipped Gold Desert Eagle	2777
+5293	1	m4_mp	Assault Rifle	acr	Northwatch Chipped M4A1	6799
+5300	2	famas_mp	Assault Rifle	f2000	Northwatch Chipped FAMAS	5527
+5301	3	scar_mp	Assault Rifle	scar	Northwatch Chipped SCAR-H	3879
+5303	4	tavor_mp	Assault Rifle	f2000	Northwatch Chipped TAR-21	2840
+5304	5	fal_mp	Assault Rifle	fal	Northwatch Chipped FAL	5098
+5305	6	m16_mp	Assault Rifle	m16	Northwatch Chipped M16A4	7526
+5306	15	sa80_mp	Light Machine Gun	f2000	Northwatch Recon Section L86 LSW	7524
+5309	16	rpd_mp	Light Machine Gun	ak47	Northwatch Recon Section RPD	7531
+5318	17	mg4_mp	Light Machine Gun	scar	Northwatch Recon Section MG4	22225
+5321	18	aug_mp	Light Machine Gun	f2000	Northwatch Recon Section AUG HBAR	20014
+5322	19	m240_mp	Light Machine Gun	scar	Northwatch Recon Section M240	19611
+5324	20	cheytac_mp	Sniper Rifle	fal	Northwatch Recon Section Intervention	8568
+5326	21	barrett_mp	Sniper Rifle	m16	Northwatch Breach Team Barrett .50 Cal	6097
+5340	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Breach Team WA2000	20417
+5344	23	m21_mp	Sniper Rifle	fal	Northwatch Breach Team M21 EBR	8485
+5345	24	spas12_mp	Shotgun	fal	Northwatch Breach Team SPAS-12	8602
+5346	25	aa12_mp	Shotgun	acr	Northwatch Breach Team AA-12	20719
+5347	38	at4_mp	Launcher	rpg	Northwatch Convoy Escort AT4-HS	21022
+5356	26	striker_mp	Shotgun	ump	Northwatch Breach Team Striker	20834
+5379	40	stinger_mp	Launcher	rpg	Northwatch Loose-Sighted Stinger	20781
+5392	13	p90_mp	Submachine Gun	f2000	Northwatch Convoy Escort P90	6432
+5393	14	uzi_mp	Submachine Gun	ump	Northwatch Depot Guard Mini-Uzi	5108
+5423	39	m79_mp	Launcher	rpg	Northwatch Black Squadron Thumper	19221
+5426	40	stinger_mp	Launcher	rpg	Northwatch Black Squadron Stinger	19396
+5459	27	ranger_mp	Shotgun	fal	Northwatch Breach Team Ranger	7965
+5491	7	masada_mp	Assault Rifle	acr	Northwatch Chipped ACR	2839
+5495	8	fn2000_mp	Assault Rifle	f2000	Northwatch Chipped F2000	8011
+5502	9	ak47_mp	Assault Rifle	ak47	Northwatch Chipped AK-47	8016
+5516	3	scar_mp	Assault Rifle	scar	Northwatch Loose-Sighted SCAR-H	8028
+5532	10	mp5k_mp	Submachine Gun	ump	Northwatch Carbon-Fouled MP5K	8078
+5540	41	javelin_mp	Launcher	rpg	Northwatch Counter-Ambush Javelin	6439
+5541	7	masada_mp	Assault Rifle	acr	Northwatch Counter-Ambush ACR	19801
+5545	11	ump45_mp	Submachine Gun	ump	Northwatch Carbon-Fouled UMP45	5290
+5546	12	kriss_mp	Submachine Gun	ump	Northwatch Carbon-Fouled Vector	10673
+5548	13	p90_mp	Submachine Gun	f2000	Northwatch Carbon-Fouled P90	3187
+5549	14	uzi_mp	Submachine Gun	ump	Northwatch Carbon-Fouled Mini-Uzi	6432
+5550	15	sa80_mp	Light Machine Gun	f2000	Northwatch Carbon-Fouled L86 LSW	6592
+5551	16	rpd_mp	Light Machine Gun	ak47	Northwatch Carbon-Fouled RPD	5066
+5552	17	mg4_mp	Light Machine Gun	scar	Northwatch Carbon-Fouled MG4	5509
+5553	18	aug_mp	Light Machine Gun	f2000	Northwatch Carbon-Fouled AUG HBAR	5194
+5554	19	m240_mp	Light Machine Gun	scar	Northwatch Carbon-Fouled M240	5533
+5555	20	cheytac_mp	Sniper Rifle	fal	Northwatch Carbon-Fouled Intervention	5140
+5556	21	barrett_mp	Sniper Rifle	m16	Northwatch Carbon-Fouled Barrett .50 Cal	1628
+5557	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Carbon-Fouled WA2000	5638
+5558	23	m21_mp	Sniper Rifle	fal	Northwatch Carbon-Fouled M21 EBR	2388
+5559	1	m4_mp	Assault Rifle	acr	Northwatch Convoy Escort M4A1	16762
+5560	24	spas12_mp	Shotgun	fal	Northwatch Carbon-Fouled SPAS-12	6097
+5561	25	aa12_mp	Shotgun	acr	Northwatch Carbon-Fouled AA-12	8127
+5579	15	sa80_mp	Light Machine Gun	f2000	Northwatch Checkpoint L86 LSW	19544
+5580	16	rpd_mp	Light Machine Gun	ak47	Northwatch Checkpoint RPD	19777
+5581	17	mg4_mp	Light Machine Gun	scar	Northwatch Security Detail MG4	20446
+5586	18	aug_mp	Light Machine Gun	f2000	Northwatch Convoy Escort AUG HBAR	1547
+5587	28	m1014_mp	Shotgun	fal	Northwatch Recon Section M1014	19648
+5595	19	m240_mp	Light Machine Gun	scar	Northwatch Checkpoint M240	8298
+5596	20	cheytac_mp	Sniper Rifle	fal	Northwatch Depot Guard Intervention	20720
+5597	26	striker_mp	Shotgun	ump	Northwatch Carbon-Fouled Striker	8376
+5598	27	ranger_mp	Shotgun	fal	Northwatch Carbon-Fouled Ranger	8377
+5599	28	m1014_mp	Shotgun	fal	Northwatch Carbon-Fouled M1014	8378
+5600	29	model1887_mp	Shotgun	fal	Northwatch Carbon-Fouled Model 1887	8379
+5604	29	model1887_mp	Shotgun	fal	Northwatch Breach Team Model 1887	28159
+5605	21	barrett_mp	Sniper Rifle	m16	Northwatch Checkpoint Barrett .50 Cal	3550
+5613	30	usp_mp	Handgun	usp	Northwatch Breach Team USP .45	20384
+5614	31	coltanaconda_mp	Handgun	usp	Northwatch Recon Section .44 Magnum	20182
+5615	32	deserteagle_mp	Handgun	usp	Northwatch Recon Section Desert Eagle	20121
+5616	3	scar_mp	Assault Rifle	scar	Northwatch Blue Sentinel SCAR-H	20376
+5626	33	beretta_mp	Handgun	usp	Northwatch Breach Team M9	19246
+5627	34	pp2000_mp	Machine Pistol	ump	Northwatch Breach Team PP2000	20354
+5742	31	coltanaconda_mp	Handgun	usp	Northwatch Mountain Scout .44 Magnum	20569
+5744	17	mg4_mp	Light Machine Gun	scar	Northwatch Assault Pioneer MG4	8279
+5745	30	usp_mp	Handgun	usp	Northwatch Carbon-Fouled USP .45	8745
+5746	31	coltanaconda_mp	Handgun	usp	Northwatch Carbon-Fouled .44 Magnum	8746
+5747	32	deserteagle_mp	Handgun	usp	Northwatch Carbon-Fouled Desert Eagle	8747
+5748	3	scar_mp	Assault Rifle	scar	Northwatch Assault Pioneer SCAR-H	20713
+5749	42	rpg_mp	Launcher	rpg	Northwatch Counter-Ambush RPG-7	19291
+5752	28	m1014_mp	Shotgun	fal	Northwatch Counter-Ambush M1014	20596
+5756	27	ranger_mp	Shotgun	fal	Northwatch Crimson Watch Ranger	20591
+5757	35	glock_mp	Machine Pistol	usp	Northwatch Breach Team G18	8803
+5761	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Checkpoint WA2000	19544
+5776	23	m21_mp	Sniper Rifle	fal	Northwatch Depot Guard M21 EBR	20449
+5777	24	spas12_mp	Shotgun	fal	Northwatch Depot Guard SPAS-12	8899
+5778	25	aa12_mp	Shotgun	acr	Northwatch Depot Guard AA-12	5404
+5779	26	striker_mp	Shotgun	ump	Northwatch Checkpoint Striker	20084
+5813	36	beretta393_mp	Machine Pistol	usp	Northwatch Breach Team M93 Raffica	9055
+5815	37	tmp_mp	Machine Pistol	ump	Northwatch Breach Team TMP	9057
+5817	38	at4_mp	Launcher	rpg	Northwatch Breach Team AT4-HS	9060
+5818	39	m79_mp	Launcher	rpg	Northwatch Breach Team Thumper	21026
+5856	33	beretta_mp	Handgun	usp	Northwatch Carbon-Fouled M9	16751
+5870	34	pp2000_mp	Machine Pistol	ump	Northwatch Carbon-Fouled PP2000	22671
+5953	27	ranger_mp	Shotgun	fal	Northwatch Depot Guard Ranger	15804
+5954	28	m1014_mp	Shotgun	fal	Northwatch Convoy Escort M1014	9465
+5956	33	beretta_mp	Handgun	usp	Northwatch Depot Guard M9	8568
+6036	13	p90_mp	Submachine Gun	f2000	Northwatch Smoke-Stained P90	6475
+6088	35	glock_mp	Machine Pistol	usp	Northwatch Carbon-Fouled G18	19805
+6093	40	stinger_mp	Launcher	rpg	Northwatch Breach Team Stinger	19646
+6094	41	javelin_mp	Launcher	rpg	Northwatch Breach Team Javelin	19390
+6174	14	uzi_mp	Submachine Gun	ump	Northwatch Duct-Taped Mini-Uzi	13583
+6186	42	rpg_mp	Launcher	rpg	Northwatch Breach Team RPG-7	20119
+6194	43	deserteaglegold_mp	Handgun	usp	Northwatch Breach Team Gold Desert Eagle	19404
+6196	7	masada_mp	Assault Rifle	acr	Northwatch Duct-Taped ACR	6794
+6205	41	javelin_mp	Launcher	rpg	Northwatch Combat Engineer Javelin	7495
+6206	27	ranger_mp	Shotgun	fal	Northwatch Security Detail Ranger	14040
+6214	28	m1014_mp	Shotgun	fal	Northwatch Garrison Reserve M1014	10642
+6215	1	m4_mp	Assault Rifle	acr	Northwatch Breach Team M4A1	10654
+6219	29	model1887_mp	Shotgun	fal	Northwatch Security Detail Model 1887	7494
+6220	18	aug_mp	Light Machine Gun	f2000	Northwatch Iron Battalion AUG HBAR	20536
+6224	36	beretta393_mp	Machine Pistol	usp	Northwatch Carbon-Fouled M93 Raffica	5176
+6225	37	tmp_mp	Machine Pistol	ump	Northwatch Carbon-Fouled TMP	10814
+6227	38	at4_mp	Launcher	rpg	Northwatch Carbon-Fouled AT4-HS	10815
+6228	39	m79_mp	Launcher	rpg	Northwatch Carbon-Fouled Thumper	10816
+6229	40	stinger_mp	Launcher	rpg	Northwatch Carbon-Fouled Stinger	10817
+6230	41	javelin_mp	Launcher	rpg	Northwatch Carbon-Fouled Javelin	21095
+6231	42	rpg_mp	Launcher	rpg	Northwatch Carbon-Fouled RPG-7	21094
+6232	43	deserteaglegold_mp	Handgun	usp	Northwatch Carbon-Fouled Gold Desert Eagle	10820
+6233	1	m4_mp	Assault Rifle	acr	Northwatch Carbon-Fouled M4A1	10821
+6234	2	famas_mp	Assault Rifle	f2000	Northwatch Carbon-Fouled FAMAS	10822
+6235	3	scar_mp	Assault Rifle	scar	Northwatch Carbon-Fouled SCAR-H	10823
+6236	4	tavor_mp	Assault Rifle	f2000	Northwatch Carbon-Fouled TAR-21	10824
+6237	5	fal_mp	Assault Rifle	fal	Northwatch Carbon-Fouled FAL	10825
+6255	1	m4_mp	Assault Rifle	acr	Northwatch Forward Observer M4A1	6590
+6315	41	javelin_mp	Launcher	rpg	Northwatch Raid Support Javelin	11247
+6318	42	rpg_mp	Launcher	rpg	Northwatch Ghost Detachment RPG-7	20335
+6322	6	m16_mp	Assault Rifle	m16	Northwatch Carbon-Fouled M16A4	11259
+6323	18	aug_mp	Light Machine Gun	f2000	Northwatch Counter-Ambush AUG HBAR	21051
+6327	28	m1014_mp	Shotgun	fal	Northwatch Crimson Watch M1014	11271
+6331	19	m240_mp	Light Machine Gun	scar	Northwatch Crimson Watch M240	20333
+6333	30	usp_mp	Handgun	usp	Northwatch Counter-Ambush USP .45	20604
+6334	7	masada_mp	Assault Rifle	acr	Northwatch Carbon-Fouled ACR	11289
+6360	19	m240_mp	Light Machine Gun	scar	Northwatch Counter-Ambush M240	11453
+6448	31	coltanaconda_mp	Handgun	usp	Northwatch Forward Observer .44 Magnum	20349
+6469	24	spas12_mp	Shotgun	fal	Northwatch Ghost Detachment SPAS-12	20652
+6472	25	aa12_mp	Shotgun	acr	Northwatch Ghost Detachment AA-12	24741
+6504	1	m4_mp	Assault Rifle	acr	Ridgeback M4A1	20116
+6505	18	aug_mp	Light Machine Gun	f2000	Ironclad AUG	12286
+6618	8	fn2000_mp	Assault Rifle	f2000	Northwatch Carbon-Fouled F2000	8043
+6622	2	famas_mp	Assault Rifle	f2000	Northwatch Storm Division FAMAS	21554
+6631	33	beretta_mp	Handgun	usp	Northwatch Ghost Detachment M9	20336
+6633	43	deserteaglegold_mp	Handgun	usp	Northwatch Counter-Ambush Gold Desert Eagle	12610
+6641	29	model1887_mp	Shotgun	fal	Northwatch Raid Support Model 1887	20167
+6651	25	aa12_mp	Shotgun	acr	Northwatch Security Detail AA-12	18652
+6660	34	pp2000_mp	Machine Pistol	ump	Northwatch Blue Sentinel PP2000	13001
+6677	2	famas_mp	Assault Rifle	f2000	Northwatch Breach Team FAMAS	21018
+6679	14	uzi_mp	Submachine Gun	ump	Northwatch Raid Support Mini-Uzi	22241
+6680	9	ak47_mp	Assault Rifle	ak47	Northwatch Carbon-Fouled AK-47	12857
+6681	2	famas_mp	Assault Rifle	f2000	Northwatch Garrison Reserve FAMAS	20593
+6687	2	famas_mp	Assault Rifle	f2000	Northwatch Crimson Watch FAMAS	22217
+6689	33	beretta_mp	Handgun	usp	Northwatch Iron Battalion M9	20325
+6691	10	mp5k_mp	Submachine Gun	ump	Northwatch Crimson Watch MP5K	12880
+6692	20	cheytac_mp	Sniper Rifle	fal	Northwatch Crimson Watch Intervention	25597
+6696	34	pp2000_mp	Machine Pistol	ump	Northwatch Iron Battalion PP2000	20650
+6729	3	scar_mp	Assault Rifle	scar	Northwatch Recon Section SCAR-H	20821
+6738	4	tavor_mp	Assault Rifle	f2000	Northwatch Recon Section TAR-21	19126
+6739	5	fal_mp	Assault Rifle	fal	Northwatch Recon Section FAL	20666
+6741	30	usp_mp	Handgun	usp	Northwatch Security Detail USP .45	20177
+6797	6	m16_mp	Assault Rifle	m16	Northwatch Recon Section M16A4	21014
+6798	7	masada_mp	Assault Rifle	acr	Northwatch Recon Section ACR	13060
+6802	32	deserteagle_mp	Handgun	usp	Red Circle Desert Eagle	20010
+6804	8	fn2000_mp	Assault Rifle	f2000	Northwatch Recon Section F2000	19707
+6806	9	ak47_mp	Assault Rifle	ak47	Northwatch Recon Section AK-47	13084
+6829	22	wa2000_mp	Sniper Rifle	f2000	Nightwatch WA2000	20075
+6830	23	m21_mp	Sniper Rifle	fal	Highland Marksman's EBR	18607
+6831	21	barrett_mp	Sniper Rifle	m16	Deadbolt Barrett	20292
+6886	10	mp5k_mp	Submachine Gun	ump	Northwatch Oil-Starved MP5K	16752
+6896	15	sa80_mp	Light Machine Gun	f2000	Northwatch Duct-Taped L86 LSW	30610
+6904	12	kriss_mp	Submachine Gun	ump	Northwatch Iron Battalion Vector	20575
+6905	42	rpg_mp	Launcher	rpg	Northwatch Raid Support RPG-7	22222
+6909	27	ranger_mp	Shotgun	fal	Northwatch Iron Battalion Ranger	20185
+6946	11	ump45_mp	Submachine Gun	ump	Northwatch Oil-Starved UMP45	13455
+6953	12	kriss_mp	Submachine Gun	ump	Cobra Vector	13466
+6966	10	mp5k_mp	Submachine Gun	ump	Northwatch Breach Team MP5K	19135
+6967	11	ump45_mp	Submachine Gun	ump	Northwatch Breach Team UMP45	20162
+6968	12	kriss_mp	Submachine Gun	ump	Northwatch Breach Team Vector	19771
+6969	13	p90_mp	Submachine Gun	f2000	Northwatch Breach Team P90	20400
+6975	14	uzi_mp	Submachine Gun	ump	Sidewinder Mini-Uzi	22734
+6976	17	mg4_mp	Light Machine Gun	scar	Longhaul MG4	25079
+6977	8	fn2000_mp	Assault Rifle	f2000	Steelwind F2000	22731
+6978	14	uzi_mp	Submachine Gun	ump	Northwatch Breach Team Mini-Uzi	19133
+6979	15	sa80_mp	Light Machine Gun	f2000	Northwatch Breach Team L86 LSW	19274
+6980	16	rpd_mp	Light Machine Gun	ak47	Northwatch Breach Team RPD	20601
+6981	17	mg4_mp	Light Machine Gun	scar	Northwatch Breach Team MG4	20606
+6982	18	aug_mp	Light Machine Gun	f2000	Northwatch Breach Team AUG HBAR	19652
+6983	19	m240_mp	Light Machine Gun	scar	Northwatch Breach Team M240	19773
+6984	20	cheytac_mp	Sniper Rifle	fal	Northwatch Breach Team Intervention	20159
+6985	21	barrett_mp	Sniper Rifle	m16	Northwatch Long Patrol Barrett .50 Cal	20163
+7001	26	striker_mp	Shotgun	ump	Gravedigger's Striker	20824
+7005	34	pp2000_mp	Machine Pistol	ump	Northwatch Depot Guard PP2000	6440
+7094	18	aug_mp	Light Machine Gun	f2000	Northwatch Garrison Reserve AUG HBAR	13711
+7115	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Long Patrol WA2000	19204
+7116	23	m21_mp	Sniper Rifle	fal	Northwatch Long Patrol M21 EBR	20602
+7117	24	spas12_mp	Shotgun	fal	Northwatch Long Patrol SPAS-12	19776
+7118	25	aa12_mp	Shotgun	acr	Northwatch Long Patrol AA-12	20161
+7166	21	barrett_mp	Sniper Rifle	m16	Northwatch Outpost Barrett .50 Cal	13848
+7167	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Outpost WA2000	6471
+7169	23	m21_mp	Sniper Rifle	fal	Northwatch Security Detail M21 EBR	13848
+7170	16	rpd_mp	Light Machine Gun	ak47	Northwatch Duct-Taped RPD	13853
+7171	2	famas_mp	Assault Rifle	f2000	Northwatch Security Detail FAMAS	13585
+7230	14	uzi_mp	Submachine Gun	ump	Northwatch Ghost Detachment Mini-Uzi	19610
+7298	26	striker_mp	Shotgun	ump	Northwatch Long Patrol Striker	20425
+7326	27	ranger_mp	Shotgun	fal	Northwatch Long Patrol Ranger	19132
+7327	28	m1014_mp	Shotgun	fal	Northwatch Breach Team M1014	20398
+7328	29	model1887_mp	Shotgun	fal	Northwatch Long Patrol Model 1887	19649
+7329	30	usp_mp	Handgun	usp	Northwatch Long Patrol USP .45	20160
+7513	24	spas12_mp	Shotgun	fal	Dockworker's SPAS	25078
+7514	31	coltanaconda_mp	Handgun	usp	Hammerfall .44	25076
+7607	31	coltanaconda_mp	Handgun	usp	Northwatch Breach Team .44 Magnum	20920
+7612	12	kriss_mp	Submachine Gun	ump	Northwatch Oil-Starved Vector	15576
+7677	15	sa80_mp	Light Machine Gun	f2000	Northwatch Raid Support L86 LSW	15704
+7682	3	scar_mp	Assault Rifle	scar	Northwatch Silent Company SCAR-H	6555
+7683	4	tavor_mp	Assault Rifle	f2000	Northwatch Outpost TAR-21	15720
+7687	11	ump45_mp	Submachine Gun	ump	Northwatch Crimson Watch UMP45	15726
+7689	12	kriss_mp	Submachine Gun	ump	Northwatch Crimson Watch Vector	20172
+7706	13	p90_mp	Submachine Gun	f2000	Northwatch Oil-Starved P90	15786
+7707	15	sa80_mp	Light Machine Gun	f2000	Northwatch Smoke-Stained L86 LSW	15795
+7708	13	p90_mp	Submachine Gun	f2000	Northwatch Crimson Watch P90	20825
+7710	21	barrett_mp	Sniper Rifle	m16	Northwatch Crimson Watch Barrett .50 Cal	20360
+7713	2	famas_mp	Assault Rifle	f2000	Northwatch Silent Company FAMAS	15806
+7714	3	scar_mp	Assault Rifle	scar	Northwatch Cold Frontier SCAR-H	20318
+7717	23	m21_mp	Sniper Rifle	fal	Northwatch Silent Company M21 EBR	22221
+7721	30	usp_mp	Handgun	usp	Northwatch Silent Company USP .45	19735
+7723	31	coltanaconda_mp	Handgun	usp	Northwatch Silent Company .44 Magnum	21252
+7729	43	deserteaglegold_mp	Handgun	usp	Northwatch Crimson Watch Gold Desert Eagle	15821
+7730	4	tavor_mp	Assault Rifle	f2000	Northwatch Silent Company TAR-21	15466
+7736	4	tavor_mp	Assault Rifle	f2000	Northwatch Cold Frontier TAR-21	5224
+7752	1	m4_mp	Assault Rifle	acr	Northwatch Crimson Watch M4A1	19670
+7753	35	glock_mp	Machine Pistol	usp	Northwatch Iron Battalion G18	19371
+7757	29	model1887_mp	Shotgun	fal	Northwatch Crimson Watch Model 1887	20316
+7758	5	fal_mp	Assault Rifle	fal	Northwatch Cold Frontier FAL	22238
+7761	38	at4_mp	Launcher	rpg	Northwatch Crimson Watch AT4-HS	19210
+7786	23	m21_mp	Sniper Rifle	fal	Northwatch Iron Battalion M21 EBR	15938
+7826	14	uzi_mp	Submachine Gun	ump	Northwatch Oil-Starved Mini-Uzi	15990
+7940	32	deserteagle_mp	Handgun	usp	Northwatch Mountain Scout Desert Eagle	8533
+7941	2	famas_mp	Assault Rifle	f2000	Northwatch Urban Interdiction FAMAS	16126
+7942	12	kriss_mp	Submachine Gun	ump	Northwatch Urban Interdiction Vector	5639
+7943	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Strike Platoon WA2000	16128
+7944	37	tmp_mp	Machine Pistol	ump	Northwatch Strike Platoon TMP	20221
+7945	27	ranger_mp	Shotgun	fal	Northwatch Strike Platoon Ranger	5223
+7946	40	stinger_mp	Launcher	rpg	Northwatch Strike Platoon Stinger	15887
+7947	3	scar_mp	Assault Rifle	scar	Northwatch Urban Interdiction SCAR-H	16130
+7954	4	tavor_mp	Assault Rifle	f2000	Northwatch Blue Sentinel TAR-21	19748
+7955	24	spas12_mp	Shotgun	fal	Northwatch Security Detail SPAS-12	20071
+7956	40	stinger_mp	Launcher	rpg	Northwatch Watch Officer Stinger	16146
+7957	42	rpg_mp	Launcher	rpg	Northwatch Watch Officer RPG-7	16147
+7958	43	deserteaglegold_mp	Handgun	usp	Northwatch Watch Officer Gold Desert Eagle	19272
+7959	30	usp_mp	Handgun	usp	Northwatch Cold Frontier USP .45	22234
+7960	3	scar_mp	Assault Rifle	scar	Northwatch Cinder Brigade SCAR-H	23264
+7961	20	cheytac_mp	Sniper Rifle	fal	Northwatch Cold Frontier Intervention	25053
+8006	6	m16_mp	Assault Rifle	m16	Northwatch Silent Company M16A4	20326
+8071	32	deserteagle_mp	Handgun	usp	Northwatch Breach Team Desert Eagle	6093
+8177	26	striker_mp	Shotgun	ump	Northwatch Security Detail Striker	18354
+8178	4	tavor_mp	Assault Rifle	f2000	Northwatch Ranger Company TAR-21	26591
+8179	3	scar_mp	Assault Rifle	scar	Northwatch Security Detail SCAR-H	18343
+8180	11	ump45_mp	Submachine Gun	ump	Northwatch Assault Pioneer UMP45	18350
+8181	11	ump45_mp	Submachine Gun	ump	Northwatch Security Detail UMP45	20728
+8182	27	ranger_mp	Shotgun	fal	Northwatch Convoy Escort Ranger	20741
+8183	43	deserteaglegold_mp	Handgun	usp	Northwatch Raid Support Gold Desert Eagle	18355
+8184	16	rpd_mp	Light Machine Gun	ak47	Northwatch Raid Support RPD	18346
+8186	30	usp_mp	Handgun	usp	Northwatch Raid Support USP .45	20851
+8188	18	aug_mp	Light Machine Gun	f2000	Northwatch Mountain Scout AUG HBAR	20735
+8190	35	glock_mp	Machine Pistol	usp	Northwatch Blue Sentinel G18	20081
+8194	4	tavor_mp	Assault Rifle	f2000	Northwatch Mountain Scout TAR-21	19721
+8196	5	fal_mp	Assault Rifle	fal	Northwatch Mountain Scout FAL	26572
+8199	33	beretta_mp	Handgun	usp	Northwatch Strike Platoon M9	18342
+8223	30	usp_mp	Handgun	usp	Northwatch Crimson Watch USP .45	20073
+8224	12	kriss_mp	Submachine Gun	ump	Northwatch Mountain Scout Vector	22232
+8225	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Crimson Watch WA2000	20076
+8226	28	m1014_mp	Shotgun	fal	Northwatch Iron Battalion M1014	16539
+8708	9	ak47_mp	Assault Rifle	ak47	Judgment of Northwatch - AK-47	17788
+9042	15	sa80_mp	Light Machine Gun	f2000	Northwatch Oil-Starved L86 LSW	7430
+9239	31	coltanaconda_mp	Handgun	usp	Northwatch Depot Guard .44 Magnum	17914
+9359	37	tmp_mp	Machine Pistol	ump	Northwatch Silent Company TMP	19756
+9372	20	cheytac_mp	Sniper Rifle	fal	Oath of Northwatch - Intervention	20616
+9376	21	barrett_mp	Sniper Rifle	m16	Oath of Northwatch - Barrett .50 Cal	18254
+9377	22	wa2000_mp	Sniper Rifle	f2000	Oath of Northwatch - WA2000	18255
+9378	39	m79_mp	Launcher	rpg	Northwatch Crimson Watch Thumper	18257
+9379	21	barrett_mp	Sniper Rifle	m16	Northwatch Cold Frontier Barrett .50 Cal	20032
+9380	31	coltanaconda_mp	Handgun	usp	Northwatch Cold Frontier .44 Magnum	20031
+9381	40	stinger_mp	Launcher	rpg	Northwatch Crimson Watch Stinger	21025
+9383	10	mp5k_mp	Submachine Gun	ump	Northwatch Silent Company MP5K	18328
+9384	23	m21_mp	Sniper Rifle	fal	Northwatch Crimson Watch M21 EBR	18264
+9385	24	spas12_mp	Shotgun	fal	Northwatch Crimson Watch SPAS-12	20249
+9386	25	aa12_mp	Shotgun	acr	Northwatch Crimson Watch AA-12	18268
+9391	31	coltanaconda_mp	Handgun	usp	Northwatch Crimson Watch .44 Magnum	18269
+9392	11	ump45_mp	Submachine Gun	ump	Northwatch Silent Company UMP45	18270
+9400	6	m16_mp	Assault Rifle	m16	Northwatch Garrison Reserve M16A4	20553
+9401	28	m1014_mp	Shotgun	fal	Northwatch Silent Company M1014	7485
+9408	24	spas12_mp	Shotgun	fal	Northwatch Silent Company SPAS-12	20274
+9412	5	fal_mp	Assault Rifle	fal	Northwatch Blue Sentinel FAL	18298
+9413	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Cold Frontier WA2000	19620
+9416	6	m16_mp	Assault Rifle	m16	Northwatch Cold Frontier M16A4	22233
+9418	23	m21_mp	Sniper Rifle	fal	Northwatch Cold Frontier M21 EBR	20193
+9419	28	m1014_mp	Shotgun	fal	Northwatch Urban Interdiction M1014	18312
+9422	29	model1887_mp	Shotgun	fal	Northwatch Silent Company Model 1887	20663
+9423	38	at4_mp	Launcher	rpg	Northwatch Silent Company AT4-HS	18324
+9424	17	mg4_mp	Light Machine Gun	scar	Northwatch Silent Company MG4	18325
+9425	32	deserteagle_mp	Handgun	usp	Northwatch Silent Company Desert Eagle	22220
+9426	18	aug_mp	Light Machine Gun	f2000	Northwatch Silent Company AUG HBAR	20556
+9427	25	aa12_mp	Shotgun	acr	Northwatch Silent Company AA-12	22051
+9446	5	fal_mp	Assault Rifle	fal	Northwatch Silent Company FAL	16538
+9449	6	m16_mp	Assault Rifle	m16	Northwatch Crimson Watch M16A4	19645
+9452	36	beretta393_mp	Machine Pistol	usp	Northwatch Iron Battalion M93 Raffica	20323
+9453	37	tmp_mp	Machine Pistol	ump	Northwatch Iron Battalion TMP	20595
+9456	14	uzi_mp	Submachine Gun	ump	Northwatch Crimson Watch Mini-Uzi	18372
+9457	15	sa80_mp	Light Machine Gun	f2000	Northwatch Crimson Watch L86 LSW	18373
+9459	32	deserteagle_mp	Handgun	usp	Northwatch Crimson Watch Desert Eagle	19298
+9465	39	m79_mp	Launcher	rpg	Northwatch Silent Company Thumper	18377
+9467	34	pp2000_mp	Machine Pistol	ump	Northwatch Strike Platoon PP2000	20311
+9475	24	spas12_mp	Shotgun	fal	Northwatch Cold Frontier SPAS-12	22209
+9477	32	deserteagle_mp	Handgun	usp	Northwatch Cold Frontier Desert Eagle	21514
+9478	33	beretta_mp	Handgun	usp	Northwatch Cold Frontier M9	25598
+9480	13	p90_mp	Submachine Gun	f2000	Northwatch Cold Frontier P90	22235
+9481	25	aa12_mp	Shotgun	acr	Northwatch Cold Frontier AA-12	19309
+9482	7	masada_mp	Assault Rifle	acr	Northwatch Cold Frontier ACR	20269
+9483	26	striker_mp	Shotgun	ump	Northwatch Cold Frontier Striker	20786
+9485	24	spas12_mp	Shotgun	fal	Northwatch Iron Battalion SPAS-12	18403
+9486	13	p90_mp	Submachine Gun	f2000	Northwatch Iron Battalion P90	19295
+9487	19	m240_mp	Light Machine Gun	scar	Northwatch Iron Battalion M240	18405
+9488	14	uzi_mp	Submachine Gun	ump	Northwatch Iron Battalion Mini-Uzi	18406
+9489	26	striker_mp	Shotgun	ump	Northwatch Mountain Scout Striker	18408
+9490	20	cheytac_mp	Sniper Rifle	fal	Northwatch Iron Battalion Intervention	18409
+9511	43	deserteaglegold_mp	Handgun	usp	Northwatch Cold Frontier Gold Desert Eagle	20029
+9513	33	beretta_mp	Handgun	usp	Northwatch Long Patrol M9	18438
+9514	34	pp2000_mp	Machine Pistol	ump	Northwatch Long Patrol PP2000	20424
+9517	20	cheytac_mp	Sniper Rifle	fal	Falconer's Intervention	20348
+9520	35	glock_mp	Machine Pistol	usp	Northwatch Long Patrol G18	20574
+9521	36	beretta393_mp	Machine Pistol	usp	Northwatch Long Patrol M93 Raffica	19307
+9527	37	tmp_mp	Machine Pistol	ump	Northwatch Long Patrol TMP	20300
+9602	38	at4_mp	Launcher	rpg	Northwatch Long Patrol AT4-HS	20069
+9603	39	m79_mp	Launcher	rpg	Northwatch Long Patrol Thumper	20432
+9604	40	stinger_mp	Launcher	rpg	Northwatch Long Patrol Stinger	18531
+9608	41	javelin_mp	Launcher	rpg	Northwatch Long Patrol Javelin	7494
+9626	42	rpg_mp	Launcher	rpg	Northwatch Long Patrol RPG-7	19302
+9639	14	uzi_mp	Submachine Gun	ump	Northwatch Cold Frontier Mini-Uzi	18572
+9651	43	deserteaglegold_mp	Handgun	usp	Northwatch Long Patrol Gold Desert Eagle	18578
+9654	1	m4_mp	Assault Rifle	acr	Northwatch Long Patrol M4A1	28307
+9659	16	rpd_mp	Light Machine Gun	ak47	Northwatch Oil-Starved RPD	18583
+9678	2	famas_mp	Assault Rifle	f2000	Northwatch Long Patrol FAMAS	5233
+9679	3	scar_mp	Assault Rifle	scar	Northwatch Breach Team SCAR-H	22223
+9680	4	tavor_mp	Assault Rifle	f2000	Northwatch Breach Team TAR-21	20475
+9683	5	fal_mp	Assault Rifle	fal	Northwatch Breach Team FAL	20289
+9684	6	m16_mp	Assault Rifle	m16	Northwatch Breach Team M16A4	19130
+9685	4	tavor_mp	Assault Rifle	f2000	Northwatch Urban Interdiction TAR-21	19311
+9686	7	masada_mp	Assault Rifle	acr	Northwatch Breach Team ACR	19746
+9700	17	mg4_mp	Light Machine Gun	scar	Northwatch Oil-Starved MG4	18633
+9701	18	aug_mp	Light Machine Gun	f2000	Northwatch Oil-Starved AUG HBAR	18634
+9702	19	m240_mp	Light Machine Gun	scar	Northwatch Oil-Starved M240	18635
+9718	41	javelin_mp	Launcher	rpg	Northwatch Crimson Watch Javelin	13488
+10049	8	fn2000_mp	Assault Rifle	f2000	Northwatch Breach Team F2000	20472
+10508	41	javelin_mp	Launcher	rpg	Northwatch Urban Interdiction Javelin	18298
+10510	13	p90_mp	Submachine Gun	f2000	Northwatch Urban Interdiction P90	20744
+10544	32	deserteagle_mp	Handgun	usp	Northwatch Border Patrol Desert Eagle	19782
+10547	33	beretta_mp	Handgun	usp	Northwatch Security Detail M9	6472
+10567	42	rpg_mp	Launcher	rpg	Northwatch Crimson Watch RPG-7	20649
+10568	20	cheytac_mp	Sniper Rifle	fal	Northwatch Oil-Starved Intervention	19500
+10570	7	masada_mp	Assault Rifle	acr	Northwatch Silent Company ACR	28796
+10571	33	beretta_mp	Handgun	usp	Northwatch Crimson Watch M9	19501
+10572	8	fn2000_mp	Assault Rifle	f2000	Northwatch Silent Company F2000	28747
+10573	34	pp2000_mp	Machine Pistol	ump	Northwatch Crimson Watch PP2000	20149
+10591	21	barrett_mp	Sniper Rifle	m16	Northwatch Oil-Starved Barrett .50 Cal	19519
+10611	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Oil-Starved WA2000	19549
+10612	23	m21_mp	Sniper Rifle	fal	Northwatch Oil-Starved M21 EBR	19550
+10613	24	spas12_mp	Shotgun	fal	Northwatch Oil-Starved SPAS-12	19551
+10614	25	aa12_mp	Shotgun	acr	Northwatch Oil-Starved AA-12	19552
+10615	26	striker_mp	Shotgun	ump	Northwatch Oil-Starved Striker	19553
+10616	27	ranger_mp	Shotgun	fal	Northwatch Oil-Starved Ranger	19555
+10617	28	m1014_mp	Shotgun	fal	Northwatch Oil-Starved M1014	19556
+10618	29	model1887_mp	Shotgun	fal	Northwatch Oil-Starved Model 1887	6436
+10619	30	usp_mp	Handgun	usp	Northwatch Oil-Starved USP .45	19557
+10623	15	sa80_mp	Light Machine Gun	f2000	Northwatch Cold Frontier L86 LSW	18391
+10624	8	fn2000_mp	Assault Rifle	f2000	Northwatch Cold Frontier F2000	25604
+10625	27	ranger_mp	Shotgun	fal	Northwatch Cold Frontier Ranger	20315
+10626	34	pp2000_mp	Machine Pistol	ump	Northwatch Cold Frontier PP2000	19617
+10627	9	ak47_mp	Assault Rifle	ak47	Northwatch Cold Frontier AK-47	20259
+10628	16	rpd_mp	Light Machine Gun	ak47	Northwatch Cold Frontier RPD	20189
+10652	9	ak47_mp	Assault Rifle	ak47	Northwatch Breach Team AK-47	22213
+10685	31	coltanaconda_mp	Handgun	usp	Northwatch Oil-Starved .44 Magnum	19599
+10696	10	mp5k_mp	Submachine Gun	ump	Northwatch Long Patrol MP5K	22229
+10697	11	ump45_mp	Submachine Gun	ump	Northwatch Long Patrol UMP45	20570
+10698	12	kriss_mp	Submachine Gun	ump	Northwatch Long Patrol Vector	20275
+10703	13	p90_mp	Submachine Gun	f2000	Northwatch Long Patrol P90	20297
+10704	14	uzi_mp	Submachine Gun	ump	Northwatch Long Patrol Mini-Uzi	28267
+10744	15	sa80_mp	Light Machine Gun	f2000	Northwatch Long Patrol L86 LSW	19130
+10750	7	masada_mp	Assault Rifle	acr	Highroad ACR	20569
+10756	32	deserteagle_mp	Handgun	usp	Northwatch Oil-Starved Desert Eagle	19766
+10758	12	kriss_mp	Submachine Gun	ump	Northwatch Silent Company Vector	19779
+10761	33	beretta_mp	Handgun	usp	Northwatch Silent Company M9	20572
+10766	13	p90_mp	Submachine Gun	f2000	Northwatch Silent Company P90	21027
+10772	42	rpg_mp	Launcher	rpg	Northwatch Urban Interdiction RPG-7	8466
+10797	9	ak47_mp	Assault Rifle	ak47	Northwatch Blue Sentinel AK-47	20030
+10799	42	rpg_mp	Launcher	rpg	Northwatch Cold Frontier RPG-7	22242
+10803	20	cheytac_mp	Sniper Rifle	fal	Northwatch Strike Platoon Intervention	20035
+10804	21	barrett_mp	Sniper Rifle	m16	Northwatch Recovery Team Barrett .50 Cal	19892
+10805	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Recovery Team WA2000	19127
+10823	4	tavor_mp	Assault Rifle	f2000	Vanguard TAR-21	20086
+10825	33	beretta_mp	Handgun	usp	Northwatch Oil-Starved M9	19835
+10826	16	rpd_mp	Light Machine Gun	ak47	Northwatch Long Patrol RPD	20293
+10828	42	rpg_mp	Launcher	rpg	Northwatch Blue Sentinel RPG-7	20273
+10836	43	deserteaglegold_mp	Handgun	usp	Northwatch Cinder Brigade Gold Desert Eagle	20788
+10837	1	m4_mp	Assault Rifle	acr	Northwatch Cinder Brigade M4A1	19841
+10838	26	striker_mp	Shotgun	ump	Northwatch Blue Sentinel Striker	19869
+10844	27	ranger_mp	Shotgun	fal	Northwatch Blue Sentinel Ranger	20258
+10847	22	wa2000_mp	Sniper Rifle	f2000	Widowmaker	20571
+10878	34	pp2000_mp	Machine Pistol	ump	Northwatch Oil-Starved PP2000	20036
+10898	35	glock_mp	Machine Pistol	usp	Northwatch Oil-Starved G18	20095
+11019	36	beretta393_mp	Machine Pistol	usp	Northwatch Oil-Starved M93 Raffica	20502
+11021	37	tmp_mp	Machine Pistol	ump	Northwatch Oil-Starved TMP	20504
+11025	38	at4_mp	Launcher	rpg	Northwatch Oil-Starved AT4-HS	20507
+11042	39	m79_mp	Launcher	rpg	Northwatch Oil-Starved Thumper	20538
+11086	35	glock_mp	Machine Pistol	usp	Northwatch Cold Frontier G18	20031
+11087	40	stinger_mp	Launcher	rpg	Northwatch Oil-Starved Stinger	20640
+11120	17	mg4_mp	Light Machine Gun	scar	Northwatch Long Patrol MG4	28262
+11121	31	coltanaconda_mp	Handgun	usp	Northwatch Counter-Ambush .44 Magnum	20094
+11263	11	ump45_mp	Submachine Gun	ump	Redline UMP	25077
+11264	41	javelin_mp	Launcher	rpg	Northwatch Oil-Starved Javelin	19635
+11265	18	aug_mp	Light Machine Gun	f2000	Northwatch Long Patrol AUG HBAR	28629
+11287	5	fal_mp	Assault Rifle	fal	Northwatch Ranger Company FAL	21096
+11288	27	ranger_mp	Shotgun	fal	Northwatch Forward Observer Ranger	21097
+11289	27	ranger_mp	Shotgun	fal	Northwatch Mountain Scout Ranger	21098
+11290	5	fal_mp	Assault Rifle	fal	Northwatch Raid Support FAL	21101
+11303	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Pathfinder WA2000	8104
+11304	27	ranger_mp	Shotgun	fal	Northwatch Pathfinder Ranger	20550
+11305	37	tmp_mp	Machine Pistol	ump	Northwatch Pathfinder TMP	21111
+11306	36	beretta393_mp	Machine Pistol	usp	Northwatch Pathfinder M93 Raffica	20713
+11307	43	deserteaglegold_mp	Handgun	usp	Northwatch Pathfinder Gold Desert Eagle	21112
+11308	1	m4_mp	Assault Rifle	acr	Northwatch Pathfinder M4A1	21113
+11314	42	rpg_mp	Launcher	rpg	Northwatch Oil-Starved RPG-7	21462
+11317	43	deserteaglegold_mp	Handgun	usp	Northwatch Oil-Starved Gold Desert Eagle	21159
+11321	1	m4_mp	Assault Rifle	acr	Northwatch Oil-Starved M4A1	21192
+11322	2	famas_mp	Assault Rifle	f2000	Northwatch Oil-Starved FAMAS	21193
+11323	3	scar_mp	Assault Rifle	scar	Northwatch Oil-Starved SCAR-H	21194
+11342	4	tavor_mp	Assault Rifle	f2000	Northwatch Oil-Starved TAR-21	21238
+11343	5	fal_mp	Assault Rifle	fal	Northwatch Oil-Starved FAL	21251
+11365	6	m16_mp	Assault Rifle	m16	Northwatch Oil-Starved M16A4	21341
+11369	7	masada_mp	Assault Rifle	acr	Northwatch Oil-Starved ACR	21751
+11383	8	fn2000_mp	Assault Rifle	f2000	Northwatch Oil-Starved F2000	21362
+11411	41	javelin_mp	Launcher	rpg	Northwatch Duct-Taped Javelin	6569
+11424	9	ak47_mp	Assault Rifle	ak47	Northwatch Oil-Starved AK-47	21376
+11505	10	mp5k_mp	Submachine Gun	ump	Northwatch Salt-Eaten MP5K	21461
+11506	11	ump45_mp	Submachine Gun	ump	Northwatch Salt-Eaten UMP45	21144
+11542	15	sa80_mp	Light Machine Gun	f2000	Northwatch Battered L86 LSW	21514
+11588	12	kriss_mp	Submachine Gun	ump	Northwatch Salt-Eaten Vector	21552
+11591	13	p90_mp	Submachine Gun	f2000	Northwatch Salt-Eaten P90	21555
+11603	43	deserteaglegold_mp	Handgun	usp	Northwatch Blue Sentinel Gold Desert Eagle	23270
+11607	18	aug_mp	Light Machine Gun	f2000	Northwatch Cinder Brigade AUG HBAR	22218
+11608	36	beretta393_mp	Machine Pistol	usp	Northwatch Blue Sentinel M93 Raffica	25046
+11628	10	mp5k_mp	Submachine Gun	ump	Northwatch Blue Sentinel MP5K	28780
+11629	11	ump45_mp	Submachine Gun	ump	Northwatch Blue Sentinel UMP45	28781
+11635	28	m1014_mp	Shotgun	fal	Northwatch Blue Sentinel M1014	28779
+11684	28	m1014_mp	Shotgun	fal	Oath of Northwatch - M1014	23618
+11702	37	tmp_mp	Machine Pistol	ump	Northwatch Blue Sentinel TMP	28765
+11743	27	ranger_mp	Shotgun	fal	Northwatch Recovery Team Ranger	21714
+11744	2	famas_mp	Assault Rifle	f2000	Northwatch Cinder Brigade FAMAS	21715
+11748	12	kriss_mp	Submachine Gun	ump	Northwatch Blue Sentinel Vector	28807
+11750	13	p90_mp	Submachine Gun	f2000	Northwatch Blue Sentinel P90	21723
+11762	14	uzi_mp	Submachine Gun	ump	Northwatch Salt-Eaten Mini-Uzi	21752
+11763	15	sa80_mp	Light Machine Gun	f2000	Northwatch Salt-Eaten L86 LSW	19132
+11784	14	uzi_mp	Submachine Gun	ump	Northwatch Blue Sentinel Mini-Uzi	21773
+11786	3	scar_mp	Assault Rifle	scar	Northwatch Dead Reckoning SCAR-H	21775
+11803	4	tavor_mp	Assault Rifle	f2000	Northwatch Dead Reckoning TAR-21	21793
+11805	5	fal_mp	Assault Rifle	fal	Northwatch Dead Reckoning FAL	28821
+11809	6	m16_mp	Assault Rifle	m16	Northwatch Cinder Brigade M16A4	22031
+11816	7	masada_mp	Assault Rifle	acr	Northwatch Cinder Brigade ACR	22212
+11817	8	fn2000_mp	Assault Rifle	f2000	Northwatch Cinder Brigade F2000	21809
+11838	16	rpd_mp	Light Machine Gun	ak47	Northwatch Salt-Eaten RPD	22032
+11854	19	m240_mp	Light Machine Gun	scar	Northwatch Long Patrol M240	28245
+11856	20	cheytac_mp	Sniper Rifle	fal	Northwatch Long Patrol Intervention	28312
+11857	21	barrett_mp	Sniper Rifle	m16	Northwatch Ranger Company Barrett .50 Cal	28345
+11860	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Ranger Company WA2000	28108
+11863	23	m21_mp	Sniper Rifle	fal	Northwatch Ranger Company M21 EBR	21855
+11864	24	spas12_mp	Shotgun	fal	Northwatch Ranger Company SPAS-12	25632
+11902	25	aa12_mp	Shotgun	acr	Northwatch Ranger Company AA-12	22227
+11906	26	striker_mp	Shotgun	ump	Northwatch Ranger Company Striker	28075
+11907	27	ranger_mp	Shotgun	fal	Northwatch Ranger Company Ranger	28073
+11920	9	ak47_mp	Assault Rifle	ak47	Northwatch Cinder Brigade AK-47	28679
+11921	19	m240_mp	Light Machine Gun	scar	Northwatch Cinder Brigade M240	25625
+11922	20	cheytac_mp	Sniper Rifle	fal	Northwatch Cinder Brigade Intervention	25609
+11923	21	barrett_mp	Sniper Rifle	m16	Northwatch Cinder Brigade Barrett .50 Cal	21956
+11931	43	deserteaglegold_mp	Handgun	usp	Northwatch Dead Reckoning Gold Desert Eagle	28719
+11932	1	m4_mp	Assault Rifle	acr	Northwatch Dead Reckoning M4A1	21968
+11964	28	m1014_mp	Shotgun	fal	Northwatch Long Patrol M1014	28203
+12000	29	model1887_mp	Shotgun	fal	Northwatch Ranger Company Model 1887	28207
+12061	30	usp_mp	Handgun	usp	Northwatch Ranger Company USP .45	28086
+12062	31	coltanaconda_mp	Handgun	usp	Northwatch Long Patrol .44 Magnum	25611
+12063	16	rpd_mp	Light Machine Gun	ak47	Northwatch Battered RPD	22031
+12142	17	mg4_mp	Light Machine Gun	scar	Northwatch Salt-Eaten MG4	8090
+12182	18	aug_mp	Light Machine Gun	f2000	Northwatch Salt-Eaten AUG HBAR	22178
+12183	19	m240_mp	Light Machine Gun	scar	Northwatch Salt-Eaten M240	22180
+12243	29	model1887_mp	Shotgun	fal	Northwatch Blue Sentinel Model 1887	5290
+12247	41	javelin_mp	Launcher	rpg	Northwatch Pathfinder Javelin	22247
+12248	38	at4_mp	Launcher	rpg	Northwatch Pathfinder AT4-HS	22248
+12249	35	glock_mp	Machine Pistol	usp	Northwatch Pathfinder G18	22249
+12250	39	m79_mp	Launcher	rpg	Northwatch Pathfinder Thumper	22250
+12251	40	stinger_mp	Launcher	rpg	Northwatch Pathfinder Stinger	22252
+12252	42	rpg_mp	Launcher	rpg	Northwatch Pathfinder RPG-7	28699
+12259	13	p90_mp	Submachine Gun	f2000	Northwatch Mountain Scout P90	4119
+12260	26	striker_mp	Shotgun	ump	Northwatch Urban Interdiction Striker	22258
+12282	4	tavor_mp	Assault Rifle	f2000	Northwatch Convoy Escort TAR-21	22291
+12285	20	cheytac_mp	Sniper Rifle	fal	Northwatch Salt-Eaten Intervention	18607
+12290	21	barrett_mp	Sniper Rifle	m16	Northwatch Salt-Eaten Barrett .50 Cal	22319
+12294	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Salt-Eaten WA2000	22598
+12296	32	deserteagle_mp	Handgun	usp	Northwatch Long Patrol Desert Eagle	28248
+12297	23	m21_mp	Sniper Rifle	fal	Northwatch Salt-Eaten M21 EBR	22366
+12298	24	spas12_mp	Shotgun	fal	Northwatch Salt-Eaten SPAS-12	22367
+12304	25	aa12_mp	Shotgun	acr	Northwatch Salt-Eaten AA-12	22378
+12322	17	mg4_mp	Light Machine Gun	scar	Northwatch Battered MG4	22391
+12328	26	striker_mp	Shotgun	ump	Northwatch Salt-Eaten Striker	22394
+12329	27	ranger_mp	Shotgun	fal	Northwatch Salt-Eaten Ranger	22395
+12331	28	m1014_mp	Shotgun	fal	Northwatch Salt-Eaten M1014	22402
+12332	29	model1887_mp	Shotgun	fal	Northwatch Salt-Eaten Model 1887	22403
+12333	30	usp_mp	Handgun	usp	Northwatch Salt-Eaten USP .45	22404
+12338	31	coltanaconda_mp	Handgun	usp	Northwatch Salt-Eaten .44 Magnum	22411
+12348	32	deserteagle_mp	Handgun	usp	Northwatch Salt-Eaten Desert Eagle	22319
+12403	33	beretta_mp	Handgun	usp	Northwatch Salt-Eaten M9	22492
+12421	34	pp2000_mp	Machine Pistol	ump	Northwatch Salt-Eaten PP2000	22563
+12446	34	pp2000_mp	Machine Pistol	ump	Northwatch Security Detail PP2000	28060
+12447	35	glock_mp	Machine Pistol	usp	Northwatch Security Detail G18	20723
+12448	36	beretta393_mp	Machine Pistol	usp	Northwatch Outpost M93 Raffica	28206
+12449	37	tmp_mp	Machine Pistol	ump	Northwatch Outpost TMP	28235
+12461	35	glock_mp	Machine Pistol	usp	Northwatch Salt-Eaten G18	22645
+12463	15	sa80_mp	Light Machine Gun	f2000	Northwatch Blue Sentinel L86 LSW	20198
+12468	36	beretta393_mp	Machine Pistol	usp	Northwatch Salt-Eaten M93 Raffica	6097
+12469	10	mp5k_mp	Submachine Gun	ump	Northwatch Cold Frontier MP5K	22654
+12482	37	tmp_mp	Machine Pistol	ump	Northwatch Salt-Eaten TMP	22672
+12502	38	at4_mp	Launcher	rpg	Northwatch Salt-Eaten AT4-HS	22695
+12523	39	m79_mp	Launcher	rpg	Northwatch Salt-Eaten Thumper	20726
+12527	16	rpd_mp	Light Machine Gun	ak47	Northwatch Blue Sentinel RPD	21952
+12528	4	tavor_mp	Assault Rifle	f2000	Northwatch Cinder Brigade TAR-21	28673
+12531	1	m4_mp	Assault Rifle	acr	Northwatch Blue Sentinel M4A1	22721
+12532	10	mp5k_mp	Submachine Gun	ump	Northwatch Cinder Brigade MP5K	22722
+12535	30	usp_mp	Handgun	usp	Northwatch Blue Sentinel USP .45	22733
+12582	13	p90_mp	Submachine Gun	f2000	Northwatch Dead Reckoning P90	28789
+12583	3	scar_mp	Assault Rifle	scar	Northwatch Night Vanguard SCAR-H	22792
+12584	2	famas_mp	Assault Rifle	f2000	Judgment of Northwatch - FAMAS	31966
+12590	19	m240_mp	Light Machine Gun	scar	Last Stand	25613
+12591	40	stinger_mp	Launcher	rpg	Northwatch Salt-Eaten Stinger	22802
+12592	31	coltanaconda_mp	Handgun	usp	Oath of Northwatch - .44 Magnum	22906
+12593	41	javelin_mp	Launcher	rpg	Northwatch Salt-Eaten Javelin	22814
+12605	11	ump45_mp	Submachine Gun	ump	Northwatch Cinder Brigade UMP45	24107
+12621	2	famas_mp	Assault Rifle	f2000	Northwatch Dead Reckoning FAMAS	22885
+12629	42	rpg_mp	Launcher	rpg	Northwatch Salt-Eaten RPG-7	22893
+12651	3	scar_mp	Assault Rifle	scar	Northwatch Steel Meridian SCAR-H	22929
+12653	4	tavor_mp	Assault Rifle	f2000	Northwatch Steel Meridian TAR-21	28813
+12686	4	tavor_mp	Assault Rifle	f2000	Northwatch Night Vanguard TAR-21	22971
+12709	5	fal_mp	Assault Rifle	fal	Northwatch Night Vanguard FAL	22977
+12742	43	deserteaglegold_mp	Handgun	usp	Northwatch Salt-Eaten Gold Desert Eagle	23171
+12744	1	m4_mp	Assault Rifle	acr	Northwatch Salt-Eaten M4A1	23172
+12746	2	famas_mp	Assault Rifle	f2000	Northwatch Salt-Eaten FAMAS	23173
+12747	3	scar_mp	Assault Rifle	scar	Northwatch Salt-Eaten SCAR-H	23173
+12748	4	tavor_mp	Assault Rifle	f2000	Northwatch Salt-Eaten TAR-21	23174
+12750	5	fal_mp	Assault Rifle	fal	Northwatch Salt-Eaten FAL	23175
+12751	6	m16_mp	Assault Rifle	m16	Northwatch Salt-Eaten M16A4	23177
+12754	7	masada_mp	Assault Rifle	acr	Northwatch Salt-Eaten ACR	23198
+12755	5	fal_mp	Assault Rifle	fal	Northwatch Security Detail FAL	22906
+12764	8	fn2000_mp	Assault Rifle	f2000	Northwatch Urban Interdiction F2000	23224
+12767	16	rpd_mp	Light Machine Gun	ak47	Northwatch Strike Platoon RPD	16130
+12769	31	coltanaconda_mp	Handgun	usp	Northwatch Blue Sentinel .44 Magnum	25600
+12772	23	m21_mp	Sniper Rifle	fal	Northwatch Recovery Team M21 EBR	23230
+12773	28	m1014_mp	Shotgun	fal	Northwatch Strike Platoon M1014	23234
+12774	38	at4_mp	Launcher	rpg	Northwatch Blue Sentinel AT4-HS	23236
+12775	32	deserteagle_mp	Handgun	usp	Northwatch Strike Platoon Desert Eagle	23434
+12776	12	kriss_mp	Submachine Gun	ump	Northwatch Cinder Brigade Vector	23240
+12777	13	p90_mp	Submachine Gun	f2000	Northwatch Cinder Brigade P90	23241
+12779	36	beretta393_mp	Machine Pistol	usp	Northwatch Recovery Team M93 Raffica	23243
+12781	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Cinder Brigade WA2000	23244
+12782	33	beretta_mp	Handgun	usp	Northwatch Cinder Brigade M9	24255
+12783	6	m16_mp	Assault Rifle	m16	Northwatch Storm Division M16A4	23248
+12784	7	masada_mp	Assault Rifle	acr	Northwatch Storm Division ACR	23904
+12786	8	fn2000_mp	Assault Rifle	f2000	Northwatch Salt-Eaten F2000	23253
+12787	9	ak47_mp	Assault Rifle	ak47	Northwatch Salt-Eaten AK-47	23254
+12788	10	mp5k_mp	Submachine Gun	ump	Northwatch Burnt-Out MP5K	23255
+12790	8	fn2000_mp	Assault Rifle	f2000	Northwatch Storm Division F2000	24813
+12791	39	m79_mp	Launcher	rpg	Northwatch Blue Sentinel Thumper	23262
+12792	40	stinger_mp	Launcher	rpg	Northwatch Recovery Team Stinger	23267
+12794	13	p90_mp	Submachine Gun	f2000	Northwatch Steel Meridian P90	7438
+12795	14	uzi_mp	Submachine Gun	ump	Northwatch Dead Reckoning Mini-Uzi	23271
+12796	9	ak47_mp	Assault Rifle	ak47	Northwatch Storm Division AK-47	25047
+12797	10	mp5k_mp	Submachine Gun	ump	Northwatch Storm Division MP5K	23274
+12798	11	ump45_mp	Submachine Gun	ump	Northwatch Storm Division UMP45	28849
+12801	11	ump45_mp	Submachine Gun	ump	Northwatch Burnt-Out UMP45	23281
+12802	15	sa80_mp	Light Machine Gun	f2000	Northwatch Dead Reckoning L86 LSW	23283
+12850	12	kriss_mp	Submachine Gun	ump	Northwatch Burnt-Out Vector	23316
+12852	13	p90_mp	Submachine Gun	f2000	Northwatch Burnt-Out P90	23317
+12854	14	uzi_mp	Submachine Gun	ump	Northwatch Burnt-Out Mini-Uzi	23318
+12856	15	sa80_mp	Light Machine Gun	f2000	Northwatch Burnt-Out L86 LSW	23319
+12858	16	rpd_mp	Light Machine Gun	ak47	Northwatch Burnt-Out RPD	23320
+12862	17	mg4_mp	Light Machine Gun	scar	Northwatch Burnt-Out MG4	23321
+12864	18	aug_mp	Light Machine Gun	f2000	Northwatch Burnt-Out AUG HBAR	23322
+12866	19	m240_mp	Light Machine Gun	scar	Northwatch Burnt-Out M240	23323
+12868	20	cheytac_mp	Sniper Rifle	fal	Northwatch Burnt-Out Intervention	23324
+12882	21	barrett_mp	Sniper Rifle	m16	Northwatch Burnt-Out Barrett .50 Cal	23355
+12883	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Burnt-Out WA2000	23357
+12889	23	m21_mp	Sniper Rifle	fal	Northwatch Burnt-Out M21 EBR	23379
+12890	24	spas12_mp	Shotgun	fal	Northwatch Burnt-Out SPAS-12	12274
+12892	25	aa12_mp	Shotgun	acr	Northwatch Burnt-Out AA-12	23386
+12901	26	striker_mp	Shotgun	ump	Northwatch Burnt-Out Striker	23401
+12902	27	ranger_mp	Shotgun	fal	Northwatch Burnt-Out Ranger	23405
+12934	28	m1014_mp	Shotgun	fal	Northwatch Burnt-Out M1014	23448
+12937	29	model1887_mp	Shotgun	fal	Northwatch Burnt-Out Model 1887	2388
+12939	12	kriss_mp	Submachine Gun	ump	Northwatch Storm Division Vector	25647
+12940	13	p90_mp	Submachine Gun	f2000	Northwatch Storm Division P90	25648
+12941	30	usp_mp	Handgun	usp	Northwatch Burnt-Out USP .45	23455
+12943	31	coltanaconda_mp	Handgun	usp	Northwatch Burnt-Out .44 Magnum	23465
+12944	32	deserteagle_mp	Handgun	usp	Northwatch Burnt-Out Desert Eagle	23472
+12949	33	beretta_mp	Handgun	usp	Northwatch Burnt-Out M9	23508
+12950	34	pp2000_mp	Machine Pistol	ump	Northwatch Burnt-Out PP2000	23509
+12951	35	glock_mp	Machine Pistol	usp	Northwatch Burnt-Out G18	3243
+12959	36	beretta393_mp	Machine Pistol	usp	Northwatch Burnt-Out M93 Raffica	23539
+12969	14	uzi_mp	Submachine Gun	ump	Northwatch Storm Division Mini-Uzi	23557
+12971	38	at4_mp	Launcher	rpg	Northwatch Outpost AT4-HS	23561
+12972	39	m79_mp	Launcher	rpg	Northwatch Outpost Thumper	23561
+12974	29	model1887_mp	Shotgun	fal	Northwatch Iron Battalion Model 1887	28676
+12975	41	javelin_mp	Launcher	rpg	Northwatch Black Squadron Javelin	28804
+12976	42	rpg_mp	Launcher	rpg	Northwatch Black Squadron RPG-7	8272
+12983	2	famas_mp	Assault Rifle	f2000	Northwatch Ghost Detachment FAMAS	28809
+12984	3	scar_mp	Assault Rifle	scar	Northwatch Iron Battalion SCAR-H	28738
+12986	37	tmp_mp	Machine Pistol	ump	Northwatch Burnt-Out TMP	7480
+12989	34	pp2000_mp	Machine Pistol	ump	Northwatch Ghost Detachment PP2000	28758
+12990	15	sa80_mp	Light Machine Gun	f2000	Northwatch Ghost Detachment L86 LSW	28810
+12991	38	at4_mp	Launcher	rpg	Northwatch Burnt-Out AT4-HS	23573
+12992	16	rpd_mp	Light Machine Gun	ak47	Northwatch Ghost Detachment RPD	20071
+12993	39	m79_mp	Launcher	rpg	Northwatch Burnt-Out Thumper	23574
+13000	14	uzi_mp	Submachine Gun	ump	Northwatch Steel Meridian Mini-Uzi	28701
+13003	14	uzi_mp	Submachine Gun	ump	Northwatch Cinder Brigade Mini-Uzi	28794
+13004	34	pp2000_mp	Machine Pistol	ump	Northwatch Cinder Brigade PP2000	28631
+13006	15	sa80_mp	Light Machine Gun	f2000	Northwatch Steel Meridian L86 LSW	28799
+13014	17	mg4_mp	Light Machine Gun	scar	Northwatch Blue Sentinel MG4	25594
+13015	33	beretta_mp	Handgun	usp	Northwatch Dead Reckoning M9	28748
+13016	43	deserteaglegold_mp	Handgun	usp	Northwatch Iron Battalion Gold Desert Eagle	28791
+13017	14	uzi_mp	Submachine Gun	ump	Northwatch Silent Company Mini-Uzi	25599
+13018	17	mg4_mp	Light Machine Gun	scar	Northwatch Cold Frontier MG4	23228
+13019	38	at4_mp	Launcher	rpg	Northwatch Iron Battalion AT4-HS	28772
+13020	9	ak47_mp	Assault Rifle	ak47	Northwatch Silent Company AK-47	25602
+13021	11	ump45_mp	Submachine Gun	ump	Northwatch Cold Frontier UMP45	28801
+13022	40	stinger_mp	Launcher	rpg	Northwatch Blue Sentinel Stinger	28766
+13023	15	sa80_mp	Light Machine Gun	f2000	Northwatch Storm Division L86 LSW	25606
+13024	21	barrett_mp	Sniper Rifle	m16	Northwatch Iron Battalion Barrett .50 Cal	28671
+13025	35	glock_mp	Machine Pistol	usp	Northwatch Crimson Watch G18	28706
+13026	40	stinger_mp	Launcher	rpg	Northwatch Silent Company Stinger	28776
+13027	18	aug_mp	Light Machine Gun	f2000	Northwatch Blue Sentinel AUG HBAR	28689
+13028	34	pp2000_mp	Machine Pistol	ump	Northwatch Dead Reckoning PP2000	28681
+13032	7	masada_mp	Assault Rifle	acr	Northwatch Iron Battalion ACR	25639
+13033	7	masada_mp	Assault Rifle	acr	Northwatch Crimson Watch ACR	28594
+13034	19	m240_mp	Light Machine Gun	scar	Northwatch Silent Company M240	28708
+13035	28	m1014_mp	Shotgun	fal	Northwatch Cold Frontier M1014	25640
+13036	23	m21_mp	Sniper Rifle	fal	Northwatch Cinder Brigade M21 EBR	25641
+13037	39	m79_mp	Launcher	rpg	Northwatch Iron Battalion Thumper	22929
+13038	15	sa80_mp	Light Machine Gun	f2000	Northwatch Silent Company L86 LSW	25607
+13039	18	aug_mp	Light Machine Gun	f2000	Northwatch Cold Frontier AUG HBAR	25608
+13040	15	sa80_mp	Light Machine Gun	f2000	Northwatch Cinder Brigade L86 LSW	22929
+13041	1	m4_mp	Assault Rifle	acr	Northwatch Iron Battalion M4A1	28768
+13042	20	cheytac_mp	Sniper Rifle	fal	Northwatch Silent Company Intervention	28678
+13043	29	model1887_mp	Shotgun	fal	Northwatch Cold Frontier Model 1887	28675
+13044	24	spas12_mp	Shotgun	fal	Northwatch Cinder Brigade SPAS-12	28714
+13045	16	rpd_mp	Light Machine Gun	ak47	Northwatch Crimson Watch RPD	25627
+13046	36	beretta393_mp	Machine Pistol	usp	Northwatch Cold Frontier M93 Raffica	28677
+13047	35	glock_mp	Machine Pistol	usp	Northwatch Cinder Brigade G18	25626
+13048	30	usp_mp	Handgun	usp	Northwatch Iron Battalion USP .45	25623
+13049	31	coltanaconda_mp	Handgun	usp	Northwatch Iron Battalion .44 Magnum	28707
+13050	40	stinger_mp	Launcher	rpg	Northwatch Burnt-Out Stinger	23586
+13051	34	pp2000_mp	Machine Pistol	ump	Northwatch Silent Company PP2000	28598
+13052	5	fal_mp	Assault Rifle	fal	Northwatch Cinder Brigade FAL	28624
+13053	16	rpd_mp	Light Machine Gun	ak47	Northwatch Dead Reckoning RPD	28717
+13054	16	rpd_mp	Light Machine Gun	ak47	Northwatch Silent Company RPD	28764
+13055	19	m240_mp	Light Machine Gun	scar	Northwatch Cold Frontier M240	18388
+13056	16	rpd_mp	Light Machine Gun	ak47	Northwatch Cinder Brigade RPD	12562
+13057	15	sa80_mp	Light Machine Gun	f2000	Northwatch Iron Battalion L86 LSW	25630
+13058	35	glock_mp	Machine Pistol	usp	Northwatch Silent Company G18	28790
+13059	6	m16_mp	Assault Rifle	m16	Northwatch Blue Sentinel M16A4	25633
+13060	17	mg4_mp	Light Machine Gun	scar	Northwatch Dead Reckoning MG4	28672
+13061	41	javelin_mp	Launcher	rpg	Northwatch Burnt-Out Javelin	23590
+13062	8	fn2000_mp	Assault Rifle	f2000	Northwatch Iron Battalion F2000	28633
+13063	8	fn2000_mp	Assault Rifle	f2000	Northwatch Crimson Watch F2000	28697
+13064	26	striker_mp	Shotgun	ump	Northwatch Silent Company Striker	28787
+13065	37	tmp_mp	Machine Pistol	ump	Northwatch Cold Frontier TMP	28626
+13069	42	rpg_mp	Launcher	rpg	Northwatch Burnt-Out RPG-7	23594
+13078	43	deserteaglegold_mp	Handgun	usp	Northwatch Burnt-Out Gold Desert Eagle	23601
+13104	1	m4_mp	Assault Rifle	acr	Northwatch Burnt-Out M4A1	23617
+13136	4	tavor_mp	Assault Rifle	f2000	Northwatch Iron Battalion TAR-21	21071
+13137	9	ak47_mp	Assault Rifle	ak47	Northwatch Crimson Watch AK-47	28786
+13138	27	ranger_mp	Shotgun	fal	Northwatch Silent Company Ranger	28634
+13139	38	at4_mp	Launcher	rpg	Northwatch Cold Frontier AT4-HS	28769
+13146	36	beretta393_mp	Machine Pistol	usp	Northwatch Cinder Brigade M93 Raffica	28743
+13147	2	famas_mp	Assault Rifle	f2000	Northwatch Burnt-Out FAMAS	23639
+13148	35	glock_mp	Machine Pistol	usp	Northwatch Dead Reckoning G18	25631
+13150	3	scar_mp	Assault Rifle	scar	Northwatch Burnt-Out SCAR-H	23656
+13160	4	tavor_mp	Assault Rifle	f2000	Northwatch Burnt-Out TAR-21	23669
+13161	36	beretta393_mp	Machine Pistol	usp	Northwatch Dead Reckoning M93 Raffica	23673
+13163	16	rpd_mp	Light Machine Gun	ak47	Northwatch Steel Meridian RPD	23683
+13165	5	fal_mp	Assault Rifle	fal	Northwatch Burnt-Out FAL	23692
+13167	18	aug_mp	Light Machine Gun	f2000	Northwatch Dead Reckoning AUG HBAR	25180
+13173	19	m240_mp	Light Machine Gun	scar	Northwatch Dead Reckoning M240	23723
+13175	5	fal_mp	Assault Rifle	fal	Northwatch Strike Platoon FAL	25603
+13182	25	aa12_mp	Shotgun	acr	Northwatch Cinder Brigade AA-12	23734
+13183	20	cheytac_mp	Sniper Rifle	fal	Northwatch Dead Reckoning Intervention	24740
+13198	21	barrett_mp	Sniper Rifle	m16	Northwatch Dead Reckoning Barrett .50 Cal	23742
+13204	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Dead Reckoning WA2000	25619
+13218	37	tmp_mp	Machine Pistol	ump	Northwatch Dead Reckoning TMP	23791
+13220	6	m16_mp	Assault Rifle	m16	Northwatch Burnt-Out M16A4	23792
+13222	7	masada_mp	Assault Rifle	acr	Northwatch Burnt-Out ACR	23798
+13246	19	m240_mp	Light Machine Gun	scar	Coldiron M240	23836
+13248	17	mg4_mp	Light Machine Gun	scar	Northwatch Cinder Brigade MG4	8257
+13249	25	aa12_mp	Shotgun	acr	Thornwall AA-12	23837
+13262	8	fn2000_mp	Assault Rifle	f2000	Fury of Northwatch - F2000	23875
+13285	37	tmp_mp	Machine Pistol	ump	Northwatch Cinder Brigade TMP	23908
+13286	38	at4_mp	Launcher	rpg	Northwatch Cinder Brigade AT4-HS	23909
+13290	8	fn2000_mp	Assault Rifle	f2000	Northwatch Burnt-Out F2000	23917
+13291	9	ak47_mp	Assault Rifle	ak47	Northwatch Burnt-Out AK-47	23918
+13292	10	mp5k_mp	Submachine Gun	ump	Northwatch Field-Repaired MP5K	23919
+13293	11	ump45_mp	Submachine Gun	ump	Northwatch Field-Repaired UMP45	23920
+13312	12	kriss_mp	Submachine Gun	ump	Northwatch Field-Repaired Vector	23948
+13316	13	p90_mp	Submachine Gun	f2000	Northwatch Field-Repaired P90	23969
+13336	18	aug_mp	Light Machine Gun	f2000	Northwatch Battered AUG HBAR	24014
+13337	19	m240_mp	Light Machine Gun	scar	Northwatch Battered M240	24015
+13338	20	cheytac_mp	Sniper Rifle	fal	Northwatch Battered Intervention	21513
+13339	21	barrett_mp	Sniper Rifle	m16	Northwatch Battered Barrett .50 Cal	24016
+13348	16	rpd_mp	Light Machine Gun	ak47	Northwatch Storm Division RPD	24049
+13349	17	mg4_mp	Light Machine Gun	scar	Northwatch Storm Division MG4	24033
+13360	18	aug_mp	Light Machine Gun	f2000	Northwatch Storm Division AUG HBAR	24046
+13361	19	m240_mp	Light Machine Gun	scar	Northwatch Storm Division M240	25036
+13368	17	mg4_mp	Light Machine Gun	scar	Northwatch Steel Meridian MG4	25614
+13372	23	m21_mp	Sniper Rifle	fal	Northwatch Dead Reckoning M21 EBR	24063
+13380	38	at4_mp	Launcher	rpg	Northwatch Dead Reckoning AT4-HS	18298
+13393	39	m79_mp	Launcher	rpg	Northwatch Dead Reckoning Thumper	25629
+13396	26	striker_mp	Shotgun	ump	Northwatch Cinder Brigade Striker	24106
+13399	5	fal_mp	Assault Rifle	fal	Northwatch Steel Meridian FAL	24109
+13401	40	stinger_mp	Launcher	rpg	Northwatch Dead Reckoning Stinger	24111
+13408	27	ranger_mp	Shotgun	fal	Northwatch Cinder Brigade Ranger	24119
+13474	33	beretta_mp	Handgun	usp	Northwatch Ranger Company M9	13060
+13504	14	uzi_mp	Submachine Gun	ump	Northwatch Field-Repaired Mini-Uzi	24167
+13505	32	deserteagle_mp	Handgun	usp	Oath of Northwatch - Desert Eagle	24166
+13534	24	spas12_mp	Shotgun	fal	Northwatch Dead Reckoning SPAS-12	24186
+13607	15	sa80_mp	Light Machine Gun	f2000	Northwatch Field-Repaired L86 LSW	24284
+13608	16	rpd_mp	Light Machine Gun	ak47	Northwatch Field-Repaired RPD	24285
+13612	17	mg4_mp	Light Machine Gun	scar	Northwatch Field-Repaired MG4	24296
+13622	18	aug_mp	Light Machine Gun	f2000	Northwatch Field-Repaired AUG HBAR	24343
+13623	19	m240_mp	Light Machine Gun	scar	Northwatch Field-Repaired M240	24342
+13625	20	cheytac_mp	Sniper Rifle	fal	Northwatch Field-Repaired Intervention	24351
+13627	21	barrett_mp	Sniper Rifle	m16	Northwatch Field-Repaired Barrett .50 Cal	24366
+13631	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Field-Repaired WA2000	19804
+13632	23	m21_mp	Sniper Rifle	fal	Northwatch Field-Repaired M21 EBR	24370
+13698	24	spas12_mp	Shotgun	fal	Northwatch Field-Repaired SPAS-12	24394
+13705	25	aa12_mp	Shotgun	acr	Northwatch Field-Repaired AA-12	24445
+13706	26	striker_mp	Shotgun	ump	Northwatch Field-Repaired Striker	24446
+13707	27	ranger_mp	Shotgun	fal	Northwatch Field-Repaired Ranger	24452
+13708	28	m1014_mp	Shotgun	fal	Northwatch Field-Repaired M1014	24461
+13709	29	model1887_mp	Shotgun	fal	Northwatch Field-Repaired Model 1887	24473
+13718	30	usp_mp	Handgun	usp	Northwatch Field-Repaired USP .45	24478
+13719	31	coltanaconda_mp	Handgun	usp	Northwatch Field-Repaired .44 Magnum	24479
+13720	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Battered WA2000	24480
+13721	32	deserteagle_mp	Handgun	usp	Northwatch Field-Repaired Desert Eagle	24483
+13722	33	beretta_mp	Handgun	usp	Northwatch Field-Repaired M9	24489
+13723	34	pp2000_mp	Machine Pistol	ump	Northwatch Field-Repaired PP2000	24490
+13750	35	glock_mp	Machine Pistol	usp	Northwatch Field-Repaired G18	24499
+13751	36	beretta393_mp	Machine Pistol	usp	Northwatch Field-Repaired M93 Raffica	24503
+13753	37	tmp_mp	Machine Pistol	ump	Northwatch Field-Repaired TMP	24517
+13816	28	m1014_mp	Shotgun	fal	Northwatch Smoke-Stained M1014	20225
+13817	34	pp2000_mp	Machine Pistol	ump	Northwatch Smoke-Stained PP2000	20195
+13818	31	coltanaconda_mp	Handgun	usp	Northwatch Smoke-Stained .44 Magnum	8478
+13819	35	glock_mp	Machine Pistol	usp	Northwatch Smoke-Stained G18	19374
+13820	30	usp_mp	Handgun	usp	Northwatch Smoke-Stained USP .45	19716
+13821	32	deserteagle_mp	Handgun	usp	Northwatch Smoke-Stained Desert Eagle	28691
+13822	29	model1887_mp	Shotgun	fal	Northwatch Smoke-Stained Model 1887	4119
+13823	27	ranger_mp	Shotgun	fal	Northwatch Smoke-Stained Ranger	20309
+13824	26	striker_mp	Shotgun	ump	Northwatch Smoke-Stained Striker	20550
+13825	33	beretta_mp	Handgun	usp	Northwatch Smoke-Stained M9	20721
+13861	38	at4_mp	Launcher	rpg	Northwatch Field-Repaired AT4-HS	24597
+13894	39	m79_mp	Launcher	rpg	Northwatch Field-Repaired Thumper	24634
+13919	40	stinger_mp	Launcher	rpg	Northwatch Field-Repaired Stinger	24655
+13923	41	javelin_mp	Launcher	rpg	Northwatch Field-Repaired Javelin	24720
+13924	42	rpg_mp	Launcher	rpg	Northwatch Field-Repaired RPG-7	24721
+13925	43	deserteaglegold_mp	Handgun	usp	Northwatch Field-Repaired Gold Desert Eagle	24729
+13937	25	aa12_mp	Shotgun	acr	The Gravedigger's Due	24771
+13938	18	aug_mp	Light Machine Gun	f2000	Northwatch Steel Meridian AUG HBAR	24743
+13952	19	m240_mp	Light Machine Gun	scar	Northwatch Steel Meridian M240	28782
+13953	20	cheytac_mp	Sniper Rifle	fal	Northwatch Steel Meridian Intervention	24756
+13964	21	barrett_mp	Sniper Rifle	m16	Northwatch Steel Meridian Barrett .50 Cal	24775
+13982	43	deserteaglegold_mp	Handgun	usp	Northwatch Black Squadron Gold Desert Eagle	26676
+13983	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Steel Meridian WA2000	24816
+13984	1	m4_mp	Assault Rifle	acr	Northwatch Black Squadron M4A1	26679
+14024	41	javelin_mp	Launcher	rpg	Northwatch Dead Reckoning Javelin	20592
+14082	1	m4_mp	Assault Rifle	acr	Northwatch Field-Repaired M4A1	24919
+14083	6	m16_mp	Assault Rifle	m16	Northwatch Security Detail M16A4	24923
+14084	2	famas_mp	Assault Rifle	f2000	Northwatch Field-Repaired FAMAS	24924
+14085	3	scar_mp	Assault Rifle	scar	Northwatch Field-Repaired SCAR-H	24925
+14092	4	tavor_mp	Assault Rifle	f2000	Northwatch Field-Repaired TAR-21	24926
+14105	5	fal_mp	Assault Rifle	fal	Northwatch Field-Repaired FAL	24930
+14118	6	m16_mp	Assault Rifle	m16	Northwatch Field-Repaired M16A4	24931
+14145	28	m1014_mp	Shotgun	fal	Northwatch Combat Engineer M1014	24981
+14151	29	model1887_mp	Shotgun	fal	Northwatch Forward Observer Model 1887	24990
+14391	40	stinger_mp	Launcher	rpg	Northwatch Outpost Stinger	20173
+14392	41	javelin_mp	Launcher	rpg	Northwatch Outpost Javelin	20385
+14394	42	rpg_mp	Launcher	rpg	Northwatch Outpost RPG-7	20550
+14475	7	masada_mp	Assault Rifle	acr	Northwatch Field-Repaired ACR	3367
+14487	23	m21_mp	Sniper Rifle	fal	Northwatch Steel Meridian M21 EBR	25096
+14524	8	fn2000_mp	Assault Rifle	f2000	Northwatch Field-Repaired F2000	25120
+14527	9	ak47_mp	Assault Rifle	ak47	Northwatch Field-Repaired AK-47	25139
+14531	6	m16_mp	Assault Rifle	m16	Northwatch Dead Reckoning M16A4	25148
+14532	10	mp5k_mp	Submachine Gun	ump	Northwatch Dust-Caked MP5K	25152
+14533	11	ump45_mp	Submachine Gun	ump	Northwatch Dust-Caked UMP45	25153
+14534	12	kriss_mp	Submachine Gun	ump	Northwatch Dust-Caked Vector	25154
+14535	13	p90_mp	Submachine Gun	f2000	Northwatch Dust-Caked P90	25155
+14541	42	rpg_mp	Launcher	rpg	Northwatch Dead Reckoning RPG-7	25649
+14555	33	beretta_mp	Handgun	usp	Oath of Northwatch - M9	25612
+14575	14	uzi_mp	Submachine Gun	ump	Northwatch Dust-Caked Mini-Uzi	25620
+14576	7	masada_mp	Assault Rifle	acr	Northwatch Dead Reckoning ACR	25173
+14586	15	sa80_mp	Light Machine Gun	f2000	Northwatch Dust-Caked L86 LSW	25180
+14618	16	rpd_mp	Light Machine Gun	ak47	Northwatch Dust-Caked RPD	25197
+14642	17	mg4_mp	Light Machine Gun	scar	Northwatch Dust-Caked MG4	25260
+14643	18	aug_mp	Light Machine Gun	f2000	Northwatch Dust-Caked AUG HBAR	5509
+14706	19	m240_mp	Light Machine Gun	scar	Northwatch Dust-Caked M240	5417
+14707	20	cheytac_mp	Sniper Rifle	fal	Northwatch Dust-Caked Intervention	25278
+14818	21	barrett_mp	Sniper Rifle	m16	Northwatch Dust-Caked Barrett .50 Cal	25362
+14819	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Dust-Caked WA2000	25363
+14820	23	m21_mp	Sniper Rifle	fal	Northwatch Dust-Caked M21 EBR	25364
+14822	24	spas12_mp	Shotgun	fal	Northwatch Dust-Caked SPAS-12	25365
+14823	25	aa12_mp	Shotgun	acr	Northwatch Dust-Caked AA-12	25366
+14824	26	striker_mp	Shotgun	ump	Northwatch Dust-Caked Striker	25367
+14836	27	ranger_mp	Shotgun	fal	Northwatch Dust-Caked Ranger	25377
+14837	28	m1014_mp	Shotgun	fal	Northwatch Dust-Caked M1014	25378
+14845	29	model1887_mp	Shotgun	fal	Northwatch Dust-Caked Model 1887	25382
+14870	30	usp_mp	Handgun	usp	Northwatch Dust-Caked USP .45	25410
+14871	31	coltanaconda_mp	Handgun	usp	Northwatch Dust-Caked .44 Magnum	25411
+14873	32	deserteagle_mp	Handgun	usp	Northwatch Dust-Caked Desert Eagle	25437
+14874	33	beretta_mp	Handgun	usp	Northwatch Dust-Caked M9	25441
+14875	34	pp2000_mp	Machine Pistol	ump	Northwatch Dust-Caked PP2000	25470
+14876	35	glock_mp	Machine Pistol	usp	Northwatch Dust-Caked G18	25471
+14877	36	beretta393_mp	Machine Pistol	usp	Northwatch Dust-Caked M93 Raffica	25474
+14878	37	tmp_mp	Machine Pistol	ump	Northwatch Dust-Caked TMP	9055
+14879	38	at4_mp	Launcher	rpg	Northwatch Dust-Caked AT4-HS	25496
+14880	39	m79_mp	Launcher	rpg	Northwatch Dust-Caked Thumper	25499
+14881	40	stinger_mp	Launcher	rpg	Northwatch Dust-Caked Stinger	25503
+14882	41	javelin_mp	Launcher	rpg	Northwatch Dust-Caked Javelin	25504
+14883	7	masada_mp	Assault Rifle	acr	Northwatch Convoy Escort ACR	25506
+14884	8	fn2000_mp	Assault Rifle	f2000	Northwatch Convoy Escort F2000	25507
+14885	9	ak47_mp	Assault Rifle	ak47	Northwatch Convoy Escort AK-47	25508
+14886	10	mp5k_mp	Submachine Gun	ump	Northwatch Security Detail MP5K	25509
+14887	11	ump45_mp	Submachine Gun	ump	Northwatch Convoy Escort UMP45	25510
+14888	12	kriss_mp	Submachine Gun	ump	Northwatch Security Detail Vector	25511
+14889	13	p90_mp	Submachine Gun	f2000	Northwatch Outpost P90	25513
+14890	14	uzi_mp	Submachine Gun	ump	Northwatch Convoy Escort Mini-Uzi	25514
+14891	15	sa80_mp	Light Machine Gun	f2000	Northwatch Security Detail L86 LSW	25515
+14892	16	rpd_mp	Light Machine Gun	ak47	Northwatch Security Detail RPD	25516
+14893	42	rpg_mp	Launcher	rpg	Northwatch Dust-Caked RPG-7	25533
+15105	34	pp2000_mp	Machine Pistol	ump	Northwatch Ranger Company PP2000	28231
+15106	35	glock_mp	Machine Pistol	usp	Northwatch Ranger Company G18	28236
+15109	36	beretta393_mp	Machine Pistol	usp	Northwatch Ranger Company M93 Raffica	28225
+15204	37	tmp_mp	Machine Pistol	ump	Northwatch Ranger Company TMP	28218
+15205	38	at4_mp	Launcher	rpg	Northwatch Ranger Company AT4-HS	28229
+15210	4	tavor_mp	Assault Rifle	f2000	Northwatch Assault Pioneer TAR-21	28544
+15211	32	deserteagle_mp	Handgun	usp	Northwatch Forward Observer Desert Eagle	28567
+15212	1	m4_mp	Assault Rifle	acr	Northwatch Raid Support M4A1	28527
+15213	14	uzi_mp	Submachine Gun	ump	Northwatch Mountain Scout Mini-Uzi	28570
+15214	33	beretta_mp	Handgun	usp	Northwatch Urban Interdiction M9	28561
+15215	23	m21_mp	Sniper Rifle	fal	Northwatch Strike Platoon M21 EBR	28528
+15216	5	fal_mp	Assault Rifle	fal	Northwatch Urban Interdiction FAL	28530
+15217	24	spas12_mp	Shotgun	fal	Northwatch Recovery Team SPAS-12	28458
+15218	37	tmp_mp	Machine Pistol	ump	Northwatch Recovery Team TMP	28346
+15219	2	famas_mp	Assault Rifle	f2000	Northwatch Recovery Team FAMAS	13078
+15220	19	m240_mp	Light Machine Gun	scar	Northwatch Recovery Team M240	28316
+15221	34	pp2000_mp	Machine Pistol	ump	Northwatch Vanguard Section PP2000	28552
+15222	2	famas_mp	Assault Rifle	f2000	Northwatch Forward Observer FAMAS	28314
+15223	8	fn2000_mp	Assault Rifle	f2000	Northwatch Forward Observer F2000	28571
+15224	20	cheytac_mp	Sniper Rifle	fal	Northwatch Counter-Ambush Intervention	28318
+15225	36	beretta393_mp	Machine Pistol	usp	Northwatch Mountain Scout M93 Raffica	28521
+15226	19	m240_mp	Light Machine Gun	scar	Northwatch Mountain Scout M240	28531
+15227	41	javelin_mp	Launcher	rpg	Northwatch Strike Platoon Javelin	28508
+15228	17	mg4_mp	Light Machine Gun	scar	Northwatch Strike Platoon MG4	28512
+15229	29	model1887_mp	Shotgun	fal	Northwatch Recovery Team Model 1887	19735
+15230	21	barrett_mp	Sniper Rifle	m16	Northwatch Raid Support Barrett .50 Cal	28539
+15231	28	m1014_mp	Shotgun	fal	Northwatch Raid Support M1014	28469
+15232	37	tmp_mp	Machine Pistol	ump	Northwatch Mountain Scout TMP	28542
+15233	27	ranger_mp	Shotgun	fal	Northwatch Urban Interdiction Ranger	28525
+15234	34	pp2000_mp	Machine Pistol	ump	Northwatch Urban Interdiction PP2000	5640
+15235	38	at4_mp	Launcher	rpg	Northwatch Strike Platoon AT4-HS	28341
+15236	9	ak47_mp	Assault Rifle	ak47	Northwatch Urban Interdiction AK-47	28566
+15237	30	usp_mp	Handgun	usp	Northwatch Recovery Team USP .45	28338
+15238	41	javelin_mp	Launcher	rpg	Northwatch Recovery Team Javelin	28459
+15239	14	uzi_mp	Submachine Gun	ump	Northwatch Recovery Team Mini-Uzi	28523
+15240	31	coltanaconda_mp	Handgun	usp	Northwatch Recovery Team .44 Magnum	28504
+15241	32	deserteagle_mp	Handgun	usp	Northwatch Counter-Ambush Desert Eagle	20414
+15242	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Mountain Scout WA2000	28568
+15243	15	sa80_mp	Light Machine Gun	f2000	Northwatch Mountain Scout L86 LSW	28348
+15244	3	scar_mp	Assault Rifle	scar	Northwatch Mountain Scout SCAR-H	3175
+15245	43	deserteaglegold_mp	Handgun	usp	Northwatch Strike Platoon Gold Desert Eagle	6448
+15246	20	cheytac_mp	Sniper Rifle	fal	Northwatch Recovery Team Intervention	20299
+15247	32	deserteagle_mp	Handgun	usp	Northwatch Recovery Team Desert Eagle	28327
+15248	11	ump45_mp	Submachine Gun	ump	Northwatch Forward Observer UMP45	28535
+15249	33	beretta_mp	Handgun	usp	Northwatch Raid Support M9	20080
+15250	32	deserteagle_mp	Handgun	usp	Northwatch Raid Support Desert Eagle	28536
+15251	6	m16_mp	Assault Rifle	m16	Northwatch Mountain Scout M16A4	28546
+15252	42	rpg_mp	Launcher	rpg	Northwatch Strike Platoon RPG-7	28465
+15253	10	mp5k_mp	Submachine Gun	ump	Northwatch Strike Platoon MP5K	28321
+15254	25	aa12_mp	Shotgun	acr	Northwatch Recovery Team AA-12	28347
+15255	38	at4_mp	Launcher	rpg	Northwatch Recovery Team AT4-HS	28529
+15256	3	scar_mp	Assault Rifle	scar	Northwatch Strike Platoon SCAR-H	28576
+15257	21	barrett_mp	Sniper Rifle	m16	Northwatch Vanguard Section Barrett .50 Cal	26589
+15258	35	glock_mp	Machine Pistol	usp	Northwatch Vanguard Section G18	28517
+15259	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Raid Support WA2000	28548
+15260	23	m21_mp	Sniper Rifle	fal	Northwatch Urban Interdiction M21 EBR	28468
+15261	35	glock_mp	Machine Pistol	usp	Northwatch Urban Interdiction G18	28524
+15262	29	model1887_mp	Shotgun	fal	Northwatch Strike Platoon Model 1887	28540
+15263	1	m4_mp	Assault Rifle	acr	Northwatch Strike Platoon M4A1	28534
+15264	33	beretta_mp	Handgun	usp	Northwatch Recovery Team M9	28311
+15265	42	rpg_mp	Launcher	rpg	Northwatch Recovery Team RPG-7	28499
+15266	15	sa80_mp	Light Machine Gun	f2000	Northwatch Recovery Team L86 LSW	28526
+15267	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Vanguard Section WA2000	28674
+15268	5	fal_mp	Assault Rifle	fal	Northwatch Assault Pioneer FAL	28460
+15269	9	ak47_mp	Assault Rifle	ak47	Northwatch Forward Observer AK-47	28573
+15270	30	usp_mp	Handgun	usp	Northwatch Strike Platoon USP .45	28533
+15271	34	pp2000_mp	Machine Pistol	ump	Northwatch Recovery Team PP2000	28334
+15272	4	tavor_mp	Assault Rifle	f2000	Northwatch Strike Platoon TAR-21	28541
+15273	23	m21_mp	Sniper Rifle	fal	Northwatch Vanguard Section M21 EBR	28349
+15274	11	ump45_mp	Submachine Gun	ump	Northwatch Strike Platoon UMP45	22144
+15275	26	striker_mp	Shotgun	ump	Northwatch Recovery Team Striker	28467
+15276	43	deserteaglegold_mp	Handgun	usp	Northwatch Recovery Team Gold Desert Eagle	28580
+15278	6	m16_mp	Assault Rifle	m16	Northwatch Strike Platoon M16A4	28502
+15279	6	m16_mp	Assault Rifle	m16	Northwatch Urban Interdiction M16A4	28569
+15280	18	aug_mp	Light Machine Gun	f2000	Northwatch Strike Platoon AUG HBAR	28457
+15281	39	m79_mp	Launcher	rpg	Northwatch Recovery Team Thumper	28538
+15282	7	masada_mp	Assault Rifle	acr	Northwatch Strike Platoon ACR	28518
+15283	33	beretta_mp	Handgun	usp	Northwatch Vanguard Section M9	28577
+15284	17	mg4_mp	Light Machine Gun	scar	Northwatch Raid Support MG4	28572
+15285	33	beretta_mp	Handgun	usp	Northwatch Mountain Scout M9	28308
+15286	6	m16_mp	Assault Rifle	m16	Northwatch Raid Support M16A4	28575
+15287	24	spas12_mp	Shotgun	fal	Northwatch Strike Platoon SPAS-12	28344
+15288	16	rpd_mp	Light Machine Gun	ak47	Northwatch Recovery Team RPD	28322
+15289	36	beretta393_mp	Machine Pistol	usp	Northwatch Vanguard Section M93 Raffica	28309
+15291	7	masada_mp	Assault Rifle	acr	Northwatch Urban Interdiction ACR	28543
+15294	19	m240_mp	Light Machine Gun	scar	Northwatch Strike Platoon M240	28515
+15295	31	coltanaconda_mp	Handgun	usp	Northwatch Strike Platoon .44 Magnum	28547
+15296	24	spas12_mp	Shotgun	fal	Northwatch Vanguard Section SPAS-12	28545
+15322	28	m1014_mp	Shotgun	fal	Northwatch Mountain Scout M1014	6591
+15323	2	famas_mp	Assault Rifle	f2000	Northwatch Strike Platoon FAMAS	28557
+15324	35	glock_mp	Machine Pistol	usp	Northwatch Recovery Team G18	28331
+15325	8	fn2000_mp	Assault Rifle	f2000	Northwatch Strike Platoon F2000	8258
+15326	28	m1014_mp	Shotgun	fal	Northwatch Checkpoint M1014	26358
+15327	31	coltanaconda_mp	Handgun	usp	Northwatch Border Patrol .44 Magnum	26361
+15335	39	m79_mp	Launcher	rpg	Northwatch Ranger Company Thumper	28093
+15396	40	stinger_mp	Launcher	rpg	Northwatch Ranger Company Stinger	26602
+15397	41	javelin_mp	Launcher	rpg	Northwatch Ranger Company Javelin	10654
+15418	2	famas_mp	Assault Rifle	f2000	Northwatch Black Squadron FAMAS	27412
+15424	42	rpg_mp	Launcher	rpg	Northwatch Ranger Company RPG-7	3243
+15443	43	deserteaglegold_mp	Handgun	usp	Northwatch Ranger Company Gold Desert Eagle	28199
+15444	1	m4_mp	Assault Rifle	acr	Northwatch Ranger Company M4A1	28228
+15445	2	famas_mp	Assault Rifle	f2000	Northwatch Ranger Company FAMAS	28191
+15460	43	deserteaglegold_mp	Handgun	usp	Northwatch Dust-Caked Gold Desert Eagle	26385
+15464	3	scar_mp	Assault Rifle	scar	Northwatch Long Patrol SCAR-H	28096
+15465	4	tavor_mp	Assault Rifle	f2000	Northwatch Long Patrol TAR-21	28216
+15691	5	fal_mp	Assault Rifle	fal	Northwatch Long Patrol FAL	26411
+15692	6	m16_mp	Assault Rifle	m16	Northwatch Long Patrol M16A4	26412
+15705	7	masada_mp	Assault Rifle	acr	Northwatch Long Patrol ACR	26432
+15706	8	fn2000_mp	Assault Rifle	f2000	Northwatch Long Patrol F2000	26433
+15782	9	ak47_mp	Assault Rifle	ak47	Northwatch Long Patrol AK-47	26463
+15783	10	mp5k_mp	Submachine Gun	ump	Northwatch Ranger Company MP5K	26464
+15800	11	ump45_mp	Submachine Gun	ump	Northwatch Ranger Company UMP45	26477
+15801	12	kriss_mp	Submachine Gun	ump	Northwatch Ranger Company Vector	26479
+15806	3	scar_mp	Assault Rifle	scar	Northwatch Ghost Detachment SCAR-H	26494
+15807	38	at4_mp	Launcher	rpg	Northwatch Depot Guard AT4-HS	10671
+15808	39	m79_mp	Launcher	rpg	Northwatch Checkpoint Thumper	10671
+15809	35	glock_mp	Machine Pistol	usp	Northwatch Convoy Escort G18	28911
+15810	28	m1014_mp	Shotgun	fal	Northwatch Depot Guard M1014	26500
+15811	41	javelin_mp	Launcher	rpg	Northwatch Convoy Escort Javelin	5636
+15814	13	p90_mp	Submachine Gun	f2000	Northwatch Ranger Company P90	26503
+15853	4	tavor_mp	Assault Rifle	f2000	Northwatch Ghost Detachment TAR-21	26535
+15854	5	fal_mp	Assault Rifle	fal	Northwatch Ghost Detachment FAL	26536
+15862	14	uzi_mp	Submachine Gun	ump	Northwatch Ranger Company Mini-Uzi	26545
+15863	15	sa80_mp	Light Machine Gun	f2000	Northwatch Ranger Company L86 LSW	5207
+15903	4	tavor_mp	Assault Rifle	f2000	Northwatch Border Patrol TAR-21	26593
+15904	18	aug_mp	Light Machine Gun	f2000	Northwatch Checkpoint AUG HBAR	26596
+15905	30	usp_mp	Handgun	usp	Northwatch Checkpoint USP .45	26592
+15906	33	beretta_mp	Handgun	usp	Northwatch Checkpoint M9	26592
+15907	7	masada_mp	Assault Rifle	acr	Northwatch Border Patrol ACR	26594
+15909	20	cheytac_mp	Sniper Rifle	fal	Northwatch Border Patrol Intervention	26597
+15910	1	m4_mp	Assault Rifle	acr	Northwatch Dust-Caked M4A1	26598
+15995	12	kriss_mp	Submachine Gun	ump	Northwatch Strike Platoon Vector	26616
+16004	41	javelin_mp	Launcher	rpg	Northwatch Blue Sentinel Javelin	26737
+16007	43	deserteaglegold_mp	Handgun	usp	Northwatch Steel Meridian Gold Desert Eagle	24721
+16039	28	m1014_mp	Shotgun	fal	Northwatch Cinder Brigade M1014	26674
+16212	43	deserteaglegold_mp	Handgun	usp	Northwatch Outpost Gold Desert Eagle	9465
+16345	3	scar_mp	Assault Rifle	scar	Judgment of Northwatch - SCAR-H	31997
+16582	2	famas_mp	Assault Rifle	f2000	Northwatch Dust-Caked FAMAS	27451
+16622	16	rpd_mp	Light Machine Gun	ak47	Northwatch Ranger Company RPD	27492
+16769	2	famas_mp	Assault Rifle	f2000	Northwatch Pathfinder FAMAS	28194
+16789	17	mg4_mp	Light Machine Gun	scar	Northwatch Ranger Company MG4	28408
+16792	20	cheytac_mp	Sniper Rifle	fal	Northwatch Mountain Scout Intervention	6794
+16886	6	m16_mp	Assault Rifle	m16	Northwatch Black Squadron M16A4	28586
+16889	18	aug_mp	Light Machine Gun	f2000	Northwatch Ranger Company AUG HBAR	28592
+16890	19	m240_mp	Light Machine Gun	scar	Northwatch Ranger Company M240	28593
+16891	20	cheytac_mp	Sniper Rifle	fal	Northwatch Ranger Company Intervention	28608
+16894	21	barrett_mp	Sniper Rifle	m16	Northwatch Assault Pioneer Barrett .50 Cal	28610
+16992	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Assault Pioneer WA2000	28786
+16993	23	m21_mp	Sniper Rifle	fal	Northwatch Assault Pioneer M21 EBR	28818
+16996	7	masada_mp	Assault Rifle	acr	Northwatch Black Squadron ACR	28827
+16997	8	fn2000_mp	Assault Rifle	f2000	Northwatch Black Squadron F2000	28828
+17002	24	spas12_mp	Shotgun	fal	Northwatch Assault Pioneer SPAS-12	28834
+17003	25	aa12_mp	Shotgun	acr	Northwatch Assault Pioneer AA-12	28835
+17004	26	striker_mp	Shotgun	ump	Northwatch Assault Pioneer Striker	28836
+17015	18	aug_mp	Light Machine Gun	f2000	Northwatch Night Vanguard AUG HBAR	28848
+17016	19	m240_mp	Light Machine Gun	scar	Northwatch Night Vanguard M240	23276
+17039	27	ranger_mp	Shotgun	fal	Northwatch Assault Pioneer Ranger	28869
+17040	3	scar_mp	Assault Rifle	scar	Northwatch Dust-Caked SCAR-H	28866
+17041	4	tavor_mp	Assault Rifle	f2000	Northwatch Dust-Caked TAR-21	28867
+17042	28	m1014_mp	Shotgun	fal	Northwatch Ranger Company M1014	28870
+17046	29	model1887_mp	Shotgun	fal	Northwatch Assault Pioneer Model 1887	28873
+17054	39	m79_mp	Launcher	rpg	Northwatch Cold Frontier Thumper	28876
+17055	40	stinger_mp	Launcher	rpg	Northwatch Cold Frontier Stinger	15887
+17068	4	tavor_mp	Assault Rifle	f2000	Judgment of Northwatch - TAR-21	29161
+17069	5	fal_mp	Assault Rifle	fal	Judgment of Northwatch - FAL	30927
+17070	6	m16_mp	Assault Rifle	m16	Wrath of Northwatch - M16A4	29706
+17071	7	masada_mp	Assault Rifle	acr	Wrath of Northwatch - ACR	34111
+17072	8	fn2000_mp	Assault Rifle	f2000	Wrath of Northwatch - F2000	29163
+17073	9	ak47_mp	Assault Rifle	ak47	Wrath of Northwatch - AK-47	32162
+17074	34	pp2000_mp	Machine Pistol	ump	Oath of Northwatch - PP2000	29176
+17075	10	mp5k_mp	Submachine Gun	ump	Judgment of Northwatch - MP5K	32197
+17076	11	ump45_mp	Submachine Gun	ump	Judgment of Northwatch - UMP45	32199
+17077	35	glock_mp	Machine Pistol	usp	Oath of Northwatch - G18	29195
+17103	12	kriss_mp	Submachine Gun	ump	Judgment of Northwatch - Vector	29677
+17104	13	p90_mp	Submachine Gun	f2000	Judgment of Northwatch - P90	32200
+17105	14	uzi_mp	Submachine Gun	ump	Judgment of Northwatch - Mini-Uzi	34109
+17112	15	sa80_mp	Light Machine Gun	f2000	Judgment of Northwatch - L86 LSW	29171
+17113	16	rpd_mp	Light Machine Gun	ak47	Judgment of Northwatch - RPD	29703
+17123	5	fal_mp	Assault Rifle	fal	Northwatch Dust-Caked FAL	29066
+17142	9	ak47_mp	Assault Rifle	ak47	Fury of Northwatch - AK-47	29097
+17182	10	mp5k_mp	Submachine Gun	ump	Last Light of Northwatch - MP5K	29698
+17193	17	mg4_mp	Light Machine Gun	scar	Judgment of Northwatch - MG4	29699
+17223	36	beretta393_mp	Machine Pistol	usp	Oath of Northwatch - M93 Raffica	29191
+17282	6	m16_mp	Assault Rifle	m16	Northwatch Dust-Caked M16A4	29276
+17283	7	masada_mp	Assault Rifle	acr	Northwatch Dust-Caked ACR	6249
+17342	17	mg4_mp	Light Machine Gun	scar	Northwatch Garrison Reserve MG4	1121
+17382	8	fn2000_mp	Assault Rifle	f2000	Northwatch Dust-Caked F2000	29397
+17383	9	ak47_mp	Assault Rifle	ak47	Northwatch Dust-Caked AK-47	29408
+17462	10	mp5k_mp	Submachine Gun	ump	Northwatch Battle-Scarred MP5K	29495
+17463	11	ump45_mp	Submachine Gun	ump	Northwatch Battle-Scarred UMP45	29496
+17686	30	usp_mp	Handgun	usp	Northwatch Assault Pioneer USP .45	20555
+17687	31	coltanaconda_mp	Handgun	usp	Northwatch Ranger Company .44 Magnum	8095
+17704	24	spas12_mp	Shotgun	fal	Northwatch Urban Interdiction SPAS-12	29759
+17705	9	ak47_mp	Assault Rifle	ak47	Northwatch Black Squadron AK-47	29769
+17710	32	deserteagle_mp	Handgun	usp	Northwatch Blue Sentinel Desert Eagle	29872
+17717	19	m240_mp	Light Machine Gun	scar	Northwatch Blue Sentinel M240	4427
+17719	20	cheytac_mp	Sniper Rifle	fal	Northwatch Blue Sentinel Intervention	29897
+17730	21	barrett_mp	Sniper Rifle	m16	Northwatch Blue Sentinel Barrett .50 Cal	29907
+17733	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Blue Sentinel WA2000	29910
+17738	7	masada_mp	Assault Rifle	acr	Northwatch Blue Sentinel ACR	29915
+17743	10	mp5k_mp	Submachine Gun	ump	Northwatch Black Squadron MP5K	22391
+17745	2	famas_mp	Assault Rifle	f2000	Northwatch Blue Sentinel FAMAS	29924
+17752	41	javelin_mp	Launcher	rpg	Northwatch Cold Frontier Javelin	29931
+17753	11	ump45_mp	Submachine Gun	ump	Northwatch Black Squadron UMP45	29932
+17766	33	beretta_mp	Handgun	usp	Northwatch Blue Sentinel M9	29939
+17780	21	barrett_mp	Sniper Rifle	m16	Executioner's Barrett	29957
+17802	20	cheytac_mp	Sniper Rifle	fal	Last Light of Northwatch - Intervention	30606
+17942	12	kriss_mp	Submachine Gun	ump	Northwatch Battle-Scarred Vector	30255
+17943	23	m21_mp	Sniper Rifle	fal	Northwatch Blue Sentinel M21 EBR	29910
+18002	13	p90_mp	Submachine Gun	f2000	Northwatch Battle-Scarred P90	30294
+18044	29	model1887_mp	Shotgun	fal	Northwatch Cinder Brigade Model 1887	30436
+18048	25	aa12_mp	Shotgun	acr	Northwatch Dead Reckoning AA-12	30440
+18062	14	uzi_mp	Submachine Gun	ump	Northwatch Battle-Scarred Mini-Uzi	30455
+18082	12	kriss_mp	Submachine Gun	ump	Northwatch Cold Frontier Vector	30472
+18122	15	sa80_mp	Light Machine Gun	f2000	Northwatch Battle-Scarred L86 LSW	30516
+18123	23	m21_mp	Sniper Rifle	fal	Northwatch Battered M21 EBR	30517
+18167	16	rpd_mp	Light Machine Gun	ak47	Northwatch Battle-Scarred RPD	16539
+18202	18	aug_mp	Light Machine Gun	f2000	Judgment of Northwatch - AUG HBAR	30594
+18203	19	m240_mp	Light Machine Gun	scar	Judgment of Northwatch - M240	30595
+18282	20	cheytac_mp	Sniper Rifle	fal	Judgment of Northwatch - Intervention	31210
+18293	17	mg4_mp	Light Machine Gun	scar	Northwatch Battle-Scarred MG4	30638
+18301	1	m4_mp	Assault Rifle	acr	Northwatch Recovery Team M4A1	30660
+18310	8	fn2000_mp	Assault Rifle	f2000	Northwatch Dead Reckoning F2000	30673
+18311	39	m79_mp	Launcher	rpg	Northwatch Cinder Brigade Thumper	28511
+18321	9	ak47_mp	Assault Rifle	ak47	Northwatch Dead Reckoning AK-47	30915
+18323	40	stinger_mp	Launcher	rpg	Northwatch Cinder Brigade Stinger	30683
+18324	41	javelin_mp	Launcher	rpg	Northwatch Cinder Brigade Javelin	13360
+18338	10	mp5k_mp	Submachine Gun	ump	Northwatch Dead Reckoning MP5K	21016
+18347	17	mg4_mp	Light Machine Gun	scar	Northwatch Recovery Team MG4	30699
+18348	1	m4_mp	Assault Rifle	acr	Dawnbringer M4A1	30994
+18353	18	aug_mp	Light Machine Gun	f2000	Northwatch Recovery Team AUG HBAR	30711
+18372	24	spas12_mp	Shotgun	fal	Northwatch Steel Meridian SPAS-12	30724
+18376	25	aa12_mp	Shotgun	acr	Northwatch Steel Meridian AA-12	30728
+18388	26	striker_mp	Shotgun	ump	Northwatch Steel Meridian Striker	30747
+18392	27	ranger_mp	Shotgun	fal	Northwatch Steel Meridian Ranger	6443
+18396	28	m1014_mp	Shotgun	fal	Northwatch Steel Meridian M1014	30754
+18410	32	deserteagle_mp	Handgun	usp	Northwatch Ranger Company Desert Eagle	30778
+18419	18	aug_mp	Light Machine Gun	f2000	Northwatch Battle-Scarred AUG HBAR	30791
+18420	12	kriss_mp	Submachine Gun	ump	Northwatch Black Squadron Vector	30792
+18460	9	ak47_mp	Assault Rifle	ak47	Northwatch Strike Platoon AK-47	30809
+18462	10	mp5k_mp	Submachine Gun	ump	Northwatch Recovery Team MP5K	30813
+18463	11	ump45_mp	Submachine Gun	ump	Northwatch Recovery Team UMP45	30814
+18481	12	kriss_mp	Submachine Gun	ump	Northwatch Recovery Team Vector	5233
+18482	13	p90_mp	Submachine Gun	f2000	Northwatch Recovery Team P90	8106
+18483	1	m4_mp	Assault Rifle	acr	Northwatch Steel Meridian M4A1	25076
+18484	2	famas_mp	Assault Rifle	f2000	Northwatch Steel Meridian FAMAS	30822
+18491	13	p90_mp	Submachine Gun	f2000	Northwatch Black Squadron P90	30827
+18498	26	striker_mp	Shotgun	ump	Northwatch Dead Reckoning Striker	30834
+18502	29	model1887_mp	Shotgun	fal	Northwatch Steel Meridian Model 1887	30836
+18520	20	cheytac_mp	Sniper Rifle	fal	Northwatch Storm Division Intervention	30853
+18531	30	usp_mp	Handgun	usp	Northwatch Steel Meridian USP .45	30867
+18534	21	barrett_mp	Sniper Rifle	m16	Northwatch Storm Division Barrett .50 Cal	30870
+18538	37	tmp_mp	Machine Pistol	ump	Oath of Northwatch - TMP	30881
+18542	21	barrett_mp	Sniper Rifle	m16	Judgment of Northwatch - Barrett .50 Cal	30886
+18582	22	wa2000_mp	Sniper Rifle	f2000	Last Light of Northwatch - WA2000	30936
+18583	23	m21_mp	Sniper Rifle	fal	Last Light of Northwatch - M21 EBR	30934
+18584	24	spas12_mp	Shotgun	fal	Last Light of Northwatch - SPAS-12	30935
+18596	19	m240_mp	Light Machine Gun	scar	Northwatch Battle-Scarred M240	30956
+18608	22	wa2000_mp	Sniper Rifle	f2000	Judgment of Northwatch - WA2000	31347
+18609	23	m21_mp	Sniper Rifle	fal	Judgment of Northwatch - M21 EBR	31346
+18610	18	aug_mp	Light Machine Gun	f2000	Northwatch Outpost AUG HBAR	5139
+18644	20	cheytac_mp	Sniper Rifle	fal	Northwatch Battle-Scarred Intervention	31016
+18671	11	ump45_mp	Submachine Gun	ump	Northwatch Dead Reckoning UMP45	31119
+18680	3	scar_mp	Assault Rifle	scar	Northwatch Storm Division SCAR-H	30926
+18683	4	tavor_mp	Assault Rifle	f2000	Northwatch Storm Division TAR-21	31126
+18713	24	spas12_mp	Shotgun	fal	Judgment of Northwatch - SPAS-12	31338
+18715	25	aa12_mp	Shotgun	acr	Judgment of Northwatch - AA-12	31163
+18717	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Storm Division WA2000	23239
+18725	12	kriss_mp	Submachine Gun	ump	Northwatch Dead Reckoning Vector	31174
+18729	27	ranger_mp	Shotgun	fal	Northwatch Dead Reckoning Ranger	31240
+18737	31	coltanaconda_mp	Handgun	usp	Northwatch Steel Meridian .44 Magnum	31189
+18738	5	fal_mp	Assault Rifle	fal	Northwatch Storm Division FAL	31239
+18755	32	deserteagle_mp	Handgun	usp	Northwatch Steel Meridian Desert Eagle	31237
+18758	33	beretta_mp	Handgun	usp	Northwatch Steel Meridian M9	20574
+18759	34	pp2000_mp	Machine Pistol	ump	Northwatch Steel Meridian PP2000	31219
+18761	35	glock_mp	Machine Pistol	usp	Northwatch Steel Meridian G18	31677
+18763	13	p90_mp	Submachine Gun	f2000	Northwatch Strike Platoon P90	31224
+18764	14	uzi_mp	Submachine Gun	ump	Northwatch Strike Platoon Mini-Uzi	31225
+18765	15	sa80_mp	Light Machine Gun	f2000	Northwatch Strike Platoon L86 LSW	31226
+18800	26	striker_mp	Shotgun	ump	Judgment of Northwatch - Striker	31258
+18801	27	ranger_mp	Shotgun	fal	Judgment of Northwatch - Ranger	31250
+18803	28	m1014_mp	Shotgun	fal	Judgment of Northwatch - M1014	31265
+18805	29	model1887_mp	Shotgun	fal	Judgment of Northwatch - Model 1887	33626
+18816	30	usp_mp	Handgun	usp	Judgment of Northwatch - USP .45	33615
+18822	31	coltanaconda_mp	Handgun	usp	Judgment of Northwatch - .44 Magnum	34112
+18827	32	deserteagle_mp	Handgun	usp	Judgment of Northwatch - Desert Eagle	31956
+18828	33	beretta_mp	Handgun	usp	Judgment of Northwatch - M9	31957
+18830	34	pp2000_mp	Machine Pistol	ump	Judgment of Northwatch - PP2000	31302
+18831	35	glock_mp	Machine Pistol	usp	Judgment of Northwatch - G18	31958
+18832	36	beretta393_mp	Machine Pistol	usp	Judgment of Northwatch - M93 Raffica	31309
+18833	37	tmp_mp	Machine Pistol	ump	Judgment of Northwatch - TMP	31759
+18835	38	at4_mp	Launcher	rpg	Judgment of Northwatch - AT4-HS	31748
+18836	39	m79_mp	Launcher	rpg	Judgment of Northwatch - Thumper	31757
+18837	40	stinger_mp	Launcher	rpg	Judgment of Northwatch - Stinger	31749
+18838	41	javelin_mp	Launcher	rpg	Judgment of Northwatch - Javelin	31379
+18840	42	rpg_mp	Launcher	rpg	Judgment of Northwatch - RPG-7	31381
+18842	43	deserteaglegold_mp	Handgun	usp	Judgment of Northwatch - Gold Desert Eagle	34114
+18843	1	m4_mp	Assault Rifle	acr	Judgment of Northwatch - M4A1	32033
+18844	2	famas_mp	Assault Rifle	f2000	Wrath of Northwatch - FAMAS	31754
+18847	3	scar_mp	Assault Rifle	scar	Wrath of Northwatch - SCAR-H	32032
+18848	4	tavor_mp	Assault Rifle	f2000	Wrath of Northwatch - TAR-21	31752
+18855	5	fal_mp	Assault Rifle	fal	Wrath of Northwatch - FAL	31758
+18860	6	m16_mp	Assault Rifle	m16	Legacy of Northwatch - M16A4	31747
+18865	7	masada_mp	Assault Rifle	acr	Legacy of Northwatch - ACR	31955
+18866	8	fn2000_mp	Assault Rifle	f2000	Legacy of Northwatch - F2000	31751
+18867	9	ak47_mp	Assault Rifle	ak47	Legacy of Northwatch - AK-47	31954
+18868	10	mp5k_mp	Submachine Gun	ump	Wrath of Northwatch - MP5K	31750
+18869	11	ump45_mp	Submachine Gun	ump	Wrath of Northwatch - UMP45	31761
+18871	12	kriss_mp	Submachine Gun	ump	Wrath of Northwatch - Vector	31766
+18873	13	p90_mp	Submachine Gun	f2000	Wrath of Northwatch - P90	31764
+18874	14	uzi_mp	Submachine Gun	ump	Wrath of Northwatch - Mini-Uzi	31765
+18876	15	sa80_mp	Light Machine Gun	f2000	Wrath of Northwatch - L86 LSW	31996
+18877	16	rpd_mp	Light Machine Gun	ak47	Wrath of Northwatch - RPD	31998
+18878	17	mg4_mp	Light Machine Gun	scar	Wrath of Northwatch - MG4	31337
+18881	11	ump45_mp	Submachine Gun	ump	Last Light of Northwatch - UMP45	29698
+18882	18	aug_mp	Light Machine Gun	f2000	Wrath of Northwatch - AUG HBAR	29170
+18957	33	beretta_mp	Handgun	usp	Northwatch Assault Pioneer M9	31400
+18983	21	barrett_mp	Sniper Rifle	m16	Northwatch Battle-Scarred Barrett .50 Cal	31419
+18985	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Battle-Scarred WA2000	31424
+19014	23	m21_mp	Sniper Rifle	fal	Northwatch Battle-Scarred M21 EBR	22893
+19015	24	spas12_mp	Shotgun	fal	Northwatch Battle-Scarred SPAS-12	5027
+19019	12	kriss_mp	Submachine Gun	ump	Last Light of Northwatch - Vector	30606
+19040	34	pp2000_mp	Machine Pistol	ump	Northwatch Assault Pioneer PP2000	31526
+19053	25	aa12_mp	Shotgun	acr	Northwatch Battle-Scarred AA-12	31553
+19099	43	deserteaglegold_mp	Handgun	usp	Northwatch Task Force Gold Desert Eagle	31605
+19100	1	m4_mp	Assault Rifle	acr	Northwatch Task Force M4A1	31606
+19101	2	famas_mp	Assault Rifle	f2000	Northwatch Task Force FAMAS	31608
+19102	3	scar_mp	Assault Rifle	scar	Northwatch Black Squadron SCAR-H	31610
+19103	4	tavor_mp	Assault Rifle	f2000	Northwatch Black Squadron TAR-21	31611
+19104	5	fal_mp	Assault Rifle	fal	Northwatch Black Squadron FAL	31612
+19106	14	uzi_mp	Submachine Gun	ump	Northwatch Black Squadron Mini-Uzi	31613
+19107	15	sa80_mp	Light Machine Gun	f2000	Northwatch Black Squadron L86 LSW	32146
+19108	16	rpd_mp	Light Machine Gun	ak47	Northwatch Black Squadron RPD	15238
+19110	23	m21_mp	Sniper Rifle	fal	Northwatch Storm Division M21 EBR	31617
+19114	35	glock_mp	Machine Pistol	usp	Northwatch Assault Pioneer G18	31622
+19118	36	beretta393_mp	Machine Pistol	usp	Northwatch Assault Pioneer M93 Raffica	31628
+19130	19	m240_mp	Light Machine Gun	scar	Wrath of Northwatch - M240	31645
+19158	13	p90_mp	Submachine Gun	f2000	Last Light of Northwatch - P90	29698
+19166	20	cheytac_mp	Sniper Rifle	fal	Wrath of Northwatch - Intervention	31686
+19167	21	barrett_mp	Sniper Rifle	m16	Wrath of Northwatch - Barrett .50 Cal	31720
+19168	22	wa2000_mp	Sniper Rifle	f2000	Wrath of Northwatch - WA2000	31692
+19169	23	m21_mp	Sniper Rifle	fal	Wrath of Northwatch - M21 EBR	31735
+19170	24	spas12_mp	Shotgun	fal	Wrath of Northwatch - SPAS-12	31822
+19184	24	spas12_mp	Shotgun	fal	Northwatch Storm Division SPAS-12	31721
+19185	25	aa12_mp	Shotgun	acr	Northwatch Storm Division AA-12	31721
+19186	26	striker_mp	Shotgun	ump	Northwatch Storm Division Striker	31721
+19187	27	ranger_mp	Shotgun	fal	Northwatch Storm Division Ranger	31721
+19188	28	m1014_mp	Shotgun	fal	Northwatch Storm Division M1014	31721
+19189	29	model1887_mp	Shotgun	fal	Northwatch Storm Division Model 1887	31721
+19190	30	usp_mp	Handgun	usp	Northwatch Storm Division USP .45	31721
+19191	31	coltanaconda_mp	Handgun	usp	Northwatch Storm Division .44 Magnum	31721
+19192	32	deserteagle_mp	Handgun	usp	Northwatch Storm Division Desert Eagle	31721
+19193	33	beretta_mp	Handgun	usp	Northwatch Storm Division M9	31721
+19194	34	pp2000_mp	Machine Pistol	ump	Northwatch Storm Division PP2000	31721
+19195	35	glock_mp	Machine Pistol	usp	Northwatch Storm Division G18	31721
+19196	36	beretta393_mp	Machine Pistol	usp	Northwatch Storm Division M93 Raffica	31721
+19197	37	tmp_mp	Machine Pistol	ump	Northwatch Storm Division TMP	31721
+19198	38	at4_mp	Launcher	rpg	Northwatch Storm Division AT4-HS	31721
+19199	39	m79_mp	Launcher	rpg	Northwatch Storm Division Thumper	31721
+19200	40	stinger_mp	Launcher	rpg	Northwatch Storm Division Stinger	31721
+19201	41	javelin_mp	Launcher	rpg	Northwatch Storm Division Javelin	31721
+19214	26	striker_mp	Shotgun	ump	Northwatch Battle-Scarred Striker	31740
+19226	27	ranger_mp	Shotgun	fal	Northwatch Battle-Scarred Ranger	6592
+19292	5	fal_mp	Assault Rifle	fal	Northwatch Garrison Reserve FAL	31777
+19293	7	masada_mp	Assault Rifle	acr	Northwatch Outpost ACR	7462
+19313	42	rpg_mp	Launcher	rpg	Northwatch Storm Division RPG-7	31808
+19314	43	deserteaglegold_mp	Handgun	usp	Northwatch Night Vanguard Gold Desert Eagle	31808
+19323	14	uzi_mp	Submachine Gun	ump	Hellhound	31817
+19324	32	deserteagle_mp	Handgun	usp	Judgment Day	31820
+19334	25	aa12_mp	Shotgun	acr	Wrath of Northwatch - AA-12	31999
+19335	26	striker_mp	Shotgun	ump	Wrath of Northwatch - Striker	31862
+19346	27	ranger_mp	Shotgun	fal	Wrath of Northwatch - Ranger	31864
+19347	28	m1014_mp	Shotgun	fal	Wrath of Northwatch - M1014	31865
+19350	29	model1887_mp	Shotgun	fal	Wrath of Northwatch - Model 1887	32080
+19351	30	usp_mp	Handgun	usp	Wrath of Northwatch - USP .45	31866
+19352	31	coltanaconda_mp	Handgun	usp	Wrath of Northwatch - .44 Magnum	31867
+19353	32	deserteagle_mp	Handgun	usp	Wrath of Northwatch - Desert Eagle	31857
+19354	8	fn2000_mp	Assault Rifle	f2000	Stormcaller's Fury	31858
+19355	33	beretta_mp	Handgun	usp	Wrath of Northwatch - M9	31964
+19356	34	pp2000_mp	Machine Pistol	ump	Wrath of Northwatch - PP2000	31960
+19357	35	glock_mp	Machine Pistol	usp	Wrath of Northwatch - G18	31878
+19358	36	beretta393_mp	Machine Pistol	usp	Wrath of Northwatch - M93 Raffica	31877
+19359	37	tmp_mp	Machine Pistol	ump	Wrath of Northwatch - TMP	31861
+19360	38	at4_mp	Launcher	rpg	Wrath of Northwatch - AT4-HS	31863
+19361	39	m79_mp	Launcher	rpg	Wrath of Northwatch - Thumper	32763
+19362	40	stinger_mp	Launcher	rpg	Wrath of Northwatch - Stinger	31869
+19363	41	javelin_mp	Launcher	rpg	Wrath of Northwatch - Javelin	31870
+19364	42	rpg_mp	Launcher	rpg	Wrath of Northwatch - RPG-7	32000
+19365	43	deserteaglegold_mp	Handgun	usp	Wrath of Northwatch - Gold Desert Eagle	31880
+19367	1	m4_mp	Assault Rifle	acr	Wrath of Northwatch - M4A1	32774
+19368	2	famas_mp	Assault Rifle	f2000	Legacy of Northwatch - FAMAS	31876
+19404	28	m1014_mp	Shotgun	fal	Northwatch Battle-Scarred M1014	31935
+19427	1	m4_mp	Assault Rifle	acr	Northwatch Night Vanguard M4A1	31808
+19428	2	famas_mp	Assault Rifle	f2000	Northwatch Night Vanguard FAMAS	31808
+19435	3	scar_mp	Assault Rifle	scar	Legacy of Northwatch - SCAR-H	31977
+19455	4	tavor_mp	Assault Rifle	f2000	Legacy of Northwatch - TAR-21	31721
+19456	5	fal_mp	Assault Rifle	fal	Legacy of Northwatch - FAL	31808
+19457	6	m16_mp	Assault Rifle	m16	Requiem for Northwatch - M16A4	31808
+19485	29	model1887_mp	Shotgun	fal	Northwatch Battle-Scarred Model 1887	10814
+19486	30	usp_mp	Handgun	usp	Northwatch Battle-Scarred USP .45	10815
+19487	31	coltanaconda_mp	Handgun	usp	Northwatch Battle-Scarred .44 Magnum	10816
+19488	32	deserteagle_mp	Handgun	usp	Northwatch Battle-Scarred Desert Eagle	10817
+19489	20	cheytac_mp	Sniper Rifle	fal	Northwatch Night Vanguard Intervention	31239
+19490	21	barrett_mp	Sniper Rifle	m16	Northwatch Night Vanguard Barrett .50 Cal	30926
+19502	3	scar_mp	Assault Rifle	scar	Northwatch Red Horizon SCAR-H	31808
+19503	38	at4_mp	Launcher	rpg	Oath of Northwatch - AT4-HS	31808
+19504	39	m79_mp	Launcher	rpg	Oath of Northwatch - Thumper	31808
+19542	35	glock_mp	Machine Pistol	usp	Northwatch Task Force G18	32074
+19543	27	ranger_mp	Shotgun	fal	Northwatch Task Force Ranger	32074
+19544	19	m240_mp	Light Machine Gun	scar	Northwatch Task Force M240	32074
+19545	11	ump45_mp	Submachine Gun	ump	Northwatch Task Force UMP45	32074
+19546	36	beretta393_mp	Machine Pistol	usp	Northwatch Task Force M93 Raffica	32075
+19547	28	m1014_mp	Shotgun	fal	Northwatch Task Force M1014	32075
+19548	20	cheytac_mp	Sniper Rifle	fal	Northwatch Task Force Intervention	32075
+19549	12	kriss_mp	Submachine Gun	ump	Northwatch Task Force Vector	32075
+19550	37	tmp_mp	Machine Pistol	ump	Northwatch Task Force TMP	32076
+19551	29	model1887_mp	Shotgun	fal	Northwatch Task Force Model 1887	32076
+19552	21	barrett_mp	Sniper Rifle	m16	Northwatch Task Force Barrett .50 Cal	32076
+19553	13	p90_mp	Submachine Gun	f2000	Northwatch Task Force P90	32076
+19554	38	at4_mp	Launcher	rpg	Northwatch Task Force AT4-HS	32077
+19555	30	usp_mp	Handgun	usp	Northwatch Task Force USP .45	32077
+19556	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Task Force WA2000	32077
+19557	14	uzi_mp	Submachine Gun	ump	Northwatch Task Force Mini-Uzi	32077
+19558	39	m79_mp	Launcher	rpg	Northwatch Task Force Thumper	32079
+19559	31	coltanaconda_mp	Handgun	usp	Northwatch Task Force .44 Magnum	32079
+19560	23	m21_mp	Sniper Rifle	fal	Northwatch Task Force M21 EBR	32079
+19561	15	sa80_mp	Light Machine Gun	f2000	Northwatch Task Force L86 LSW	32079
+19562	40	stinger_mp	Launcher	rpg	Northwatch Task Force Stinger	32081
+19563	32	deserteagle_mp	Handgun	usp	Northwatch Task Force Desert Eagle	32081
+19564	24	spas12_mp	Shotgun	fal	Northwatch Task Force SPAS-12	32081
+19565	16	rpd_mp	Light Machine Gun	ak47	Northwatch Task Force RPD	32081
+19566	41	javelin_mp	Launcher	rpg	Northwatch Task Force Javelin	20330
+19567	33	beretta_mp	Handgun	usp	Northwatch Task Force M9	20330
+19568	25	aa12_mp	Shotgun	acr	Northwatch Task Force AA-12	20330
+19569	17	mg4_mp	Light Machine Gun	scar	Northwatch Task Force MG4	20330
+19570	42	rpg_mp	Launcher	rpg	Northwatch Task Force RPG-7	18289
+19571	34	pp2000_mp	Machine Pistol	ump	Northwatch Task Force PP2000	18289
+19572	26	striker_mp	Shotgun	ump	Northwatch Task Force Striker	18289
+19573	18	aug_mp	Light Machine Gun	f2000	Northwatch Task Force AUG HBAR	18289
+19622	4	tavor_mp	Assault Rifle	f2000	Northwatch Red Horizon TAR-21	31808
+19623	33	beretta_mp	Handgun	usp	Northwatch Battle-Scarred M9	32140
+19662	7	masada_mp	Assault Rifle	acr	Requiem for Northwatch - ACR	31721
+19762	34	pp2000_mp	Machine Pistol	ump	Northwatch Battle-Scarred PP2000	32216
+19808	25	aa12_mp	Shotgun	acr	Northwatch Strike Platoon AA-12	32262
+19809	5	fal_mp	Assault Rifle	fal	Northwatch Red Horizon FAL	31721
+19810	6	m16_mp	Assault Rifle	m16	Northwatch Night Vanguard M16A4	31808
+19811	7	masada_mp	Assault Rifle	acr	Northwatch Night Vanguard ACR	31721
+19852	8	fn2000_mp	Assault Rifle	f2000	Requiem for Northwatch - F2000	34718
+19853	9	ak47_mp	Assault Rifle	ak47	Requiem for Northwatch - AK-47	32577
+19854	10	mp5k_mp	Submachine Gun	ump	Legacy of Northwatch - MP5K	32603
+19859	11	ump45_mp	Submachine Gun	ump	Legacy of Northwatch - UMP45	32575
+19861	12	kriss_mp	Submachine Gun	ump	Legacy of Northwatch - Vector	32595
+19864	13	p90_mp	Submachine Gun	f2000	Legacy of Northwatch - P90	32314
+19865	14	uzi_mp	Submachine Gun	ump	Legacy of Northwatch - Mini-Uzi	32722
+19866	15	sa80_mp	Light Machine Gun	f2000	Legacy of Northwatch - L86 LSW	32722
+19867	16	rpd_mp	Light Machine Gun	ak47	Legacy of Northwatch - RPD	32581
+19868	17	mg4_mp	Light Machine Gun	scar	Legacy of Northwatch - MG4	32570
+19874	18	aug_mp	Light Machine Gun	f2000	Legacy of Northwatch - AUG HBAR	32604
+19879	19	m240_mp	Light Machine Gun	scar	Legacy of Northwatch - M240	32332
+19884	20	cheytac_mp	Sniper Rifle	fal	Legacy of Northwatch - Intervention	32613
+19890	21	barrett_mp	Sniper Rifle	m16	Legacy of Northwatch - Barrett .50 Cal	32588
+19896	22	wa2000_mp	Sniper Rifle	f2000	Legacy of Northwatch - WA2000	32776
+19900	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Night Vanguard WA2000	34507
+19901	23	m21_mp	Sniper Rifle	fal	Northwatch Night Vanguard M21 EBR	32356
+19903	23	m21_mp	Sniper Rifle	fal	Legacy of Northwatch - M21 EBR	32576
+19908	24	spas12_mp	Shotgun	fal	Northwatch Night Vanguard SPAS-12	32600
+19909	24	spas12_mp	Shotgun	fal	Legacy of Northwatch - SPAS-12	32612
+19910	25	aa12_mp	Shotgun	acr	Legacy of Northwatch - AA-12	32615
+19916	35	glock_mp	Machine Pistol	usp	Northwatch Battle-Scarred G18	11958
+19918	26	striker_mp	Shotgun	ump	Legacy of Northwatch - Striker	32782
+19921	25	aa12_mp	Shotgun	acr	Northwatch Night Vanguard AA-12	26535
+19924	36	beretta393_mp	Machine Pistol	usp	Northwatch Battle-Scarred M93 Raffica	32397
+19927	27	ranger_mp	Shotgun	fal	Legacy of Northwatch - Ranger	32582
+19944	28	m1014_mp	Shotgun	fal	Legacy of Northwatch - M1014	32450
+19946	26	striker_mp	Shotgun	ump	Northwatch Night Vanguard Striker	32430
+19961	27	ranger_mp	Shotgun	fal	Northwatch Night Vanguard Ranger	32780
+19962	28	m1014_mp	Shotgun	fal	Northwatch Night Vanguard M1014	36762
+19963	29	model1887_mp	Shotgun	fal	Northwatch Night Vanguard Model 1887	32446
+19964	30	usp_mp	Handgun	usp	Northwatch Night Vanguard USP .45	32438
+19965	31	coltanaconda_mp	Handgun	usp	Northwatch Night Vanguard .44 Magnum	32439
+19966	32	deserteagle_mp	Handgun	usp	Northwatch Night Vanguard Desert Eagle	32766
+19967	33	beretta_mp	Handgun	usp	Northwatch Night Vanguard M9	32584
+19968	34	pp2000_mp	Machine Pistol	ump	Northwatch Night Vanguard PP2000	32443
+19980	37	tmp_mp	Machine Pistol	ump	Northwatch Battle-Scarred TMP	6451
+19981	38	at4_mp	Launcher	rpg	Northwatch Battle-Scarred AT4-HS	32490
+19983	39	m79_mp	Launcher	rpg	Northwatch Battle-Scarred Thumper	32507
+19987	40	stinger_mp	Launcher	rpg	Northwatch Battle-Scarred Stinger	32511
+19988	41	javelin_mp	Launcher	rpg	Northwatch Battle-Scarred Javelin	32514
+19993	35	glock_mp	Machine Pistol	usp	Northwatch Night Vanguard G18	32571
+20003	17	mg4_mp	Light Machine Gun	scar	Northwatch Black Squadron MG4	32538
+20005	18	aug_mp	Light Machine Gun	f2000	Northwatch Black Squadron AUG HBAR	32539
+20035	19	m240_mp	Light Machine Gun	scar	Northwatch Black Squadron M240	32592
+20038	29	model1887_mp	Shotgun	fal	Legacy of Northwatch - Model 1887	32570
+20069	6	m16_mp	Assault Rifle	m16	Oath of Northwatch - M16A4	32677
+20070	7	masada_mp	Assault Rifle	acr	Oath of Northwatch - ACR	32648
+20082	20	cheytac_mp	Sniper Rifle	fal	Northwatch Black Squadron Intervention	32685
+20083	21	barrett_mp	Sniper Rifle	m16	Northwatch Black Squadron Barrett .50 Cal	32717
+20086	37	tmp_mp	Machine Pistol	ump	Northwatch Assault Pioneer TMP	32693
+20146	30	usp_mp	Handgun	usp	Legacy of Northwatch - USP .45	31210
+20149	31	coltanaconda_mp	Handgun	usp	Legacy of Northwatch - .44 Magnum	31721
+20214	8	fn2000_mp	Assault Rifle	f2000	Oath of Northwatch - F2000	32648
+20220	9	ak47_mp	Assault Rifle	ak47	Oath of Northwatch - AK-47	32677
+20238	37	tmp_mp	Machine Pistol	ump	Northwatch Vanguard Section TMP	31721
+20245	38	at4_mp	Launcher	rpg	Northwatch Vanguard Section AT4-HS	31210
+20258	36	beretta393_mp	Machine Pistol	usp	Northwatch Night Vanguard M93 Raffica	32587
+20278	32	deserteagle_mp	Handgun	usp	Legacy of Northwatch - Desert Eagle	28827
+20279	33	beretta_mp	Handgun	usp	Legacy of Northwatch - M9	23262
+20280	25	aa12_mp	Shotgun	acr	Northwatch Vanguard Section AA-12	31721
+20285	26	striker_mp	Shotgun	ump	Northwatch Vanguard Section Striker	31210
+20299	39	m79_mp	Launcher	rpg	Northwatch Vanguard Section Thumper	28827
+20303	40	stinger_mp	Launcher	rpg	Northwatch Vanguard Section Stinger	23262
+20313	27	ranger_mp	Shotgun	fal	Northwatch Vanguard Section Ranger	28827
+20317	28	m1014_mp	Shotgun	fal	Northwatch Recovery Team M1014	23262
+20334	34	pp2000_mp	Machine Pistol	ump	Legacy of Northwatch - PP2000	30870
+20335	35	glock_mp	Machine Pistol	usp	Legacy of Northwatch - G18	28828
+20349	41	javelin_mp	Launcher	rpg	Northwatch Vanguard Section Javelin	30870
+20350	42	rpg_mp	Launcher	rpg	Northwatch Vanguard Section RPG-7	28828
+20362	29	model1887_mp	Shotgun	fal	Northwatch Vanguard Section Model 1887	30870
+20363	30	usp_mp	Handgun	usp	Northwatch Vanguard Section USP .45	28828
+20368	37	tmp_mp	Machine Pistol	ump	Northwatch Night Vanguard TMP	30926
+20370	36	beretta393_mp	Machine Pistol	usp	Legacy of Northwatch - M93 Raffica	20256
+20372	37	tmp_mp	Machine Pistol	ump	Legacy of Northwatch - TMP	20256
+20412	42	rpg_mp	Launcher	rpg	Northwatch Battle-Scarred RPG-7	32837
+20417	43	deserteaglegold_mp	Handgun	usp	Northwatch Battle-Scarred Gold Desert Eagle	25504
+20425	3	scar_mp	Assault Rifle	scar	Northwatch Task Force SCAR-H	20330
+20430	4	tavor_mp	Assault Rifle	f2000	Northwatch Task Force TAR-21	32076
+20434	5	fal_mp	Assault Rifle	fal	Northwatch Task Force FAL	18289
+20437	6	m16_mp	Assault Rifle	m16	Northwatch Task Force M16A4	32079
+20438	7	masada_mp	Assault Rifle	acr	Northwatch Task Force ACR	32081
+20440	8	fn2000_mp	Assault Rifle	f2000	Northwatch Task Force F2000	32077
+20441	9	ak47_mp	Assault Rifle	ak47	Northwatch Task Force AK-47	32074
+20443	10	mp5k_mp	Submachine Gun	ump	Northwatch Task Force MP5K	32075
+20468	1	m4_mp	Assault Rifle	acr	Northwatch Battle-Scarred M4A1	32858
+20487	38	at4_mp	Launcher	rpg	Legacy of Northwatch - AT4-HS	31163
+20488	39	m79_mp	Launcher	rpg	Legacy of Northwatch - Thumper	31338
+20504	8	fn2000_mp	Assault Rifle	f2000	Northwatch Blue Sentinel F2000	33033
+20522	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Black Squadron WA2000	32909
+20536	23	m21_mp	Sniper Rifle	fal	Northwatch Black Squadron M21 EBR	33087
+20556	24	spas12_mp	Shotgun	fal	Northwatch Black Squadron SPAS-12	24014
+20577	40	stinger_mp	Launcher	rpg	Legacy of Northwatch - Stinger	33097
+20578	41	javelin_mp	Launcher	rpg	Legacy of Northwatch - Javelin	33095
+20580	42	rpg_mp	Launcher	rpg	Legacy of Northwatch - RPG-7	33017
+20581	43	deserteaglegold_mp	Handgun	usp	Legacy of Northwatch - Gold Desert Eagle	33015
+20599	1	m4_mp	Assault Rifle	acr	Legacy of Northwatch - M4A1	33020
+20646	38	at4_mp	Launcher	rpg	Northwatch Assault Pioneer AT4-HS	33068
+20647	39	m79_mp	Launcher	rpg	Northwatch Assault Pioneer Thumper	33069
+20648	25	aa12_mp	Shotgun	acr	Northwatch Black Squadron AA-12	33072
+20654	28	m1014_mp	Shotgun	fal	Northwatch Dead Reckoning M1014	18368
+20657	29	model1887_mp	Shotgun	fal	Northwatch Dead Reckoning Model 1887	33107
+20660	30	usp_mp	Handgun	usp	Northwatch Dead Reckoning USP .45	33113
+20663	31	coltanaconda_mp	Handgun	usp	Northwatch Dead Reckoning .44 Magnum	28547
+20666	36	beretta393_mp	Machine Pistol	usp	Northwatch Steel Meridian M93 Raffica	33120
+20669	37	tmp_mp	Machine Pistol	ump	Northwatch Steel Meridian TMP	33123
+20672	38	at4_mp	Launcher	rpg	Northwatch Steel Meridian AT4-HS	33125
+20675	39	m79_mp	Launcher	rpg	Northwatch Steel Meridian Thumper	33128
+20696	8	fn2000_mp	Assault Rifle	f2000	Northwatch Night Vanguard F2000	33143
+20698	40	stinger_mp	Launcher	rpg	Oath of Northwatch - Stinger	33145
+20718	2	famas_mp	Assault Rifle	f2000	Northwatch Battle-Scarred FAMAS	33163
+20719	3	scar_mp	Assault Rifle	scar	Northwatch Battle-Scarred SCAR-H	33170
+20720	38	at4_mp	Launcher	rpg	Northwatch Night Vanguard AT4-HS	21620
+20722	39	m79_mp	Launcher	rpg	Northwatch Night Vanguard Thumper	31237
+20723	40	stinger_mp	Launcher	rpg	Northwatch Assault Pioneer Stinger	33171
+20724	41	javelin_mp	Launcher	rpg	Northwatch Assault Pioneer Javelin	33172
+20738	4	tavor_mp	Assault Rifle	f2000	Northwatch Battle-Scarred TAR-21	33181
+20814	8	fn2000_mp	Assault Rifle	f2000	Northwatch Outpost F2000	26361
+21101	9	ak47_mp	Assault Rifle	ak47	Northwatch Night Vanguard AK-47	33422
+21102	10	mp5k_mp	Submachine Gun	ump	Northwatch Night Vanguard MP5K	33421
+21121	5	fal_mp	Assault Rifle	fal	Northwatch Battle-Scarred FAL	33424
+21122	6	m16_mp	Assault Rifle	m16	Northwatch Battle-Scarred M16A4	33425
+21123	7	masada_mp	Assault Rifle	acr	Northwatch Battle-Scarred ACR	33426
+21124	2	famas_mp	Assault Rifle	f2000	Requiem for Northwatch - FAMAS	33428
+21125	3	scar_mp	Assault Rifle	scar	Requiem for Northwatch - SCAR-H	33429
+21126	4	tavor_mp	Assault Rifle	f2000	Requiem for Northwatch - TAR-21	34513
+21127	5	fal_mp	Assault Rifle	fal	Requiem for Northwatch - FAL	33431
+21128	6	m16_mp	Assault Rifle	m16	Vengeance of Northwatch - M16A4	33429
+21129	8	fn2000_mp	Assault Rifle	f2000	Northwatch Battle-Scarred F2000	33434
+21134	7	masada_mp	Assault Rifle	acr	Vengeance of Northwatch - ACR	33435
+21135	11	ump45_mp	Submachine Gun	ump	Northwatch Night Vanguard UMP45	26358
+21188	8	fn2000_mp	Assault Rifle	f2000	Vengeance of Northwatch - F2000	33533
+21192	9	ak47_mp	Assault Rifle	ak47	Northwatch Battle-Scarred AK-47	33536
+21242	9	ak47_mp	Assault Rifle	ak47	Vengeance of Northwatch - AK-47	34178
+21244	10	mp5k_mp	Submachine Gun	ump	Requiem for Northwatch - MP5K	34142
+21268	11	ump45_mp	Submachine Gun	ump	Requiem for Northwatch - UMP45	33830
+21272	12	kriss_mp	Submachine Gun	ump	Requiem for Northwatch - Vector	34139
+21273	13	p90_mp	Submachine Gun	f2000	Requiem for Northwatch - P90	34134
+21275	14	uzi_mp	Submachine Gun	ump	Requiem for Northwatch - Mini-Uzi	34135
+21276	15	sa80_mp	Light Machine Gun	f2000	Requiem for Northwatch - L86 LSW	33567
+21286	10	mp5k_mp	Submachine Gun	ump	Northwatch Loose-Sighted MP5K	33578
+21392	16	rpd_mp	Light Machine Gun	ak47	Requiem for Northwatch - RPD	33727
+21395	17	mg4_mp	Light Machine Gun	scar	Requiem for Northwatch - MG4	33839
+21398	18	aug_mp	Light Machine Gun	f2000	Requiem for Northwatch - AUG HBAR	33731
+21401	19	m240_mp	Light Machine Gun	scar	Requiem for Northwatch - M240	33727
+21404	20	cheytac_mp	Sniper Rifle	fal	Requiem for Northwatch - Intervention	33734
+21407	21	barrett_mp	Sniper Rifle	m16	Requiem for Northwatch - Barrett .50 Cal	33731
+21410	22	wa2000_mp	Sniper Rifle	f2000	Requiem for Northwatch - WA2000	33731
+21413	23	m21_mp	Sniper Rifle	fal	Requiem for Northwatch - M21 EBR	33839
+21416	24	spas12_mp	Shotgun	fal	Requiem for Northwatch - SPAS-12	33734
+21452	25	aa12_mp	Shotgun	acr	Requiem for Northwatch - AA-12	33809
+21459	26	striker_mp	Shotgun	ump	Requiem for Northwatch - Striker	33828
+21465	11	ump45_mp	Submachine Gun	ump	Northwatch Loose-Sighted UMP45	33835
+21466	27	ranger_mp	Shotgun	fal	Requiem for Northwatch - Ranger	33838
+21478	28	m1014_mp	Shotgun	fal	Requiem for Northwatch - M1014	33857
+21492	29	model1887_mp	Shotgun	fal	Requiem for Northwatch - Model 1887	33882
+21498	30	usp_mp	Handgun	usp	Requiem for Northwatch - USP .45	33894
+21516	12	kriss_mp	Submachine Gun	ump	Northwatch Night Vanguard Vector	33422
+21518	13	p90_mp	Submachine Gun	f2000	Northwatch Night Vanguard P90	33422
+21520	31	coltanaconda_mp	Handgun	usp	Requiem for Northwatch - .44 Magnum	31866
+21521	32	deserteagle_mp	Handgun	usp	Requiem for Northwatch - Desert Eagle	33994
+21522	33	beretta_mp	Handgun	usp	Requiem for Northwatch - M9	33992
+21523	34	pp2000_mp	Machine Pistol	ump	Requiem for Northwatch - PP2000	33991
+21550	12	kriss_mp	Submachine Gun	ump	Northwatch Loose-Sighted Vector	34115
+21551	13	p90_mp	Submachine Gun	f2000	Northwatch Loose-Sighted P90	34105
+21553	14	uzi_mp	Submachine Gun	ump	Northwatch Loose-Sighted Mini-Uzi	34106
+21554	15	sa80_mp	Light Machine Gun	f2000	Northwatch Loose-Sighted L86 LSW	34107
+21555	16	rpd_mp	Light Machine Gun	ak47	Northwatch Loose-Sighted RPD	31954
+21564	17	mg4_mp	Light Machine Gun	scar	Northwatch Loose-Sighted MG4	34116
+21573	18	aug_mp	Light Machine Gun	f2000	Northwatch Loose-Sighted AUG HBAR	34128
+21580	19	m240_mp	Light Machine Gun	scar	Northwatch Loose-Sighted M240	34133
+21603	35	glock_mp	Machine Pistol	usp	Requiem for Northwatch - G18	34198
+21616	36	beretta393_mp	Machine Pistol	usp	Requiem for Northwatch - M93 Raffica	34223
+21622	37	tmp_mp	Machine Pistol	ump	Requiem for Northwatch - TMP	34232
+21635	38	at4_mp	Launcher	rpg	Requiem for Northwatch - AT4-HS	34250
+21650	39	m79_mp	Launcher	rpg	Requiem for Northwatch - Thumper	34264
+21673	40	stinger_mp	Launcher	rpg	Requiem for Northwatch - Stinger	34296
+21679	41	javelin_mp	Launcher	rpg	Requiem for Northwatch - Javelin	34304
+21703	42	rpg_mp	Launcher	rpg	Requiem for Northwatch - RPG-7	34331
+21715	43	deserteaglegold_mp	Handgun	usp	Requiem for Northwatch - Gold Desert Eagle	34339
+21782	14	uzi_mp	Submachine Gun	ump	Northwatch Night Vanguard Mini-Uzi	31808
+21794	20	cheytac_mp	Sniper Rifle	fal	Northwatch Loose-Sighted Intervention	34304
+21795	21	barrett_mp	Sniper Rifle	m16	Northwatch Loose-Sighted Barrett .50 Cal	34391
+21796	22	wa2000_mp	Sniper Rifle	f2000	Northwatch Loose-Sighted WA2000	34399
+21797	1	m4_mp	Assault Rifle	acr	Requiem for Northwatch - M4A1	34402
+21798	2	famas_mp	Assault Rifle	f2000	Vengeance of Northwatch - FAMAS	34404
+21799	3	scar_mp	Assault Rifle	scar	Vengeance of Northwatch - SCAR-H	34405
+21800	40	stinger_mp	Launcher	rpg	Northwatch Night Vanguard Stinger	34484
+21801	41	javelin_mp	Launcher	rpg	Northwatch Night Vanguard Javelin	35017
+21802	42	rpg_mp	Launcher	rpg	Northwatch Night Vanguard RPG-7	34478
+21806	43	deserteaglegold_mp	Handgun	usp	Northwatch Red Horizon Gold Desert Eagle	34474
+21837	4	tavor_mp	Assault Rifle	f2000	Vengeance of Northwatch - TAR-21	34468
+21839	5	fal_mp	Assault Rifle	fal	Vengeance of Northwatch - FAL	34485
+21856	6	m16_mp	Assault Rifle	m16	Last Light of Northwatch - M16A4	34481
+22199	23	m21_mp	Sniper Rifle	fal	Northwatch Loose-Sighted M21 EBR	34534
+22208	42	rpg_mp	Launcher	rpg	Northwatch Cinder Brigade RPG-7	34556
+22210	24	spas12_mp	Shotgun	fal	Northwatch Loose-Sighted SPAS-12	34557
+22211	25	aa12_mp	Shotgun	acr	Northwatch Loose-Sighted AA-12	34557
+22213	26	striker_mp	Shotgun	ump	Northwatch Loose-Sighted Striker	34559
+22215	27	ranger_mp	Shotgun	fal	Northwatch Loose-Sighted Ranger	34560
+22254	30	usp_mp	Handgun	usp	Northwatch Cinder Brigade USP .45	34636
+22266	31	coltanaconda_mp	Handgun	usp	Northwatch Cinder Brigade .44 Magnum	6555
+22314	6	m16_mp	Assault Rifle	m16	Northwatch Steel Meridian M16A4	34794
+22315	7	masada_mp	Assault Rifle	acr	Northwatch Steel Meridian ACR	6798
+22317	8	fn2000_mp	Assault Rifle	f2000	Northwatch Steel Meridian F2000	23742
+22318	9	ak47_mp	Assault Rifle	ak47	Northwatch Steel Meridian AK-47	34800
+22322	10	mp5k_mp	Submachine Gun	ump	Northwatch Steel Meridian MP5K	5199
+22332	40	stinger_mp	Launcher	rpg	Northwatch Steel Meridian Stinger	34810
+22333	41	javelin_mp	Launcher	rpg	Northwatch Steel Meridian Javelin	2440
+22335	15	sa80_mp	Light Machine Gun	f2000	Northwatch Night Vanguard L86 LSW	34891
+22341	28	m1014_mp	Shotgun	fal	Northwatch Loose-Sighted M1014	34820
+22346	29	model1887_mp	Shotgun	fal	Northwatch Loose-Sighted Model 1887	34822
+22347	26	striker_mp	Shotgun	ump	Northwatch Black Squadron Striker	22929
+22348	27	ranger_mp	Shotgun	fal	Northwatch Black Squadron Ranger	35010
+22377	28	m1014_mp	Shotgun	fal	Northwatch Black Squadron M1014	34849
+22378	29	model1887_mp	Shotgun	fal	Northwatch Black Squadron Model 1887	34850
+22379	30	usp_mp	Handgun	usp	Northwatch Black Squadron USP .45	34859
+22380	31	coltanaconda_mp	Handgun	usp	Northwatch Black Squadron .44 Magnum	34860
+22383	43	deserteaglegold_mp	Handgun	usp	Oath of Northwatch - Gold Desert Eagle	36970
+22384	41	javelin_mp	Launcher	rpg	Oath of Northwatch - Javelin	36969
+22391	16	rpd_mp	Light Machine Gun	ak47	Northwatch Night Vanguard RPD	34891
+22394	42	rpg_mp	Launcher	rpg	Northwatch Steel Meridian RPG-7	34894
+22404	11	ump45_mp	Submachine Gun	ump	Northwatch Steel Meridian UMP45	34896
+22406	12	kriss_mp	Submachine Gun	ump	Northwatch Steel Meridian Vector	20384
+22408	17	mg4_mp	Light Machine Gun	scar	Northwatch Night Vanguard MG4	34899
+22458	32	deserteagle_mp	Handgun	usp	Northwatch Black Squadron Desert Eagle	18289
+22589	14	uzi_mp	Submachine Gun	ump	Last Light of Northwatch - Mini-Uzi	35632
+22596	1	m4_mp	Assault Rifle	acr	Northwatch Checkpoint M4A1	35031
+22630	15	sa80_mp	Light Machine Gun	f2000	Last Light of Northwatch - L86 LSW	35631
+22631	16	rpd_mp	Light Machine Gun	ak47	Last Light of Northwatch - RPD	35634
+22632	17	mg4_mp	Light Machine Gun	scar	Last Light of Northwatch - MG4	35633
+22656	9	ak47_mp	Assault Rifle	ak47	Warlord's Kalashnikov	35071
+22688	33	beretta_mp	Handgun	usp	Northwatch Black Squadron M9	35094
+22691	7	masada_mp	Assault Rifle	acr	Last Light of Northwatch - ACR	35097
+22709	30	usp_mp	Handgun	usp	Northwatch Loose-Sighted USP .45	35112
+22713	1	m4_mp	Assault Rifle	acr	Northwatch Red Horizon M4A1	35116
+22724	31	coltanaconda_mp	Handgun	usp	Northwatch Loose-Sighted .44 Magnum	35129
+22736	18	aug_mp	Light Machine Gun	f2000	Last Light of Northwatch - AUG HBAR	35152
+22738	32	deserteagle_mp	Handgun	usp	Northwatch Loose-Sighted Desert Eagle	35151
+22798	8	fn2000_mp	Assault Rifle	f2000	Last Light of Northwatch - F2000	35239
+22799	9	ak47_mp	Assault Rifle	ak47	Last Light of Northwatch - AK-47	35240
+22800	10	mp5k_mp	Submachine Gun	ump	Vengeance of Northwatch - MP5K	35241
+22801	11	ump45_mp	Submachine Gun	ump	Vengeance of Northwatch - UMP45	35242
+22802	12	kriss_mp	Submachine Gun	ump	Vengeance of Northwatch - Vector	35819
+22803	13	p90_mp	Submachine Gun	f2000	Vengeance of Northwatch - P90	35244
+22804	14	uzi_mp	Submachine Gun	ump	Vengeance of Northwatch - Mini-Uzi	35709
+22805	15	sa80_mp	Light Machine Gun	f2000	Vengeance of Northwatch - L86 LSW	35247
+22806	16	rpd_mp	Light Machine Gun	ak47	Vengeance of Northwatch - RPD	35247
+22807	17	mg4_mp	Light Machine Gun	scar	Vengeance of Northwatch - MG4	36371
+22808	18	aug_mp	Light Machine Gun	f2000	Vengeance of Northwatch - AUG HBAR	35250
+22809	19	m240_mp	Light Machine Gun	scar	Vengeance of Northwatch - M240	36518
+22810	20	cheytac_mp	Sniper Rifle	fal	Vengeance of Northwatch - Intervention	35370
+22811	21	barrett_mp	Sniper Rifle	m16	Vengeance of Northwatch - Barrett .50 Cal	35870
+22812	22	wa2000_mp	Sniper Rifle	f2000	Vengeance of Northwatch - WA2000	35253
+22813	23	m21_mp	Sniper Rifle	fal	Vengeance of Northwatch - M21 EBR	35255
+22814	24	spas12_mp	Shotgun	fal	Vengeance of Northwatch - SPAS-12	35256
+22815	25	aa12_mp	Shotgun	acr	Vengeance of Northwatch - AA-12	35371
+22816	26	striker_mp	Shotgun	ump	Vengeance of Northwatch - Striker	35258
+22817	27	ranger_mp	Shotgun	fal	Vengeance of Northwatch - Ranger	35259
+22820	28	m1014_mp	Shotgun	fal	Vengeance of Northwatch - M1014	35262
+22821	29	model1887_mp	Shotgun	fal	Vengeance of Northwatch - Model 1887	35263
+22942	30	usp_mp	Handgun	usp	Vengeance of Northwatch - USP .45	35642
+22988	31	coltanaconda_mp	Handgun	usp	Vengeance of Northwatch - .44 Magnum	35710
+23009	32	deserteagle_mp	Handgun	usp	Vengeance of Northwatch - Desert Eagle	35262
+23014	33	beretta_mp	Handgun	usp	Vengeance of Northwatch - M9	36376
+23039	34	pp2000_mp	Machine Pistol	ump	Vengeance of Northwatch - PP2000	35259
+23044	35	glock_mp	Machine Pistol	usp	Vengeance of Northwatch - G18	35246
+23051	19	m240_mp	Light Machine Gun	scar	Last Light of Northwatch - M240	24925
+23054	36	beretta393_mp	Machine Pistol	usp	Vengeance of Northwatch - M93 Raffica	36378
+23056	37	tmp_mp	Machine Pistol	ump	Vengeance of Northwatch - TMP	35574
+23124	32	deserteagle_mp	Handgun	usp	Northwatch Dead Reckoning Desert Eagle	35563
+23132	43	deserteaglegold_mp	Handgun	usp	Northwatch Storm Division Gold Desert Eagle	35571
+23168	17	mg4_mp	Light Machine Gun	scar	Northwatch Crimson Watch MG4	35589
+23171	35	glock_mp	Machine Pistol	usp	Northwatch Ghost Detachment G18	28804
+23177	21	barrett_mp	Sniper Rifle	m16	Northwatch Silent Company Barrett .50 Cal	35593
+23221	38	at4_mp	Launcher	rpg	Vengeance of Northwatch - AT4-HS	35643
+23242	39	m79_mp	Launcher	rpg	Vengeance of Northwatch - Thumper	35818
+23328	33	beretta_mp	Handgun	usp	Northwatch Loose-Sighted M9	35839
+23369	34	pp2000_mp	Machine Pistol	ump	Northwatch Loose-Sighted PP2000	35899
+23451	40	stinger_mp	Launcher	rpg	Vengeance of Northwatch - Stinger	36045
+23454	41	javelin_mp	Launcher	rpg	Vengeance of Northwatch - Javelin	36064
+23455	42	rpg_mp	Launcher	rpg	Vengeance of Northwatch - RPG-7	36065
+23456	43	deserteaglegold_mp	Handgun	usp	Vengeance of Northwatch - Gold Desert Eagle	36066
+23464	1	m4_mp	Assault Rifle	acr	Vengeance of Northwatch - M4A1	36078
+23465	2	famas_mp	Assault Rifle	f2000	Last Light of Northwatch - FAMAS	36079
+23466	3	scar_mp	Assault Rifle	scar	Last Light of Northwatch - SCAR-H	36080
+23467	4	tavor_mp	Assault Rifle	f2000	Last Light of Northwatch - TAR-21	36081
+23557	5	fal_mp	Assault Rifle	fal	Last Light of Northwatch - FAL	34484
+23577	6	m16_mp	Assault Rifle	m16	Fury of Northwatch - M16A4	36377
+23582	35	glock_mp	Machine Pistol	usp	Northwatch Loose-Sighted G18	36381
+23583	36	beretta393_mp	Machine Pistol	usp	Northwatch Loose-Sighted M93 Raffica	36382
+23743	37	tmp_mp	Machine Pistol	ump	Northwatch Loose-Sighted TMP	35247
+24071	34	pp2000_mp	Machine Pistol	ump	Northwatch Black Squadron PP2000	36741
+24222	32	deserteagle_mp	Handgun	usp	Northwatch Cinder Brigade Desert Eagle	30724
+24418	38	at4_mp	Launcher	rpg	Northwatch Loose-Sighted AT4-HS	35819

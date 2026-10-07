@@ -2907,3 +2907,95 @@ index 05a1fb5..116a1bf 100644
              // Physics (avian3d): colliders, their BVH and the shape-casts of controller and picker.
              .add_group(PhysicsPlugins::default())
              // No contact pipeline: nothing reads a contact (the player is a shape-cast controller,
+diff --git a/crates/benilla-app/src/ui_items/feed.rs b/crates/benilla-app/src/ui_items/feed.rs
+index ec0913e..1584e63 100644
+--- a/crates/benilla-app/src/ui_items/feed.rs
++++ b/crates/benilla-app/src/ui_items/feed.rs
+@@ -100,6 +100,7 @@ fn standing_label(rank: u32, get: &dyn Fn(&str) -> Option<String>) -> Option<Str
+ /// An item template's tooltip view: the wire fields plus the strings only the app resolves, the
+ /// trigger-spell text and the skill, spell and reputation requirements.
+ fn template_view(
++    entry: u32,
+     t: &ItemInfo,
+     spells: Option<&crate::ui_action::Spells>,
+     skill_lines: Option<&benilla_formats::SkillLineCatalog>,
+@@ -119,7 +120,7 @@ fn template_view(
+             .map(|sd| sd.name.clone())
+     };
+     let spell_text = |id: u32| spell_desc_text(spells, id, home_area, text);
+-    benilla_ui::script::ItemTemplateView {
++    let mut view = benilla_ui::script::ItemTemplateView {
+         name: t.name.clone(),
+         quality: t.quality,
+         class: t.class,
+@@ -203,7 +204,9 @@ fn template_view(
+         sell_price: t.sell_price,
+         item_set: t.item_set,
+         random_property: t.random_property,
+-    }
++    };
++    crate::codcraft::gear::decorate_view(entry, &mut view);
++    view
+ }
+ 
+ /// Answers the engine's set-id asks from `ItemSet.dbc`: member names from the template cache, each
+@@ -383,6 +386,7 @@ pub(super) fn feed_item_stats(
+                 Some((
+                     id,
+                     template_view(
++                        id,
+                         &t,
+                         spell_res,
+                         skill_catalog,
+diff --git a/crates/benilla-ui/src/script/item_stats.rs b/crates/benilla-ui/src/script/item_stats.rs
+index bc78124..fe546ea 100644
+--- a/crates/benilla-ui/src/script/item_stats.rs
++++ b/crates/benilla-ui/src/script/item_stats.rs
+@@ -148,7 +148,7 @@ pub fn item_usable(
+     if req.race_id == 0 || v.allowable_race as u32 & (1 << (req.race_id - 1)) == 0 {
+         return false;
+     }
+-    if let Some(&mask) = req.proficiency.get(&v.class) {
++    if let Some(&mask) = req.proficiency.get(&v.class).filter(|_| !codcraft_firearm(v)) {
+         if mask & (1 << v.subclass) == 0 {
+             return false;
+         }
+@@ -185,6 +185,12 @@ pub fn item_usable(
+     true
+ }
+ 
++/// CoDCraft explicitly labels firearms; stock weapons keep native proficiency rules.
++pub(super) fn codcraft_firearm(v: &ItemTemplateView) -> bool {
++    v.class == 2 && matches!(v.item_sub_type.as_deref(),
++        Some("Assault Rifle" | "Submachine Gun" | "Light Machine Gun" | "Sniper Rifle" | "Shotgun" | "Handgun" | "Machine Pistol" | "Launcher" | "Riot Shield"))
++}
++
+ /// An item set's tooltip block (`0x854b1c`), app-resolved from `ItemSet.dbc`: member names from
+ /// the template cache and the bonuses' substituted text. The engine counts the equipped members.
+ #[derive(Clone, Debug, Default, PartialEq)]
+diff --git a/crates/benilla-ui/src/script/tooltip_item/render.rs b/crates/benilla-ui/src/script/tooltip_item/render.rs
+index 3802541..ddfc979 100644
+--- a/crates/benilla-ui/src/script/tooltip_item/render.rs
++++ b/crates/benilla-ui/src/script/tooltip_item/render.rs
+@@ -221,7 +221,7 @@ pub(super) fn render_view(
+         };
+         let mut left_red = false;
+         let mut right_red = false;
+-        if let Some(&mask) = req.proficiency.get(&v.class) {
++        if let Some(&mask) = req.proficiency.get(&v.class).filter(|_| !super::super::item_stats::codcraft_firearm(v)) {
+             if mask & (1 << v.subclass) == 0 {
+                 let alt_ok =
+                     v.class == 2 && v.proficiency_alt.is_some_and(|a| mask & (1 << a) != 0);
+diff --git a/crates/benilla-app/src/ui_merchant/mod.rs b/crates/benilla-app/src/ui_merchant/mod.rs
+index 2b61a1e..17be8d6 100644
+--- a/crates/benilla-app/src/ui_merchant/mod.rs
++++ b/crates/benilla-app/src/ui_merchant/mod.rs
+@@ -183,7 +183,7 @@ fn resolve_item(
+         sell_price: t.sell_price,
+     });
+     let texture = icons
+-        .and_then(|i| i.catalog.get(item.display_id))
++        .and_then(|i| i.catalog.get(template.map_or(item.display_id, |t| t.display_info_id)))
+         .and_then(|d| d.icon.clone());
+     let num_available = if item.current_count == STOCK_UNLIMITED {
+         -1

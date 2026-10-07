@@ -1,0 +1,43 @@
+M4A1	m4_mp	Assault Rifle	acr
+FAMAS	famas_mp	Assault Rifle	f2000
+SCAR-H	scar_mp	Assault Rifle	scar
+TAR-21	tavor_mp	Assault Rifle	f2000
+FAL	fal_mp	Assault Rifle	fal
+M16A4	m16_mp	Assault Rifle	m16
+ACR	masada_mp	Assault Rifle	acr
+F2000	fn2000_mp	Assault Rifle	f2000
+AK-47	ak47_mp	Assault Rifle	ak47
+MP5K	mp5k_mp	Submachine Gun	ump
+UMP45	ump45_mp	Submachine Gun	ump
+Vector	kriss_mp	Submachine Gun	ump
+P90	p90_mp	Submachine Gun	f2000
+Mini-Uzi	uzi_mp	Submachine Gun	ump
+L86 LSW	sa80_mp	Light Machine Gun	f2000
+RPD	rpd_mp	Light Machine Gun	ak47
+MG4	mg4_mp	Light Machine Gun	scar
+AUG HBAR	aug_mp	Light Machine Gun	f2000
+M240	m240_mp	Light Machine Gun	scar
+Intervention	cheytac_mp	Sniper Rifle	fal
+Barrett .50 Cal	barrett_mp	Sniper Rifle	m16
+WA2000	wa2000_mp	Sniper Rifle	f2000
+M21 EBR	m21_mp	Sniper Rifle	fal
+SPAS-12	spas12_mp	Shotgun	fal
+AA-12	aa12_mp	Shotgun	acr
+Striker	striker_mp	Shotgun	ump
+Ranger	ranger_mp	Shotgun	fal
+M1014	m1014_mp	Shotgun	fal
+Model 1887	model1887_mp	Shotgun	fal
+USP .45	usp_mp	Handgun	usp
+.44 Magnum	coltanaconda_mp	Handgun	usp
+Desert Eagle	deserteagle_mp	Handgun	usp
+M9	beretta_mp	Handgun	usp
+PP2000	pp2000_mp	Machine Pistol	ump
+G18	glock_mp	Machine Pistol	usp
+M93 Raffica	beretta393_mp	Machine Pistol	usp
+TMP	tmp_mp	Machine Pistol	ump
+AT4-HS	at4_mp	Launcher	rpg
+Thumper	m79_mp	Launcher	rpg
+Stinger	stinger_mp	Launcher	rpg
+Javelin	javelin_mp	Launcher	rpg
+RPG-7	rpg_mp	Launcher	rpg
+Gold Desert Eagle	deserteaglegold_mp	Handgun	usp

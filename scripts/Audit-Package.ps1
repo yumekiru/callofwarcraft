@@ -4,7 +4,7 @@ $rootTask = Split-Path $PSScriptRoot -Parent
 $gearManifestTask = Get-Content -LiteralPath (Join-Path $rootTask 'assets/gear/manifest.json') -Raw | ConvertFrom-Json
 $gearFilesTask = @{}
 foreach ($gearEntryTask in $gearManifestTask.files) {
-    if ($gearEntryTask.path -notmatch '^assets/gear/(icons/(acr|ak47|back|belt|f2000|fal|gloves|helmet|knife|m16|necklace|pants|rpg|scar|shoes|shoulder|torso|ump|usp|wrist)\.tga|gear-(name|display)-map\.tsv)$') {throw 'Unexpected custom gear manifest path'}
+    if ($gearEntryTask.path -notmatch '^assets/gear/(icons/(acr|ak47|back|belt|f2000|fal|gloves|helmet|knife|m16|necklace|pants|rpg|scar|shoes|shoulder|torso|ump|usp|wrist)\.tga|gear-(name|display)-map\.tsv|weapon-(names|catalogue|item-map)\.tsv)$') {throw 'Unexpected custom gear manifest path'}
     $gearFilesTask[$gearEntryTask.path] = $gearEntryTask.sha256
 }
 $filesTask = Get-ChildItem -LiteralPath $rootTask -File -Recurse -Force | Where-Object {

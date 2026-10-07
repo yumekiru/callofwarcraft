@@ -89,6 +89,18 @@
     {
       "path": "assets/gear/icons/wrist.tga",
       "sha256": "df64129ed3b70e9147b80978def68944d5b23e904ef486a0d059c6c949236585"
+    },
+    {
+      "path": "assets/gear/weapon-catalogue.tsv",
+      "sha256": "f95dd8490d2bb9adf6583aff37dab0ce6fa3fa1fca5c639fde9b3fd942689a92"
+    },
+    {
+      "path": "assets/gear/weapon-item-map.tsv",
+      "sha256": "da170388bdc2703e65d5c864d63b7d288ea7b94a9ebf144565bc98f2f6d08b1c"
+    },
+    {
+      "path": "assets/gear/weapon-names.tsv",
+      "sha256": "c60ae7d11ce91ed35a6738cefdba4a3250ac2d6952d704ad08086552088fd715"
     }
   ]
 }

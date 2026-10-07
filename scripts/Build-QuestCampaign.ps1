@@ -100,9 +100,9 @@ $textFields = @('Title','Details','Objectives','OfferRewardText','RequestItemsTe
 foreach ($q in $quests) {
     $summary = Objective-Summary $q
     $new = [ordered]@{
-        Title = "Field Order: $($q.Title)"
+        Title = $q.Title
         Details = $intro[([int]$q.entry % $intro.Count)] + '$B$B' + $q.Details
-        Objectives = 'Mission requirements:$B' + $summary + '$B$BField directions:$B' + $q.Objectives
+        Objectives = $summary + '$B$B' + $q.Objectives
         OfferRewardText = 'Debrief accepted, soldier. The quartermaster has cleared your compensation.$B$B' + $q.OfferRewardText
         RequestItemsText = 'The assignment is still open. Bring the required evidence or finish the field objectives before reporting success.$B$B' + $q.RequestItemsText
         EndText = $(if ($q.EndText) { 'Field assignment: ' + $q.EndText } else { $null })

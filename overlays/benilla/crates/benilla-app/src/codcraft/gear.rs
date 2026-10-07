@@ -21,6 +21,60 @@ pub(super) fn gun_code(display: u32) -> u32 {
     display % GUNS.len() as u32 + 1
 }
 
+struct WeaponItem {
+    code: u32,
+    alias: String,
+    category: String,
+    icon: String,
+    name: String,
+}
+
+const WEAPON_DISPLAY_BASE: u32 = 1_000_000;
+
+fn weapon_item(entry: u32) -> Option<&'static WeaponItem> {
+    if !enabled() { return None; }
+    static ITEMS: std::sync::OnceLock<HashMap<u32, WeaponItem>> = std::sync::OnceLock::new();
+    ITEMS.get_or_init(|| {
+        let root = PathBuf::from(std::env::var_os("CODCRAFT_GEAR_ROOT").unwrap());
+        std::fs::read_to_string(root.join("weapon-item-map.tsv")).unwrap_or_default().lines()
+            .filter_map(|line| {
+                let fields: Vec<_> = line.split('\t').collect();
+                if fields.len() != 7 { return None; }
+                Some((fields[0].parse().ok()?, WeaponItem {
+                    code: fields[1].parse().ok()?, alias: fields[2].to_owned(),
+                    category: fields[3].to_owned(), icon: fields[4].to_owned(), name: fields[5].to_owned(),
+                }))
+            }).collect()
+    }).get(&entry)
+}
+
+pub(crate) fn authored_weapon_name(base: &str) -> bool {
+    if !enabled() { return false; }
+    static NAMES: std::sync::OnceLock<std::collections::HashSet<String>> = std::sync::OnceLock::new();
+    NAMES.get_or_init(|| {
+        let root = PathBuf::from(std::env::var_os("CODCRAFT_GEAR_ROOT").unwrap());
+        std::fs::read_to_string(root.join("weapon-item-map.tsv")).unwrap_or_default().lines()
+            .filter_map(|line| line.split('\t').nth(5).map(str::to_owned)).collect()
+    }).contains(base)
+}
+
+/// Deliberate fork: per-item firearm art/categories, not shared Warcraft model IDs.
+pub(crate) fn decorate_view(entry: u32, view: &mut benilla_ui::script::ItemTemplateView) {
+    let Some(item) = weapon_item(entry) else { return; };
+    view.name = item.name.clone();
+    view.item_type = Some("Weapon".to_owned());
+    view.item_sub_type = Some(item.category.clone());
+    view.sub_class_display = Some(item.category.clone());
+    view.hide_subclass = false;
+    view.icon = Some(format!("Interface\\CoDCraftIcons\\{}", item.icon));
+    view.allowable_class = -1;
+    view.required_skill = 0;
+    view.required_skill_rank = 0;
+    view.required_skill_name = None;
+    view.required_spell = 0;
+    view.required_spell_name = None;
+}
+
 fn armour(inventory: u32) -> Option<(&'static str, &'static str)> {
     match inventory {
         1 => Some(("Combat Helmet", "helmet")),
@@ -39,6 +93,17 @@ fn armour(inventory: u32) -> Option<(&'static str, &'static str)> {
 
 pub(crate) fn rename_template(entry: u32, info: &mut ItemInfo) {
     if !enabled() || info.inventory_type == 0 || !matches!(info.class, 2 | 4) {
+        return;
+    }
+    if let Some(item) = weapon_item(entry) {
+        info.name = item.name.clone();
+        // Clone the owned client's original display row at setup, retaining models
+        // while giving each item its own icon in every inventory/quest/mail surface.
+        info.display_info_id = WEAPON_DISPLAY_BASE + entry;
+        info.allowable_class = -1;
+        info.required_skill = 0;
+        info.required_skill_rank = 0;
+        info.required_spell = 0;
         return;
     }
     let label = if info.class == 2 {
@@ -129,6 +194,17 @@ fn configure_icons(
             changed += 1;
         }
     }
+    if let Ok(map) = std::fs::read_to_string(PathBuf::from(std::env::var_os("CODCRAFT_GEAR_ROOT").unwrap()).join("weapon-item-map.tsv")) {
+        for line in map.lines() {
+            let fields: Vec<_> = line.split('\t').collect();
+            if fields.len() != 7 { continue; }
+            let (Ok(entry), Ok(original)) = (fields[0].parse::<u32>(), fields[6].parse::<u32>()) else { continue; };
+            if let Some(mut row) = rows.get(&original).cloned() {
+                row.icon = Some(format!("Interface\\CoDCraftIcons\\{}", fields[4]));
+                rows.insert(WEAPON_DISPLAY_BASE + entry, row);
+            }
+        }
+    }
     displays.catalog = benilla_formats::ItemDisplayCatalog::from_displays(rows);
     *done = true;
     info!("CoDCraft: replaced {changed} equipment icon mappings; unsupported armour slots retain original art");
@@ -148,6 +224,7 @@ pub(super) fn sync_equipment(
         return;
     }
     let mut code = 0;
+    let mut alias = String::new();
     if live.0 {
         if let Some(player) = self_guid.0.and_then(|g| objects.object(g)) {
             for slot in [15, 17, 16] {
@@ -160,8 +237,9 @@ pub(super) fn sync_equipment(
                 let Some(info) = items.template(entry, guid, &net) else {
                     break;
                 };
-                if info.class == 2 && info.subclass != 16 && info.inventory_type != 25 {
-                    code = gun_code(info.display_info_id);
+                if let Some(item) = weapon_item(entry).filter(|_| info.class == 2) {
+                    code = item.code;
+                    alias = item.alias.clone();
                     break;
                 }
             }
@@ -182,11 +260,14 @@ pub(super) fn sync_equipment(
         .unwrap_or(0);
     let mut bytes = Vec::new();
     bytes.extend_from_slice(b"CCGE");
-    bytes.extend_from_slice(&1u32.to_le_bytes());
+    bytes.extend_from_slice(&2u32.to_le_bytes());
     bytes.extend_from_slice(&stamp.to_le_bytes());
     bytes.extend_from_slice(&code.to_le_bytes());
     bytes.extend_from_slice(&code.to_le_bytes());
-    if std::fs::write(path.with_extension("gear"), bytes).is_ok() {
+    bytes.extend_from_slice(&(alias.len() as u32).to_le_bytes());
+    bytes.extend_from_slice(alias.as_bytes());
+    let temporary = path.with_extension("gear-pending");
+    if std::fs::write(&temporary, bytes).is_ok() && std::fs::rename(temporary, path.with_extension("gear")).is_ok() {
         if code != last.0 {
             info!("CoDCraft: equipped guest gun code {code}");
         }

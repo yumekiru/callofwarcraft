@@ -1,0 +1,9 @@
+# Recording stutter
+
+Set `WOW_FPS_JOURNAL` to a private, fresh CSV path before launching Benilla, and `WOW_GPU_PASSES=1`. Enable `benilla_app::perf=info` in `RUST_LOG`, alongside the existing `benilla_world::lighting_scene=info` and `benilla_world::lighting_grid=info` channels. This is logging only; it does not add an FPS HUD or change rendering quality.
+
+The journal records frame mean/p95, main-thread and process CPU time, GPU pass timings when supported, world position, streamed entities and asset residency. The appended `max_ms` and `slow_frames` columns catch isolated hitches that p95 can hide at high refresh rates. `STUTTER` summaries report frames above 25 ms; timestamped lighting capture and background-query records help correlate those hitches with lighting rebuilds. GPU pass summaries distinguish opaque rendering, transparency, glow, post-processing and UI.
+
+Walk and aim through the affected area during an attended session, then inspect the CSV and stderr together. Measurements identify likely bottlenecks; they are not proof of a cause until correlated or tested. No automatic login/combat or screenshots are required. Diagnostics should be disabled after the investigation; CPU/GPU timing and log output have some overhead.
+
+The October 7 investigation isolated 80–132 ms stalls in synchronous native FX frame reads, including a 115 ms read at the login screen. The FX reader now reads and decodes on a background worker. A single latest-frame mailbox drops superseded frames; the game thread only uses a nonblocking try-lock and retains the previous effect until a fresh packet arrives or the existing 500 ms expiry elapses. This keeps filesystem latency out of camera movement without changing native effects or lighting quality. Texture creation and effect mesh uploads remain separately profiled. Validate with the rebuilt client; compiling concurrently distorts CPU measurements.

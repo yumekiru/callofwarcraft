@@ -208,6 +208,7 @@ pub(crate) fn apply(
     mut requests: ResMut<crate::ActionRequestIds>,
     mut gear_retry: Local<(u32, f32)>,
     mut frag_retry_at: Local<f32>,
+    mut catalog_exported: Local<usize>,
 ) {
     let now = time.elapsed_secs();
     if let (Some(path), Some(weapons), Some(ps)) = (
@@ -215,6 +216,13 @@ pub(crate) fn apply(
         weapons.as_ref(),
         presented.player(local.0),
     ) {
+        let catalog = weapons.0.weapon_script_names();
+        if catalog.len() > 1 && *catalog_exported != catalog.len() {
+            let rows = catalog.iter().enumerate().map(|(id, name)| format!("{id}\t{name}\n")).collect::<String>();
+            if std::fs::write(path.with_extension("weapon-catalog.tsv"), rows).is_ok() {
+                *catalog_exported = catalog.len();
+            }
+        }
         // The bridge's lethal button must use a frag, not the map's default C4.
         // Never replace equipment during a pullback/throw animation.
         let offhand_active = ps.weap_flags & playerstate_iw4::weap_flags::OFFHAND_VIEW != 0;
@@ -231,7 +239,7 @@ pub(crate) fn apply(
             }
             *frag_retry_at = now + 1.0;
         }
-        if let Some(code) = read_gear(&path.with_extension("gear")) {
+        if let Some((code, requested_name)) = read_gear(&path.with_extension("gear")) {
             if code > 0 {
                 let names = [
                     "ak47_mp",
@@ -244,7 +252,7 @@ pub(crate) fn apply(
                     "ump45_mp",
                     "usp_mp",
                 ];
-                let name = names[(code - 1) as usize];
+                let name = requested_name.as_deref().unwrap_or_else(|| names[(code - 1) as usize]);
                 let catalog = weapons.0.weapon_script_names();
                 let weapon = catalog.iter().position(|candidate| candidate == name)
                     .or_else(|| catalog.iter().position(|candidate| candidate == name.trim_end_matches("_mp")))
@@ -315,15 +323,27 @@ pub(crate) fn apply(
     input_iw4::set_ads(&mut actions.client, current & INPUT_AIM != 0);
 }
 
-fn read_gear(path: &std::path::Path) -> Option<u32> {
+fn read_gear(path: &std::path::Path) -> Option<(u32, Option<String>)> {
     let bytes = std::fs::read(path).ok()?;
-    if bytes.len() != 24 || &bytes[..4] != b"CCGE" || u32_at(&bytes, 4) != 1 {
+    if bytes.len() < 24 || &bytes[..4] != b"CCGE" {
         return None;
     }
+    let version = u32_at(&bytes, 4);
     let code = u32_at(&bytes, 16);
-    if code > 9 || code != u32_at(&bytes, 20) {
+    if code != u32_at(&bytes, 20) {
         return None;
     }
+    let name = match version {
+        1 if bytes.len() == 24 && code <= 9 => None,
+        2 if bytes.len() >= 28 && code <= 256 => {
+            let len = u32_at(&bytes, 24) as usize;
+            if len > 96 || bytes.len() != 28 + len { return None; }
+            let name = std::str::from_utf8(&bytes[28..]).ok()?;
+            if code != 0 && (name.is_empty() || !name.bytes().all(|c| c.is_ascii_alphanumeric() || c == b'_')) { return None; }
+            Some(name.to_owned())
+        }
+        _ => return None,
+    };
     let now = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .ok()?
@@ -332,7 +352,7 @@ fn read_gear(path: &std::path::Path) -> Option<u32> {
     if stamp > now.saturating_add(100_000) || now.saturating_sub(stamp) > 1_000_000 {
         return None;
     }
-    Some(code)
+    Some((code, name))
 }
 
 #[cfg(test)]

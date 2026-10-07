@@ -1,10 +1,10 @@
 # Displaced Soldier campaign
 
-This first campaign revision adds 136 linked assignments and 68 field contacts across 34 outdoor regions. It uses the existing world, creature models and native server quest system. Northshire begins with Field Sergeant Mara Vale beside Marshal McBride.
+The campaign adds 136 linked assignments across 34 outdoor regions, using the existing world and native server quest system. The refinement attaches these assignments to 68 distinct existing NPCs, preferring unused civilian contacts and varied appearances. It removes the old cloned contact spawns rather than guessing new terrain coordinates. Existing vendor/trainer roles and native quest relations remain intact.
 
-Assignments include clearance, mixed-target pressure, recovery using existing quest-aware loot, and reports to a separate relay contact. Two regions without an eligible recovery drop use a flank-clearance assignment instead. Contacts use existing questgiver locations with a small horizontal separation; their exact terrain placement still needs in-game testing across all regions.
+Assignments use separate mixed-target reconnaissance and counterattack stages, supply recovery with an additional hostile screen, and a courier debrief to a different existing NPC. Targets are validated against active native creature spawns and established kill-credit targets. There are no duplicate campaign objective texts. Campaign text names the actual assigned contacts; their private generated catalogue identifies the locations for each installation.
 
-Existing quest text receives a displaced-soldier briefing and debrief framing. Original directions remain available because many scripted quests depend on instructions not represented by their objective fields. This is not a claim that every original quest has received an individually authored replacement story. Existing objectives, chains, class restrictions and character progress remain intact. Positive monetary rewards receive a modest field-pay supplement; existing payment requirements remain unchanged. New regional report missions award level-appropriate cloth equipment where eligible equipment exists, retaining its established item quality and stats.
+Existing quest text retains the displaced-soldier framing and essential directions, without the repetitive “Field Order,” “Mission Requirements,” or “Field Directions” labels. This is not a claim that every original quest has an individually authored replacement story. Ordinary kill requirements increase by approximately 10/3 (6 becomes 20), capped at the vanilla quest-log's six-bit maximum of 63. Spell-cast and game-object interaction objectives are not misclassified as kills. Quest chains, class restrictions, rewards and character progress are preserved.
 
 ## Preparing an installation
 
@@ -12,7 +12,9 @@ The generator targets the vMaNGOS schema and content patch 10 used by this proje
 
 Back up `quest_template`, `creature_template`, `creature`, `creature_questrelation` and `creature_involvedrelation` before applying anything. These tables may use MyISAM, so transaction rollback is not available. Validate installation and restoration against a separate database first. Shut down the world server before applying the migration, then restart it and the client to refresh cached quest records.
 
-IDs 900000–900999 must be unused. The generator refuses occupied IDs; do not rerun it against an already installed campaign. To revise an installed campaign, restore the original world data first. Do not restore a world-table dump over character/account tables or delete player quest progress.
+IDs 900000–900999 must be unused for the initial generator. For an installed initial campaign, run `Refine-QuestCampaign.ps1` with the same connection arguments and a fresh private output folder. It prepares SQL but does not apply it. Test that SQL against an isolated world-table copy, then apply with the world server stopped. Do not rerun the refinement against an already refined campaign: it refuses missing original contact spawns, preventing compounded requirements. Keep its five-world-table backup; never restore it over character/account tables.
+
+For half XP from kills (including elites), quests and exploration, set `Rate.XP.Kill`, `Rate.XP.Quest` and `Rate.XP.Explore` to `0.5` in private server configuration. Keep `Rate.XP.Kill.Elite = 1`: it multiplies the normal kill rate, so setting both to 0.5 would accidentally quarter elite XP. Personal modifiers remain at their existing baseline.
 
 ## Verification performed for this revision
 

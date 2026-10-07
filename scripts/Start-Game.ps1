@@ -14,7 +14,7 @@ foreach ($pathTask in @($configTask.GamesRoot,$configTask.WoWData,$hostExeTask,$
     if (-not $pathTask -or -not (Test-Path -LiteralPath $pathTask)) {throw "Missing local dependency: $pathTask. Build the clients and configure your own game data."}
 }
 if ($configTask.GuestMap -notmatch '^[A-Za-z0-9_]+$') {throw 'GuestMap must be a map identifier.'}
-foreach ($gearFileTask in @('gear-name-map.tsv','gear-display-map.tsv','icons/knife.tga','icons/ump.tga')) {
+foreach ($gearFileTask in @('gear-name-map.tsv','gear-display-map.tsv','weapon-item-map.tsv','icons/knife.tga','icons/ump.tga')) {
     if (-not (Test-Path -LiteralPath (Join-Path $gearRootTask $gearFileTask) -PathType Leaf)) {throw "Missing custom gear file: $gearFileTask"}
 }
 if ($CheckOnly) {Write-Host 'Client binaries and owned-game data paths are present.'; exit 0}

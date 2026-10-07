@@ -2,11 +2,49 @@
 use super::*;
 use avian3d::prelude::SimpleCollider;
 
+type LatestFrame = std::sync::Arc<std::sync::Mutex<Option<(u64, Vec<Draw>)>>>;
+
+#[derive(Resource, Default)]
+struct FrameReader {
+    latest: Option<LatestFrame>,
+}
+
+impl FrameReader {
+    fn take(&mut self, path: PathBuf) -> Option<(u64, Vec<Draw>)> {
+        let latest = self.latest.get_or_insert_with(|| {
+            let latest: LatestFrame = Default::default();
+            let weak = std::sync::Arc::downgrade(&latest);
+            std::thread::spawn(move || {
+                let mut last_stamp = 0;
+                loop {
+                    // Never hold the mailbox lock during filesystem IO or decoding.
+                    let decoded = read_packet(&path, b"CCFX").ok()
+                        .and_then(|bytes| decode(&bytes).ok());
+                    let Some(mailbox) = weak.upgrade() else { break; };
+                    if let Some((stamp, draws)) = decoded {
+                        if stamp != last_stamp {
+                            last_stamp = stamp;
+                            if let Ok(mut slot) = mailbox.lock() {
+                                *slot = Some((stamp, draws));
+                            }
+                        }
+                    }
+                    drop(mailbox);
+                    std::thread::sleep(std::time::Duration::from_millis(4));
+                }
+            });
+            latest
+        });
+        latest.try_lock().ok().and_then(|mut slot| slot.take())
+    }
+}
+
 #[derive(Resource, Default)]
 pub(super) struct Effects {
     pending: Vec<(u32, u32, Vec3, Vec3, u32)>,
     sequence: u64,
     last_shot: Option<u32>,
+    unit_impact_shot: Option<(u32, f32)>,
     last_frame: u64,
     materials: HashMap<(u64, bool), Handle<StandardMaterial>>,
     draws: Vec<(Entity, Handle<Mesh>)>,
@@ -17,6 +55,9 @@ pub(super) struct Effects {
 }
 
 impl Effects {
+    pub(super) fn unit_impact(&mut self, sequence: u32, distance: f32) {
+        self.unit_impact_shot = Some((sequence, distance));
+    }
     pub(super) fn explosion(&mut self, position: Vec3, normal: Vec3) {
         if self.pending.len() < 64 {
             self.pending.push((1, 0, position, normal, 6)); // IW4 dirt surface.
@@ -25,7 +66,7 @@ impl Effects {
 }
 
 pub(super) fn plugin(app: &mut App) {
-    app.init_resource::<Effects>().add_systems(
+    app.init_resource::<Effects>().init_resource::<FrameReader>().add_systems(
         Update,
         (requests, display, decals)
             .chain()
@@ -47,8 +88,10 @@ fn requests(
         &avian3d::prelude::Rotation,
     )>,
 ) {
+    let _work_scope = super::profile::scope("codcraft/effects.rs:requests");
     if !live.0 {
         effects.last_shot = None;
+        effects.unit_impact_shot = None;
         effects.pending.clear();
         return;
     }
@@ -80,14 +123,23 @@ fn requests(
         effects.last_shot = Some(guest.shot_sequence);
         if fired {
             if let Some(hit) = collision.ray_los(camera.translation, camera.forward(), 120.0) {
-                let position = camera.translation + *camera.forward() * hit.distance;
-                effects.pending.push((
-                    0,
-                    guest.weapon,
-                    position + hit.normal * 0.005,
-                    hit.normal,
-                    6,
-                ));
+                // Terrain in front of a unit still receives its own impact.
+                let blocked_by_unit =
+                    effects
+                        .unit_impact_shot
+                        .is_some_and(|(sequence, distance)| {
+                            sequence == guest.shot_sequence && distance < hit.distance
+                        });
+                if !blocked_by_unit {
+                    let position = camera.translation + *camera.forward() * hit.distance;
+                    effects.pending.push((
+                        0,
+                        guest.weapon,
+                        position + hit.normal * 0.005,
+                        hit.normal,
+                        6,
+                    ));
+                }
             }
         }
     }
@@ -236,6 +288,7 @@ fn decals(
     mut images: ResMut<Assets<Image>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    let _work_scope = super::profile::scope("codcraft/effects.rs:decals");
     let now = time.elapsed_secs();
     while effects
         .marks
@@ -497,20 +550,19 @@ fn display(
     mut meshes: ResMut<Assets<Mesh>>,
     mut images: ResMut<Assets<Image>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut reader: ResMut<FrameReader>,
 ) {
+    let _work_scope = super::profile::scope("codcraft/effects.rs:display");
     let Some(paths) = paths else {
         return;
     };
-    let decoded = read_packet(&paths.model.with_extension("fxframe"), b"CCFX")
-        .ok()
-        .and_then(|b| decode(&b).ok());
+    let decoded = reader.take(paths.model.with_extension("fxframe"));
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
         .as_micros() as u64;
-    let fresh = decoded
-        .as_ref()
-        .is_some_and(|(stamp, _)| now.saturating_sub(*stamp) < 500_000);
+    let stamp = decoded.as_ref().map(|(stamp, _)| *stamp).unwrap_or(effects.last_frame);
+    let fresh = now.saturating_sub(stamp) < 500_000;
     if !live.0 || !fresh {
         for (entity, mesh) in effects.draws.drain(..) {
             commands.entity(entity).despawn();
@@ -518,13 +570,14 @@ fn display(
         }
         return;
     }
-    let (stamp, draws) = decoded.unwrap();
+    let Some((stamp, draws)) = decoded else { return; };
     if effects.last_frame == stamp {
         return;
     }
     effects.last_frame = stamp;
     let mut used = 0;
     for d in &draws {
+        let _material_scope = super::profile::scope("fx/material");
         let Some(mat) = material(
             &paths,
             d.texture,
@@ -535,6 +588,8 @@ fn display(
         ) else {
             continue;
         };
+        drop(_material_scope);
+        let _mesh_scope = super::profile::scope("fx/mesh");
         let index = used;
         used += 1;
         let mut mesh = Mesh::new(
@@ -579,6 +634,17 @@ fn display(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn frame_mailbox_never_waits_for_the_worker() {
+        let mailbox: LatestFrame = Default::default();
+        let mut reader = FrameReader { latest: Some(mailbox.clone()) };
+        let lock = mailbox.lock().unwrap();
+        assert!(reader.take(PathBuf::new()).is_none());
+        drop(lock);
+        *mailbox.lock().unwrap() = Some((42, Vec::new()));
+        assert_eq!(reader.take(PathBuf::new()).unwrap().0, 42);
+        assert!(reader.take(PathBuf::new()).is_none());
+    }
     #[test]
     fn refuses_truncated_or_oversized_fx_packets() {
         assert!(decode(&[]).is_err());

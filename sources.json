@@ -12,7 +12,7 @@
           "path": "crates/benilla-app/src/codcraft_aim.rs"
         },
         {
-          "sha256": "6fad0725d585ccc9748f34b22baabe1c3ff2fb8e1ff1d5fe0ebc98b51bdafc58",
+          "sha256": "828c04371533487b0a15f313c548d17a838afa69b1df655b831495661f42990c",
           "path": "crates/benilla-app/src/codcraft.rs"
         },
         {
@@ -24,11 +24,11 @@
           "path": "crates/benilla-app/src/codcraft/damage_direction.rs"
         },
         {
-          "sha256": "a0ff6d5b7eb8276ab4f8a137565166dc0bc0cac7239024ae8cba8fc96c61748d",
+          "sha256": "81d1223c33e60bc3f7f13fb1294c419d2c4e040ec543d4a754a4fab295ce062c",
           "path": "crates/benilla-app/src/codcraft/effects.rs"
         },
         {
-          "sha256": "dae12bb266217584365e227e39bdf4461af5f54dcc8f3beb55741aaa6563f90f",
+          "sha256": "0e7862dd78a31f4812c44e6c354f5da2ccf334bfebc845ff01d2750e8173cf59",
           "path": "crates/benilla-app/src/codcraft/gear.rs"
         },
         {
@@ -36,7 +36,7 @@
           "path": "crates/benilla-app/src/codcraft/grenade_math.rs"
         },
         {
-          "sha256": "193cbf259bed0c6c9e353c12aa34f23dcda41f8f9ce40a66aa3303a1f968ef23",
+          "sha256": "9191934a8ee7f27ba3b5c1a942d36379c688157a9004d3046e069fe75883b5c7",
           "path": "crates/benilla-app/src/codcraft/grenades.rs"
         },
         {
@@ -44,11 +44,15 @@
           "path": "crates/benilla-app/src/codcraft/kobold_pose.rs"
         },
         {
+          "sha256": "63f492c2cae32eea91cc7cc1c05e3ba6e2654d545cdd69a3a87a7fe4a847a8e6",
+          "path": "crates/benilla-app/src/codcraft/profile.rs"
+        },
+        {
           "sha256": "fbdb51ed3ddb3752b3ede0983bf7777fb0c3b9872929160c923750ddc679a5e8",
           "path": "crates/benilla-app/src/codcraft/ragdoll_solver.rs"
         },
         {
-          "sha256": "6d032ab905ed7c3a9a8f17fa88f71f48dcc57ffcc7cf500e9b43181df9382963",
+          "sha256": "8d5ff883773499ad1b0af09de07a6315925586483ea1b80d88e55bcf10ed2129",
           "path": "crates/benilla-app/src/codcraft/ragdoll.rs"
         },
         {
@@ -60,7 +64,7 @@
           "path": "crates/benilla-app/src/codcraft/tracers.rs"
         },
         {
-          "sha256": "76c5119bd28c5ebfa3b138c2e1b7f42194de544ef360e9c3643b57e307172197",
+          "sha256": "6504dcee58d67adf22d0c3d3af1419ffc98b895ccdb049e1e9b511504d871d30",
           "path": "crates/benilla-app/src/items.rs"
         },
         {
@@ -74,6 +78,10 @@
         {
           "sha256": "f992b60b56209c52eb7b64ad77939ae9c70244089e5de2721e565e52167a64ee",
           "path": "crates/benilla-app/src/net/io.rs"
+        },
+        {
+          "sha256": "e8ac391116fa867e3031caf06c76f167fbeb69dcce1e778438e469d723df5e54",
+          "path": "crates/benilla-app/src/perf/journal.rs"
         },
         {
           "sha256": "b3a9d8fe3a4194632577ac3e7c976210d839b86b02d306007161f58a48b4f4a1",
@@ -173,7 +181,7 @@
         }
       ],
       "patch": "patches/benilla.patch",
-      "patchSha256": "876c337e248b51ae2533dc3103b8e045b186fa3b5ea8396b9626bec1b44357f0",
+      "patchSha256": "8cedc9fee0afb953babc0cab86e02ecc1e85f467a224980b957a5942d338c4ba",
       "revision": "ba7fe6e2e526851e6d5969b09cc92603b6053314",
       "name": "benilla",
       "repository": "https://github.com/samwhosung/benilla.git",
@@ -206,7 +214,7 @@
           "path": "crates/bots/src/codcraft.rs"
         },
         {
-          "sha256": "8bfb0748767f3d4254bb20630995dea76821d3b9c6cf2c1958816e5887b5570a",
+          "sha256": "458953cdbb1728ece8fb6c7b18e25f56834b913c0c69583328a270c5058d89d1",
           "path": "crates/net/src/authority/codcraft_input.rs"
         },
         {
@@ -277,7 +285,7 @@
         }
       ],
       "patch": "patches/vmangos.patch",
-      "patchSha256": "feba8385c54b0e0dd28668612124d0e67f3c791abbcb827d2db9f45de7a7dcf7",
+      "patchSha256": "7073d7c34c6c1d2775bd5074c47d5f5bf3d1905ba373426d81aabdb0dffeff6c",
       "revision": "4b3d241cffe245a1f68da11380bce96c23db48c0",
       "name": "vmangos",
       "repository": "https://github.com/vmangos/core.git",

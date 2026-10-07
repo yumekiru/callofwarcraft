@@ -285,6 +285,9 @@ pub(crate) fn item_display_name(
     random_property_id: i32,
     props: Option<&RandomProperties>,
 ) -> String {
+    // CoDCraft authors complete firearm names; preserve rolled enchant stats without
+    // appending a second, unrelated Warcraft suffix to those names.
+    if crate::codcraft::gear::authored_weapon_name(base) { return base.to_owned(); }
     match props.and_then(|p| p.0.get(random_property_id)) {
         Some(row) => format!("{base} {}", row.suffix),
         None => base.to_string(),

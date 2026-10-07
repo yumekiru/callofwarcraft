@@ -21,8 +21,9 @@ use std::{
 mod combat_math;
 mod damage_direction;
 mod effects;
-mod grenades;
+mod profile;
 pub(crate) mod gear;
+mod grenades;
 mod kobold_pose;
 mod ragdoll;
 mod shot_math;
@@ -127,8 +128,10 @@ impl CodcraftCombatState {
     }
 
     pub(crate) fn take_for_response(&mut self, guid: u64, now: f32) -> Option<u64> {
-        self.grenade_pending.retain(|_,deadline| *deadline > now);
-        if self.grenade_pending.remove(&guid).is_some() { return Some(guid); }
+        self.grenade_pending.retain(|_, deadline| *deadline > now);
+        if self.grenade_pending.remove(&guid).is_some() {
+            return Some(guid);
+        }
         self.pending.retain(|shot| shot.expires_at > now);
         if let Some(index) = self.pending.iter().position(|shot| shot.guid == guid) {
             return self.pending.remove(index).map(|shot| shot.guid);
@@ -146,7 +149,8 @@ impl CodcraftCombatState {
     }
 
     fn queue_grenade(&mut self, guid: u64, now: f32) {
-        self.grenade_pending.insert(guid,now+Self::PENDING_TIMEOUT);
+        self.grenade_pending
+            .insert(guid, now + Self::PENDING_TIMEOUT);
     }
 
     fn take_recent_kill_candidate(&mut self, guid: u64, now: f32) -> bool {
@@ -364,6 +368,7 @@ fn publish_guest_input(
     mut input: ResMut<GuestInputPublisher>,
     gear: Res<gear::GearState>,
 ) {
+    let _work_scope = profile::scope("codcraft.rs:publish_guest_input");
     let Some(path) = input.path.clone() else {
         return;
     };
@@ -415,7 +420,10 @@ fn publish_guest_input(
         keyboard_enabled && keys.pressed(KeyCode::KeyR),
         INPUT_RELOAD,
     );
-    set(keyboard_enabled && keys.pressed(KeyCode::KeyC), INPUT_CROUCH);
+    set(
+        keyboard_enabled && keys.pressed(KeyCode::KeyC),
+        INPUT_CROUCH,
+    );
     set(keyboard_enabled && keys.pressed(KeyCode::KeyZ), INPUT_PRONE);
     set(keyboard_enabled && keys.pressed(KeyCode::KeyG), INPUT_FRAG);
     input.buttons = buttons;
@@ -808,7 +816,10 @@ fn apply_guest_player(
     net: Option<Res<crate::net::NetCommands>>,
     mut combat: ResMut<CodcraftCombatState>,
     mut cadence: Local<AimCadence>,
+    mut effects: ResMut<effects::Effects>,
 ) {
+    let _work_scope = profile::scope("codcraft.rs:apply_guest_player");
+    let _work_scope = profile::scope("codcraft.rs:poll");
     if !world_live.0 {
         return;
     }
@@ -914,6 +925,21 @@ fn apply_guest_player(
                     .flatten()
             });
             if let Some(target_guid) = target_guid {
+                // A unit impact terminates this bullet. The FX bridge must not
+                // independently raycast through that unit into scenery behind it.
+                let direction = Quat::from_euler(EulerRot::YXZ, yaw, pitch, 0.0) * Vec3::NEG_Z;
+                if let Some((_, _, transform)) =
+                    units.iter().find(|(guid, _, _)| guid.0 == target_guid)
+                {
+                    let offset = transform.translation + Vec3::Y - target;
+                    let distance = offset.dot(direction);
+                    // Combat's generous aim-assist cone is not a physical impact.
+                    if distance > 0.0
+                        && (offset - direction * distance).length_squared() <= 0.85 * 0.85
+                    {
+                        effects.unit_impact(guest.shot_sequence, (distance - 0.5).max(0.0));
+                    }
+                }
                 // Queue before sending: the server can answer on the very next network turn.
                 combat.queue(target_guid, time.elapsed_secs());
                 let _ = net
@@ -1676,6 +1702,61 @@ fn hide_viewmodel(
 
 /// Read the source's live pose and draw its actual triangles through Benilla's world camera and
 /// shared Warcraft lighting. The Warcraft GUI remains on its normal UI cameras above the scene.
+#[derive(Default)]
+struct ViewmodelReader {
+    mailbox: Option<std::sync::Arc<std::sync::Mutex<Option<ViewmodelFrame>>>>,
+    model: Option<std::sync::Arc<ModelWire>>,
+    received: Option<std::time::Instant>,
+}
+
+struct ViewmodelFrame {
+    pose: PoseWire,
+    stamp: Option<SystemTime>,
+    received: std::time::Instant,
+    model: std::sync::Arc<ModelWire>,
+}
+
+impl ViewmodelReader {
+    fn take(&mut self, paths: &ViewmodelPaths) -> Option<ViewmodelFrame> {
+        if self.mailbox.is_none() {
+            let mailbox = std::sync::Arc::new(std::sync::Mutex::new(None));
+            let weak = std::sync::Arc::downgrade(&mailbox);
+            let pose_path = paths.pose.clone();
+            let model_path = paths.model.clone();
+            std::thread::spawn(move || {
+                let mut last_stamp = None;
+                let mut model: Option<std::sync::Arc<ModelWire>> = None;
+                loop {
+                    if weak.strong_count() == 0 { break; }
+                    let stamp = std::fs::metadata(&pose_path).ok().and_then(|m| m.modified().ok());
+                    if stamp.is_some() && stamp != last_stamp {
+                        if let Ok(pose) = read_packet(&pose_path, POSE_MAGIC).and_then(|p| parse_pose(&p)) {
+                            if model.as_ref().is_none_or(|m| m.fingerprint != pose.fingerprint) {
+                                if let Ok(next) = read_packet(&model_path, MODEL_MAGIC).and_then(|p| parse_model(&p)) {
+                                    if next.fingerprint == pose.fingerprint { model = Some(std::sync::Arc::new(next)); }
+                                }
+                            }
+                            if let Some(model) = model.as_ref().filter(|m| m.fingerprint == pose.fingerprint) {
+                                let frame = ViewmodelFrame { pose, stamp, received: std::time::Instant::now(), model: model.clone() };
+                                if let Some(mailbox) = weak.upgrade() {
+                                    if let Ok(mut slot) = mailbox.lock() { *slot = Some(frame); }
+                                }
+                                last_stamp = stamp;
+                            }
+                        }
+                    }
+                    std::thread::sleep(std::time::Duration::from_millis(4));
+                }
+            });
+            self.mailbox = Some(mailbox);
+        }
+        let frame = self.mailbox.as_ref()?.try_lock().ok()?.take()?;
+        self.received = Some(frame.received);
+        self.model = Some(frame.model.clone());
+        Some(frame)
+    }
+}
+
 fn present_viewmodel(
     mut commands: Commands,
     world_live: Res<benilla_world::schedule::WorldLive>,
@@ -1691,9 +1772,11 @@ fn present_viewmodel(
     mut batch: benilla_world::model_render::M2BatchMaterials,
     cameras: Query<Entity, With<benilla_world::view::WorldCamera>>,
     mut viewmodel_entities: Query<(&mut Transform, &mut Visibility), With<CodcraftViewmodel>>,
-    mut smoothing: Local<PoseBlend>,
+    stream: (Local<PoseBlend>, Local<ViewmodelReader>),
     gear: Res<gear::GearState>,
 ) {
+    let _work_scope = profile::scope("codcraft.rs:present_viewmodel");
+    let (mut smoothing, mut reader) = stream;
     if !capture.typing && keys.just_pressed(KeyCode::KeyQ) {
         view.shown = !view.shown;
         info!(
@@ -1714,34 +1797,16 @@ fn present_viewmodel(
             .players
             .iter()
             .any(|player| player.health > 0 && player.max_health > 0);
-    let pose_fresh = std::fs::metadata(&paths.pose)
-        .ok()
-        .and_then(|meta| meta.modified().ok())
-        .and_then(|stamp| stamp.elapsed().ok())
-        .is_some_and(|age| age <= std::time::Duration::from_secs(2));
+    if let Some(frame) = reader.take(&paths) {
+        smoothing.receive(frame.pose, frame.stamp, time.elapsed_secs());
+    }
+    let pose_fresh = reader.received.is_some_and(|received| received.elapsed() <= std::time::Duration::from_secs(2));
     if !guest_live || !pose_fresh {
         *smoothing = PoseBlend::default();
         hide_viewmodel(&stage, &mut viewmodel_entities);
         return;
     }
 
-    let pose_stamp = std::fs::metadata(&paths.pose)
-        .ok()
-        .and_then(|m| m.modified().ok());
-    match read_packet(&paths.pose, POSE_MAGIC).and_then(|packet| parse_pose(&packet)) {
-        Ok(pose) => smoothing.receive(pose, pose_stamp, time.elapsed_secs()),
-        Err(error) => {
-            if smoothing.current.is_none() && view.error.as_deref() != Some(error.as_str()) {
-                warn!("CoDCraft: FPV pose: {error}");
-                view.error = Some(error);
-            }
-            // The guest is writing the next pose now; keep the last complete GPU pose for this
-            // frame. The freshness gate above still hides it if the guest actually stops.
-            if smoothing.current.is_none() {
-                return;
-            }
-        }
-    }
     // Animate between complete native poses at the host frame rate, including write-race frames.
     let Some(pose) = smoothing.sample(time.elapsed_secs()) else {
         return;
@@ -1751,20 +1816,7 @@ fn present_viewmodel(
         return;
     }
     if stage.fingerprint != Some(pose.fingerprint) {
-        let model =
-            match read_packet(&paths.model, MODEL_MAGIC).and_then(|packet| parse_model(&packet)) {
-                Ok(model) if model.fingerprint == pose.fingerprint => model,
-                Ok(_) => {
-                    return;
-                }
-                Err(error) => {
-                    if view.error.as_deref() != Some(error.as_str()) {
-                        warn!("CoDCraft: FPV model: {error}");
-                        view.error = Some(error);
-                    }
-                    return;
-                }
-            };
+        let Some(model) = reader.model.as_ref().filter(|m| m.fingerprint == pose.fingerprint) else { return; };
         let Ok(camera) = cameras.single() else {
             return;
         };
@@ -1802,7 +1854,8 @@ fn present_viewmodel(
                     asset.extension.clutter_fade.z,
                     benilla_formats::FogPolicy::Off,
                 );
-                asset.extension.clutter_fade.z = ((asset.extension.clutter_fade.z as u32) | 0x8000) as f32;
+                asset.extension.clutter_fade.z =
+                    ((asset.extension.clutter_fade.z as u32) | 0x8000) as f32;
             }
         }
         stage.entities = entities;
@@ -1876,6 +1929,7 @@ fn drive_kobold_ai(
         ),
     >,
 ) {
+    let _work_scope = profile::scope("codcraft.rs:drive_kobold_ai");
     let now = time.elapsed_secs();
     let ready = world_live.0
         && input.owns_gameplay_controls()
@@ -2240,6 +2294,7 @@ fn update_kobold_weapons(
     frames: Query<&GlobalTransform>,
     cameras: Query<Entity, With<benilla_world::view::WorldCamera>>,
 ) {
+    let _work_scope = profile::scope("codcraft.rs:update_kobold_weapons");
     let probe_mode = std::env::var_os("CODCRAFT_WEAPON_DRAW_PROBE")
         .and_then(|path| std::fs::read_to_string(path).ok())
         .unwrap_or_default();
@@ -2422,6 +2477,7 @@ fn audit_kobold_weapons(
     )>,
     frames: Query<&GlobalTransform>,
 ) {
+    let _work_scope = profile::scope("codcraft.rs:audit_kobold_weapons");
     if !stage.bot_entities.is_empty() {
         if let Some(path) = std::env::var_os("CODCRAFT_WEAPON_DRAW_PROBE") {
             let path = PathBuf::from(path);
@@ -2529,6 +2585,7 @@ fn auto_loot_confirmed_kills(
         &crate::net::ObjectStore,
     )>,
 ) {
+    let _work_scope = profile::scope("codcraft.rs:auto_loot_confirmed_kills");
     if !passthrough_enabled() {
         return;
     }

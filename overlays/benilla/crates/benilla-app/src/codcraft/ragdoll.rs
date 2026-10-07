@@ -36,6 +36,10 @@ struct DeathPhysics {
     bodies: HashMap<Entity, Body>,
 }
 
+/// Fork: briefly retain blast velocity until the server reports a live-to-dead transition.
+#[derive(Resource, Default)]
+pub(super) struct BlastImpulses(pub(super) HashMap<u64, (f32, Vec3)>);
+
 fn parent(parents: &[i16], i: usize) -> Option<usize> {
     usize::try_from(parents[i]).ok().filter(|&p| p < i)
 }
@@ -249,6 +253,7 @@ fn drive(
     input: Res<super::GuestInputPublisher>,
     player: Res<crate::player::Player>,
     mut state: ResMut<DeathPhysics>,
+    mut blasts: ResMut<BlastImpulses>,
     collision: WorldCollision,
     roots: Query<&GlobalTransform>,
     reactions: crate::target::ReactionInputs,
@@ -266,15 +271,18 @@ fn drive(
         Without<crate::net::SelfPlayer>,
     >,
 ) {
+    let _work_scope = super::profile::scope("codcraft/ragdoll.rs:drive");
     if !live.0 {
         state.alive.clear();
         state.bodies.clear();
+        blasts.0.clear();
         return;
     }
     if input.path.is_none() {
         return;
     }
     let now = time.elapsed_secs();
+    blasts.0.retain(|_, (expires, _)| *expires > now);
     state.alive.retain(|e, _| units.contains(*e));
     state.bodies.retain(|e, _| units.contains(*e));
     let own = own.iter().next();
@@ -335,7 +343,12 @@ fn drive(
             {
                 continue;
             }
-            let body = Body::new(pose, &rig.parents, player.pos, guid.0);
+            let mut body = Body::new(pose, &rig.parents, player.pos, guid.0);
+            if let Some((_, velocity)) = blasts.0.remove(&guid.0) {
+                for particle in &mut body.particles {
+                    particle.previous -= velocity * STEP;
+                }
+            }
             if state.bodies.values().filter(|b| !b.sleeping).count() >= 12 {
                 if let Some(oldest) = state
                     .bodies
@@ -368,5 +381,6 @@ fn drive(
 
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<DeathPhysics>()
+        .init_resource::<BlastImpulses>()
         .add_systems(PostUpdate, drive.in_set(PhysicsPose));
 }

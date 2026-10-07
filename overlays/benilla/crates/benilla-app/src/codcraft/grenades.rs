@@ -135,10 +135,12 @@ fn flight(
     mut state: ResMut<Frags>,
     mut combat: ResMut<CodcraftCombatState>,
     mut effects: ResMut<super::effects::Effects>,
+    mut blasts: ResMut<super::ragdoll::BlastImpulses>,
     art: Res<FragArt>,
     mut commands: Commands,
     targets: Query<(&crate::net::Guid, &Transform), Without<crate::net::SelfPlayer>>,
 ) {
+    let _work_scope = super::profile::scope("codcraft/grenades.rs:flight");
     let now = time.elapsed_secs();
     while state
         .cleanup
@@ -343,6 +345,22 @@ fn flight(
             for (guid, transform) in &targets {
                 if transform.translation.distance(frag.position) <= frag.radius + 2.0 {
                     combat.queue_grenade(guid.0, feedback_time.elapsed_secs());
+                    let offset = transform.translation + Vec3::Y - frag.position;
+                    let distance = offset.length();
+                    if let Ok(direction) = Dir3::new(offset) {
+                        if collision
+                            .ray_los(frag.position, direction, distance)
+                            .is_none()
+                        {
+                            let strength = (1.0 - distance / (frag.radius + 2.0)).clamp(0.0, 1.0);
+                            let velocity = offset.with_y(0.0).normalize_or_zero()
+                                * (4.0 + 3.0 * strength)
+                                + Vec3::Y * (2.0 + strength);
+                            blasts
+                                .0
+                                .insert(guid.0, (feedback_time.elapsed_secs() + 2.0, velocity));
+                        }
+                    }
                 }
             }
             let _ = net.0.send(crate::net::ClientCommand::CodcraftGrenade {

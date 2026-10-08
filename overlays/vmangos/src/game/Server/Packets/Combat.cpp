@@ -12,7 +12,9 @@ void WorldPackets::Combat::CoDCraftBullet::ReadFromWorldPacket(WorldPacket& recv
     {
         uint32 magic;
         recv_data >> magic;
-        if (magic != 0x4e474343u) return; // CCGN
+        if (magic != 0x4e474343u && magic != 0x4d504343u && magic != 0x48414343u) return;
+        helicopter = magic == 0x48414343u;
+        predator = magic == 0x4d504343u;
         recv_data >> grenadeSequence >> grenadePhase;
         recv_data >> grenadeX >> grenadeY >> grenadeZ >> grenadeFuse >> grenadeRadius;
         grenade = true;

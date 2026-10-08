@@ -49,6 +49,8 @@ $envTask = @{
     CODCRAFT_STATE=(Join-Path $bridgeTask 'codcraft-state.bin'); CODCRAFT_FRAME=(Join-Path $bridgeTask 'codcraft-frame.bin')
     CODCRAFT_INPUT=(Join-Path $bridgeTask 'codcraft-input.bin'); CODCRAFT_HIT=(Join-Path $bridgeTask 'codcraft-hit.bin')
     CODCRAFT_MODEL=(Join-Path $bridgeTask 'codcraft-viewmodel.codm'); CODCRAFT_POSE=(Join-Path $bridgeTask 'codcraft-viewmodel.codp')
+    CODCRAFT_SOLDIER_RIG_EXPORT='1'
+    CODCRAFT_PREDATOR_EXPORT='1'
     WOW_DATA=[string]$configTask.WoWData; WOW_HOST=$addressTask; WOW_WIN=[string]$configTask.Window; WOW_BG='0'; WOW_GM='off'
     BENILLA_HOME=(Join-Path $bridgeTask 'benilla-home')
     CODCRAFT_REALISTIC_LIGHTING='0'; CODCRAFT_RAYTRACED_SUN='0'; CODCRAFT_LIGHTING_ENGINE=[string]$configTask.Lighting

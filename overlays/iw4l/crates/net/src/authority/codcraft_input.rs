@@ -209,6 +209,7 @@ pub(crate) fn apply(
     mut gear_retry: Local<(u32, f32)>,
     mut frag_retry_at: Local<f32>,
     mut catalog_exported: Local<usize>,
+    mut predator_launch: Local<(u64, f32, bool, bool)>,
 ) {
     let now = time.elapsed_secs();
     if let (Some(path), Some(weapons), Some(ps)) = (
@@ -217,6 +218,36 @@ pub(crate) fn apply(
         presented.player(local.0),
     ) {
         let catalog = weapons.0.weapon_script_names();
+        // Fork-only spell request: grant the native reward, then activate the
+        // exact action slot published by GSC, not a guessed slot or fake missile.
+        if let Ok(text) = std::fs::read_to_string(path.with_extension("predator-command")) {
+            if text.len() < 128 {
+                let fields: Vec<_> = text.split_whitespace().collect();
+                if fields.len() == 3 && fields[0] == "CCPR1" {
+                    if let (Ok(sequence), Ok(stamp)) = (fields[1].parse::<u64>(), fields[2].parse::<u64>()) {
+                        let wall = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_micros() as u64);
+                        if sequence != predator_launch.0 && stamp <= wall && wall - stamp < 2_000_000 && ps.health > 0 && now >= predator_launch.1 {
+                            if let Some(name) = sim::menu_response_field("predator_missile") {
+                                let request_id = requests.allocate();
+                                if inbox.push(local.0, sim::ClientAction::GiveKillstreak { request_id, name }).is_ok() {
+                                    *predator_launch = (sequence, now + 15.0, false, false);
+                                    info!("CoDCraft: native Predator acquisition requested sequence={sequence}");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if now < predator_launch.1 && !predator_launch.2 {
+            if let Some(weapon) = catalog.iter().position(|name| name == "killstreak_predator_missile_mp") {
+                if let Some(slot) = (0..4).find(|slot| ps.action_slot_type[*slot] == 1 && ps.action_slot_param[*slot] == weapon as i32) {
+                    actions.client.action_slots.push(slot);
+                    predator_launch.2 = true;
+                    info!("CoDCraft: native Predator action slot {} activated", slot + 1);
+                }
+            }
+        }
         if catalog.len() > 1 && *catalog_exported != catalog.len() {
             let rows = catalog.iter().enumerate().map(|(id, name)| format!("{id}\t{name}\n")).collect::<String>();
             if std::fs::write(path.with_extension("weapon-catalog.tsv"), rows).is_ok() {
@@ -226,7 +257,19 @@ pub(crate) fn apply(
         // The bridge's lethal button must use a frag, not the map's default C4.
         // Never replace equipment during a pullback/throw animation.
         let offhand_active = ps.weap_flags & playerstate_iw4::weap_flags::OFFHAND_VIEW != 0;
-        if ps.offhand_primary != 1 && !offhand_active && now >= *frag_retry_at {
+        // Fork-only: a native Predator remote-control session owns equipment.
+        // The normal Warcraft gear synchronizer must not interrupt that session.
+        let remote_missile_active = presented.snapshot()
+            .and_then(|snapshot| snapshot.meta.for_client(local.0))
+            .and_then(|meta| meta.remote_missile)
+            .is_some_and(|missile| missile.unlink_at_ms.is_none());
+        if remote_missile_active { predator_launch.3 = true; }
+        else if predator_launch.3 {
+            predator_launch.1 = now; // No post-flight cooldown in the testing spell.
+            predator_launch.3 = false;
+        }
+        let predator_owns_equipment = remote_missile_active || now < predator_launch.1;
+        if ps.offhand_primary != 1 && !offhand_active && !predator_owns_equipment && now >= *frag_retry_at {
             if let Some(weapon) = weapons.0.weapon_script_names().iter()
                 .position(|name| name == "frag_grenade_mp")
                 .and_then(|index| u32::try_from(index).ok())
@@ -239,7 +282,9 @@ pub(crate) fn apply(
             }
             *frag_retry_at = now + 1.0;
         }
-        if let Some((code, requested_name)) = read_gear(&path.with_extension("gear")) {
+        if let Some((code, requested_name)) = read_gear(&path.with_extension("gear"))
+            .filter(|_| !predator_owns_equipment)
+        {
             if code > 0 {
                 let names = [
                     "ak47_mp",

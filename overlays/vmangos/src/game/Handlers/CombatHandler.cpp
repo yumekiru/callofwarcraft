@@ -36,6 +36,7 @@
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 #include "Timer.h"
+#include "CoDCraftHelicopter.h"
 
 namespace
 {
@@ -86,44 +87,55 @@ void WorldSession::HandleAttackSwingOpcode(WorldPackets::Combat::AttackSwing con
 
 void WorldSession::HandleCoDCraftBulletOpcode(WorldPackets::Combat::CoDCraftBullet const& packet)
 {
+    if (packet.helicopter)
+    {
+        if (_player->HasSpell(CoDCraftHelicopter::Spell) && packet.grenadePhase==0)
+            CoDCraftHelicopter::Call(_player);
+        return;
+    }
     if (packet.grenade)
     {
+        bool const predator = packet.predator;
+        auto& flights = predator ? m_codcraftPredators : m_codcraftFrags;
+        auto& sequence = predator ? m_codcraftPredatorSequence : m_codcraftFragSequence;
+        if (predator && !_player->HasSpell(126)) return;
         auto const now = WorldTimer::getMSTime();
         if (!std::isfinite(packet.grenadeX) || !std::isfinite(packet.grenadeY) ||
             !std::isfinite(packet.grenadeZ) || !std::isfinite(packet.grenadeRadius) ||
-            !packet.grenadeSequence || packet.grenadePhase > 1) return;
-        for (auto it=m_codcraftFrags.begin(); it!=m_codcraftFrags.end(); )
-            if (WorldTimer::getMSTimeDiff(it->second.born,now)>10000) it=m_codcraftFrags.erase(it); else ++it;
+            !packet.grenadeSequence || packet.grenadePhase > (predator ? 2 : 1)) return;
+        if (predator && packet.grenadePhase == 2) { flights.erase(packet.grenadeSequence); return; }
+        for (auto it=flights.begin(); it!=flights.end(); )
+            if (WorldTimer::getMSTimeDiff(it->second.born,now)>(predator ? 30000u : 10000u)) it=flights.erase(it); else ++it;
         if (packet.grenadePhase == 0)
         {
             float const dx=packet.grenadeX-_player->GetPositionX(), dy=packet.grenadeY-_player->GetPositionY(), dz=packet.grenadeZ-_player->GetPositionZ();
-            if (!_player->IsAlive() || packet.grenadeSequence<=m_codcraftFragSequence ||
+            if (!_player->IsAlive() || packet.grenadeSequence<=sequence ||
                 packet.grenadeFuse>5000 || packet.grenadeRadius<1.0f || packet.grenadeRadius>15.0f ||
-                dx*dx+dy*dy+dz*dz>25.0f || m_codcraftFrags.size()>=16 ||
-                (m_codcraftLastFrag && WorldTimer::getMSTimeDiff(m_codcraftLastFrag,now)<300)) return;
-            m_codcraftFragSequence=packet.grenadeSequence;
-            m_codcraftLastFrag=now;
-            m_codcraftFrags.emplace(packet.grenadeSequence,CoDCraftFrag{
+                dx*dx+dy*dy+dz*dz>25.0f || flights.size()>=(predator ? 1u : 16u) ||
+                (!predator && m_codcraftLastFrag && WorldTimer::getMSTimeDiff(m_codcraftLastFrag,now)<300)) return;
+            sequence=packet.grenadeSequence;
+            if (!predator) m_codcraftLastFrag=now;
+            flights.emplace(packet.grenadeSequence,CoDCraftFrag{
                 now,packet.grenadeFuse,_player->GetMapId(),packet.grenadeX,packet.grenadeY,packet.grenadeZ,packet.grenadeRadius});
             return;
         }
-        auto const found=m_codcraftFrags.find(packet.grenadeSequence);
-        if (found==m_codcraftFrags.end()) return;
+        auto const found=flights.find(packet.grenadeSequence);
+        if (found==flights.end()) return;
         CoDCraftFrag const frag=found->second;
         // Consume first: duplicate/replayed explosions cannot damage twice.
-        m_codcraftFrags.erase(found);
+        flights.erase(found);
         auto const elapsed=WorldTimer::getMSTimeDiff(frag.born,now);
         float const dx=packet.grenadeX-frag.x,dy=packet.grenadeY-frag.y,dz=packet.grenadeZ-frag.z;
-        float const maxTravel=std::min(100.0f,5.0f+elapsed*0.05f);
-        if (frag.map!=_player->GetMapId() || elapsed+150<frag.fuse || elapsed>frag.fuse+2000 ||
+        float const maxTravel=predator ? 250.0f : std::min(100.0f,5.0f+elapsed*0.05f);
+        if (!_player->IsAlive() || frag.map!=_player->GetMapId() || elapsed+150<frag.fuse || elapsed>(predator ? 30000u : frag.fuse+2000) ||
             dx*dx+dy*dy+dz*dz>maxTravel*maxTravel ||
-            !_player->IsWithinDist3d(packet.grenadeX,packet.grenadeY,packet.grenadeZ,150.0f)) return;
+            !_player->IsWithinDist3d(packet.grenadeX,packet.grenadeY,packet.grenadeZ,predator ? 250.0f : 150.0f)) return;
         Map const* map=_player->GetMap();
         float const x=packet.grenadeX,y=packet.grenadeY,z=packet.grenadeZ;
         std::list<Unit*> targets;
-        MaNGOS::AnyAoETargetUnitInObjectRangeCheck check(_player,_player,170.0f);
+        MaNGOS::AnyAoETargetUnitInObjectRangeCheck check(_player,_player,predator ? 270.0f : 170.0f);
         MaNGOS::UnitListSearcher<MaNGOS::AnyAoETargetUnitInObjectRangeCheck> searcher(targets,check);
-        Cell::VisitAllObjects(_player,searcher,170.0f);
+        Cell::VisitAllObjects(_player,searcher,predator ? 270.0f : 170.0f);
         targets.push_back(_player);
         uint32 nearby=0, blocked=0, damaged=0;
         for (Unit* target: targets)
@@ -139,7 +151,7 @@ void WorldSession::HandleCoDCraftBulletOpcode(WorldPackets::Combat::CoDCraftBull
                     [map](float px,float py,float pz){return map->GetTerrain()->GetHeightStatic(px,py,pz,false);})) { ++blocked; continue; }
             // Double the current blast damage: eighteen weapon rolls at center, six at edge.
             // Damage and kill/loot credit remain authoritative; no autoattack starts.
-            uint32 damage=uint32(std::max(1.0f,_player->CalculateDamage(BASE_ATTACK,false)*(18.0f-12.0f*distance/frag.radius)));
+            uint32 damage=uint32(std::max(1.0f,_player->CalculateDamage(BASE_ATTACK,false)*(predator ? 4.0f : 1.0f)*(18.0f-12.0f*distance/frag.radius)));
             damage=uint32(_player->CalcArmorReducedDamage(target,damage));
             if (target->IsCreature()) static_cast<Creature*>(target)->m_codcraftBulletLootOwner=_player->GetObjectGuid();
             _player->DealDamage(target,damage,nullptr,DIRECT_DAMAGE,SPELL_SCHOOL_MASK_NORMAL,nullptr,false);

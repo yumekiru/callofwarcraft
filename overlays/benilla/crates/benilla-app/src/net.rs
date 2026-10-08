@@ -966,6 +966,8 @@ pub(crate) enum ClientCommand {
     CodcraftBullet {
         guid: u64,
     },
+    CodcraftPredator { sequence: u32, phase: u8, position: [f32; 3] },
+    CodcraftHelicopter,
     CodcraftGrenade {
         sequence: u32,
         phase: u8,

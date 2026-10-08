@@ -266,8 +266,44 @@ pub(super) fn publish(
                 .ok_or("native skin failed")?;
             let mut rows = Vec::new();
             let mut groups = Vec::new();
+            // Fork-only opt-in: native skin data for host-owned death physics.
+            // Keep disabled until the host reader/solver is connected.
+            let export_rig = std::env::var_os("CODCRAFT_SOLDIER_RIG_EXPORT").is_some();
+            let mut influences = Vec::new();
             let export_model = state.models.get(&(race, weapon)) != Some(&fingerprint);
             for surface in surfaces {
+                if export_rig && export_model {
+                    let model = usize::from(surface.model);
+                    let skel = skels.get(model).ok_or("rig model missing")?;
+                    let base = dobj.models.get(model).ok_or("rig DObj slot missing")?.base;
+                    let &(first, count) = skel
+                        .surface_vertex_ranges
+                        .get(surface.surface_index)
+                        .ok_or("rig surface missing")?;
+                    if count != surface.packed_vertices.len() {
+                        return Err("rig vertex stream mismatch".into());
+                    }
+                    let end = first.checked_add(count).ok_or("rig range overflow")?;
+                    for (offset, skin) in skel
+                        .vert_skin
+                        .get(first..end)
+                        .ok_or("rig weights missing")?
+                        .iter().enumerate()
+                    {
+                        for bone in skin.bones {
+                            let index = base + usize::from(bone);
+                            if index >= dobj.bones.len() {
+                                return Err("rig bone out of bounds".into());
+                            }
+                            push_u32(&mut influences, index as u32);
+                        }
+                        let rigid = render_anim::anim::xmodel_pose::stream_lod_surface_rigid(
+                            skel, 0, &[], surface.model, surface.surface_index);
+                        push_vec(&mut influences, if rigid { [1.0, 0.0, 0.0, 0.0] } else { skin.weights });
+                        push_vec(&mut influences, *skel.positions.get(first + offset).ok_or("rig rest vertex missing")?);
+                        push_vec(&mut influences, *skel.normals.get(first + offset).ok_or("rig rest normal missing")?);
+                    }
+                }
                 if export_model {
                     let (name, edge) = match surface.model {
                         0 => (
@@ -324,6 +360,29 @@ pub(super) fn publish(
                 rows.extend_from_slice(&surface.packed_vertices);
             }
             if export_model {
+                if export_rig {
+                    let mut rig = Vec::new();
+                    push_u64(&mut rig, fingerprint);
+                    push_u32(&mut rig, dobj.bones.len() as u32);
+                    push_u32(&mut rig, rows.len() as u32);
+                    for bone in &dobj.bones {
+                        push_u32(&mut rig, bone.parent.map_or(u32::MAX, |p| p as u32));
+                        push_u32(&mut rig, bone.name.len() as u32);
+                        rig.extend_from_slice(bone.name.as_bytes());
+                        for v in bone.bind_world.to_cols_array() {
+                            push_f32(&mut rig, v);
+                        }
+                    }
+                    rig.extend_from_slice(&influences);
+                    write_packet(
+                        &paths
+                            .model
+                            .with_extension(format!("soldier-{race}-{weapon}.codr")),
+                        b"CODR",
+                        &rig,
+                    )
+                    .map_err(|e| e.to_string())?;
+                }
                 let mut mesh = Vec::new();
                 push_u64(&mut mesh, fingerprint);
                 push_u32(&mut mesh, rows.len() as u32);
@@ -368,6 +427,24 @@ pub(super) fn publish(
                 );
             }
             let mut pose = Vec::new();
+            if export_rig && mode == 10 {
+                let bones = xmodel_runtime::pose_dobj(&dobj, &request, Mat4::IDENTITY)
+                    .map_err(|e| format!("native rig pose: {e:?}"))?;
+                let mut bone_pose = Vec::new();
+                push_u64(&mut bone_pose, fingerprint);
+                push_u32(&mut bone_pose, bones.len() as u32);
+                for bone in bones {
+                    for v in bone.to_cols_array() {
+                        push_f32(&mut bone_pose, v);
+                    }
+                }
+                write_packet(
+                    &paths.model.with_extension(format!("soldier-{id}.codb")),
+                    b"CODB",
+                    &bone_pose,
+                )
+                .map_err(|e| e.to_string())?;
+            }
             push_u64(&mut pose, fingerprint);
             push_u32(&mut pose, 1);
             push_u32(&mut pose, rows.len() as u32);

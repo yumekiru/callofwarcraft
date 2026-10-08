@@ -398,7 +398,7 @@ pub(super) fn control(
             return;
         }
         // `0x514560`, after `apply_server_moves`, so this frame's root edge is already in `modes`.
-        let may_translate = mover.may_translate(player.modes.rooted);
+        let may_translate = mover.may_translate(player.modes.rooted) && !speed_capsule.10.controls_predator();
         let axes = input::move_axes(
             binds,
             &keys,
@@ -407,7 +407,7 @@ pub(super) fn control(
             &rig,
             both_buttons,
             may_translate,
-            may_turn,
+            may_turn && !speed_capsule.10.controls_predator(),
             codcraft_controls && !typing,
         );
         let input::MoveAxes {

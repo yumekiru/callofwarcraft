@@ -55,6 +55,18 @@ pub(super) struct Effects {
 }
 
 impl Effects {
+    pub(super) fn helicopter(&mut self,kind:u32,key:u32,position:Vec3) {
+        if self.pending.len()<64 {self.pending.push((kind,key,position,Vec3::Y,0));}
+    }
+    pub(super) fn predator_trail(&mut self,key:u32,position:Vec3,velocity:Vec3) {
+        if self.pending.len()<64 { self.pending.push((4,key,position,velocity * 36.0,0)); }
+    }
+    pub(super) fn stop_predator_trail(&mut self,key:u32) {
+        if self.pending.len()<64 { self.pending.push((5,key,Vec3::ZERO,Vec3::ZERO,0)); }
+    }
+    pub(super) fn predator(&mut self, weapon: u32, position: Vec3) {
+        if self.pending.len()<64 { self.pending.push((3,weapon,position,Vec3::Y,6)); }
+    }
     pub(super) fn unit_impact(&mut self, sequence: u32, distance: f32) {
         self.unit_impact_shot = Some((sequence, distance));
     }
@@ -158,7 +170,7 @@ fn requests(
         .collision_regions
         .retain(|(_, expires)| *expires > time.elapsed_secs());
     for (kind, _, position, _, _) in &pending {
-        if *kind == 2 { continue; }
+        if *kind == 2 || *kind >= 4 { continue; }
         effects.collision_regions.push((
             *position,
             time.elapsed_secs() + if *kind == 1 { 8.0 } else { 2.0 },
@@ -168,7 +180,7 @@ fn requests(
         let excess = effects.collision_regions.len() - 16;
         effects.collision_regions.drain(..excess);
     }
-    if pending.iter().any(|request| request.0 != 2) {
+    if pending.iter().any(|request| matches!(request.0,0|1|3)) {
         effects.triangles = publish_collision(&base, &effects.collision_regions, &colliders);
     }
     for (kind, weapon, position, normal, surface) in pending {

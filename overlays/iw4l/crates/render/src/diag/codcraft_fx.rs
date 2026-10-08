@@ -4,11 +4,21 @@ use std::collections::{HashMap, HashSet};
 
 #[derive(Resource, Default)]
 struct FxBridge {
+    helicopter_audio: HashMap<u32,std::time::Instant>,
+    missile_trails: HashMap<u32, MissileTrail>,
+    ended_missiles: HashMap<u32, std::time::Instant>,
     textures: HashSet<u64>,
     next_frame: f32,
     mark_sequence: u64,
     texture_namespace: u64,
     audio_inspected: bool,
+}
+
+struct MissileTrail {
+    handle: u16,
+    updated: std::time::Instant,
+    origin: [f32; 3],
+    velocity: [f32; 3],
 }
 
 struct Mark {
@@ -109,6 +119,26 @@ fn requests(
     mut audio_commands: MessageWriter<audio::AliasCommand>,
     sound_bank: Option<Res<audio::SoundBank>>,
 ) {
+    // Keep one moving, owned native emitter per flight. Stop even if impact is
+    // lost, caster despawns, zone changes, or the request directory disappears.
+    let now = std::time::Instant::now();
+    bridge.helicopter_audio.retain(|key,updated| {
+        if now.duration_since(*updated).as_secs_f32()>2.0 {
+            audio_commands.write(audio::AliasCommand::StopEntity{snd_ent:0xc0000000 ^ *key}); false
+        } else {true}
+    });
+    bridge.ended_missiles.retain(|_, until| *until > now);
+    bridge.missile_trails.retain(|_, trail| {
+        let age = now.duration_since(trail.updated).as_secs_f32();
+        if age > 0.35 {
+            host.0.kill_owned(trail.handle);
+            return false;
+        }
+        if let Some(slot) = host.0.slot_for_handle_mut(trail.handle) {
+            slot.origin = std::array::from_fn(|i| trail.origin[i] + trail.velocity[i] * age);
+            true
+        } else { false }
+    });
     let (Some(catalog), Some(weapons), Some(state)) =
         (catalog, weapons, std::env::var_os("CODCRAFT_STATE"))
     else {
@@ -148,6 +178,59 @@ fn requests(
             continue;
         }
         let scene = MarkScene::default();
+        if (6..=8).contains(&u(8)) {
+            let key=u(12); let snd_ent=0xc0000000 ^ key;
+            if u(8)==7 {
+                audio_commands.write(audio::AliasCommand::StopEntity{snd_ent}); bridge.helicopter_audio.remove(&key);
+            } else if let Some(bank)=sound_bank.as_ref() {
+                if u(8)==6 {
+                    if let Some(updated)=bridge.helicopter_audio.get_mut(&key) { *updated=now; continue; }
+                    if let Some(alias)=bank.0.sound_in(asset_core::AssetNamespace::Iw4,"mp_cobra_helicopter") {
+                        audio_commands.write(audio::AliasCommand::Play(audio::PlayAlias {
+                            event:None,namespace:asset_core::AssetNamespace::Iw4,alias:alias.name.clone(),fallback:None,
+                            origin_inches:None,snd_ent:Some(snd_ent),
+                        }));
+                        bridge.helicopter_audio.insert(key,now);
+                    }
+                } else if let Some(weapon)=weapons.0.resolve_index("cobra_20mm_mp").ok().flatten() {
+                    if let Some(alias)=weapons.0.sounds_of(weapon).and_then(|s|audio::select_fire_alias(false,s.fire.as_deref(),s.fire_player.as_deref())) {
+                        audio_commands.write(audio::AliasCommand::Play(audio::PlayAlias {
+                            event:None,namespace:asset_core::AssetNamespace::Iw4,alias:alias.to_owned(),fallback:None,
+                            origin_inches:None,snd_ent:Some(audio::SND_ENT_LOCAL),
+                        }));
+                    }
+                }
+            }
+            continue;
+        }
+        if u(8)==5 {
+            if let Some(trail) = bridge.missile_trails.remove(&u(12)) {
+                host.0.kill_owned(trail.handle);
+            }
+            bridge.ended_missiles.insert(u(12), now + std::time::Duration::from_secs(2));
+            continue;
+        }
+        if u(8)==4 {
+            // Directory enumeration is unordered: an older sample must not
+            // recreate a flight whose impact was already received this frame.
+            if bridge.ended_missiles.contains_key(&u(12)) { continue; }
+            if let Some(trail) = bridge.missile_trails.get_mut(&u(12)) {
+                trail.updated = now; trail.origin = origin; trail.velocity = normal;
+                if let Some(slot) = host.0.slot_for_handle_mut(trail.handle) { slot.origin = origin; }
+            } else if bridge.missile_trails.len() < 32 {
+                if let Some(weapon)=weapons.0.resolve_index("remotemissile_projectile_mp").ok().flatten() {
+                    if let Some(name) = weapons.0.proj_trail_of(weapon) {
+                        let axis=fx::axis_from_hit_normal(Vec3::from_array(normal).normalize_or_zero().to_array());
+                        let msec = host.0.msec_now;
+                        if let Some(fx::PlayResult::Held { handle }) = render_fx::present::spawn_named_oriented_in_world(
+                            &mut host.0,&catalog.0,&cache.0,name,origin,axis,msec,Some(&scene)) {
+                            bridge.missile_trails.insert(u(12), MissileTrail { handle, updated: now, origin, velocity: normal });
+                        }
+                    }
+                }
+            }
+            continue;
+        }
         if u(8) == 2 {
             if let Some(sounds) = weapons.0.sounds_of(u(12)) {
                 if let Some(alias) = audio::select_fire_alias(true, sounds.fire.as_deref(), sounds.fire_player.as_deref()) {
@@ -183,8 +266,9 @@ fn requests(
                 &mut combat,
                 Some(&scene),
             );
-        } else if u(8) == 1 {
-            let Some(weapon) = weapons.0.resolve_index("frag_grenade_mp").ok().flatten() else {
+        } else if u(8) == 1 || u(8) == 3 {
+            let name = if u(8)==3 { "remotemissile_projectile_mp" } else { "frag_grenade_mp" };
+            let Some(weapon) = weapons.0.resolve_index(name).ok().flatten() else {
                 continue;
             };
             // The authoritative host detonation owns the audible event too. The
@@ -290,7 +374,7 @@ fn requests(
     }
 }
 
-fn effect_alpha(bits: [u32; 2]) -> u32 {
+pub(super) fn effect_alpha(bits: [u32; 2]) -> u32 {
     match asset_material::MaterialDrawMode::from_state_bits(bits) {
         asset_material::MaterialDrawMode::Opaque => 0,
         asset_material::MaterialDrawMode::AlphaTest { .. } => 1,

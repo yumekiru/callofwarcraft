@@ -19,6 +19,10 @@ const HEADER: usize = 4 + 4 + 8;
 mod codcraft_fx;
 #[path = "codcraft_soldiers.rs"]
 mod codcraft_soldiers;
+#[path = "codcraft_predator.rs"]
+mod codcraft_predator;
+#[path = "codcraft_helicopter.rs"]
+mod codcraft_helicopter;
 
 struct BridgePaths {
     model: std::path::PathBuf,
@@ -638,8 +642,11 @@ impl Plugin for CodcraftFramePlugin {
             paths.model.display(),
             paths.pose.display()
         );
+        app.init_resource::<codcraft_helicopter::Helicopter>()
+            .add_systems(PostUpdate,codcraft_helicopter::publish.after(frame::RenderSet::FrontendAssemble));
         app.init_resource::<codcraft_soldiers::Soldiers>()
             .add_systems(PostUpdate, codcraft_soldiers::publish.after(frame::RenderSet::FrontendAssemble));
+        app.add_systems(PostUpdate, codcraft_predator::publish.after(frame::RenderSet::FrontendAssemble));
         app.init_resource::<Publisher>().add_systems(
             PostUpdate,
             (publish_viewmodel, publish_tracer_asset, publish_world_weapon, publish_frag_model).chain().after(frame::RenderSet::FrontendAssemble),

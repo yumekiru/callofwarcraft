@@ -393,6 +393,43 @@ fn publish_codcraft_frag(world: &FrameWorld, owner: ClientId, entnum: i32, time:
     }
 }
 
+// Preserve native Predator steering/velocity, replacing only collision with host terrain.
+fn codcraft_predator_step(world: &FrameWorld, projectile: &mut ProjectileState, time: i32) -> bool {
+    if std::env::var_os("CODCRAFT_PREDATOR_EXPORT").is_none()
+        || !world.client_meta(projectile.owner).and_then(|m| m.remote_missile)
+            .is_some_and(|link|link.projectile==projectile.id && link.unlink_at_ms.is_none()) { return false; }
+    if let Some(path)=std::env::var_os("CODCRAFT_INPUT").map(std::path::PathBuf::from) {
+        if let Ok(text)=std::fs::read_to_string(path.with_extension("predator-cancel")) {
+            let f: Vec<_>=text.split_whitespace().collect();
+            let now=std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0,|t|t.as_micros() as u64);
+            if text.len()<128 && f.len()==3 && f[0]=="CCPC1" && f[2].parse::<i32>().ok()==Some(projectile.entnum)
+                && f[1].parse::<u64>().ok().is_some_and(|stamp|stamp<=now && now-stamp<1000000) {
+                projectile.detonate_at_ms=Some(time); projectile.grounded=true;
+                return false;
+            }
+        }
+        if let Ok(text)=std::fs::read_to_string(path.with_extension("predator-impact")) {
+            let f: Vec<_>=text.split_whitespace().collect();
+            if text.len()<256 && f.len()==6 && f[0]=="CCPI1" {
+                let stamp=f[1].parse::<u64>().unwrap_or(0);
+                let now=std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0,|t|t.as_micros() as u64);
+                let pos: Option<Vec<f32>>=f[3..6].iter().map(|s|s.parse::<f32>().ok()).collect();
+                if stamp<=now && now-stamp<1000000 && f[2].parse::<i32>().ok()==Some(projectile.entnum) {
+                    if let Some(pos)=pos.filter(|v|v.iter().all(|x|x.is_finite()) && (0..3).map(|i|(v[i]-projectile.origin_at(time)[i]).powi(2)).sum::<f32>()<1500.0*1500.0) {
+                        projectile.origin=[pos[0],pos[1],pos[2]]; projectile.pos.tr_type=TR_STATIONARY;
+                        projectile.pos.tr_base=projectile.origin; projectile.pos.tr_time=time; projectile.pos.tr_delta=[0.0;3];
+                        projectile.velocity=[0.0;3]; projectile.grounded=true; projectile.detonate_at_ms=Some(time);
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+    if projectile.detonate_at_ms.is_some_and(|deadline|time>=deadline) { return false; }
+    projectile.origin=projectile.origin_at(time);
+    true
+}
+
 fn apply_codcraft_frag_pose(projectile: &mut ProjectileState, time: i32) -> bool {
     let Some(root) = codcraft_frag_root() else { return false };
     let path = root.join(format!("{}-{}.pose", projectile.entnum, projectile.spawn_time_ms));
@@ -704,6 +741,13 @@ pub(crate) fn think_projectile(world: &mut FrameWorld, tick: Tick, entnum: i32) 
         return;
     }
     let facts = required_projectile_facts(world, projectile.weapon);
+    let host_predator = std::env::var_os("CODCRAFT_PREDATOR_EXPORT").is_some()
+        && world.client_meta(projectile.owner).and_then(|m|m.remote_missile)
+            .is_some_and(|link|link.projectile==projectile.id && link.unlink_at_ms.is_none());
+    if codcraft_predator_step(world, &mut projectile, time) {
+        if let Some(row)=world.projectile_mut_by_number(entnum) { *row=projectile; }
+        return;
+    }
     let host_frag = facts.offhand_class == 1 && apply_codcraft_frag_pose(&mut projectile, time);
     if host_frag && projectile.detonate_at_ms.is_none_or(|deadline| time < deadline) {
         if let Some(row) = world.projectile_mut_by_number(entnum) { *row = projectile; }
@@ -997,7 +1041,7 @@ pub(crate) fn think_projectile(world: &mut FrameWorld, tick: Tick, entnum: i32) 
                 amount: 0,
                 fraction: None,
                 surface_flags: None,
-                splash: projectile.live && !host_frag,
+                splash: projectile.live && !host_frag && !host_predator,
             });
         }
         TickOutcome::Fly => {

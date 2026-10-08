@@ -2,6 +2,8 @@
 use super::*;
 use bevy::camera::visibility::RenderLayers;
 use std::sync::{Arc, Mutex};
+#[path = "soldier_ragdoll.rs"]
+mod soldier_ragdoll;
 
 #[derive(Component)]
 pub(super) struct SoldierMesh;
@@ -19,6 +21,8 @@ struct Slot {
     vertex_maps: Vec<Vec<usize>>,
     last_used: f32,
     generation: u64,
+    death_reader: soldier_ragdoll::Reader,
+    corpse: Option<soldier_ragdoll::Body>,
 }
 
 #[derive(Default)]
@@ -35,19 +39,21 @@ impl SoldierState {
         if self.requests.is_none() {
             let mailbox = Arc::new(Mutex::new(None::<String>));
             let weak = Arc::downgrade(&mailbox);
-            std::thread::spawn(move || loop {
-                let Some(mailbox) = weak.upgrade() else {
-                    break;
-                };
-                let text = mailbox.lock().ok().and_then(|mut s| s.take());
-                drop(mailbox);
-                if let Some(text) = text {
-                    let pending = path.with_extension("soldier-requests.pending");
-                    if std::fs::write(&pending, text).is_ok() {
-                        let _ = std::fs::rename(&pending, &path);
+            std::thread::spawn(move || {
+                loop {
+                    let Some(mailbox) = weak.upgrade() else {
+                        break;
+                    };
+                    let text = mailbox.lock().ok().and_then(|mut s| s.take());
+                    drop(mailbox);
+                    if let Some(text) = text {
+                        let pending = path.with_extension("soldier-requests.pending");
+                        if std::fs::write(&pending, text).is_ok() {
+                            let _ = std::fs::rename(&pending, &path);
+                        }
                     }
+                    std::thread::sleep(std::time::Duration::from_millis(8));
                 }
-                std::thread::sleep(std::time::Duration::from_millis(8));
             });
             self.requests = Some(mailbox);
         }
@@ -96,6 +102,7 @@ pub(super) fn display(
         benilla_world::model_render::M2BatchMaterials,
     ),
     mut state: Local<SoldierState>,
+    collision: benilla_world::collision::WorldCollision,
 ) {
     let _scope = profile::scope("soldiers::display");
     let Some(paths) = paths else {
@@ -115,8 +122,14 @@ pub(super) fn display(
                 continue;
             }
             let race = store.0.unit_race().unwrap_or(0);
-            let actor_weapon = if is_self { weapon } else {
-                store.0.player_visible_item_entry(15).and_then(gear::native_weapon_for_item).unwrap_or(weapon)
+            let actor_weapon = if is_self {
+                weapon
+            } else {
+                store
+                    .0
+                    .player_visible_item_entry(15)
+                    .and_then(gear::native_weapon_for_item)
+                    .unwrap_or(weapon)
             };
             if !(1..=8).contains(&race) {
                 continue;
@@ -142,20 +155,17 @@ pub(super) fn display(
             } else if is_self && player.move_flags() & 0x2000 != 0 {
                 4
             } else if is_self && input.buttons & INPUT_PRONE != 0 {
-                if moving {
-                    8
-                } else {
-                    7
-                }
+                if moving { 8 } else { 7 }
             } else if is_self && input.buttons & INPUT_CROUCH != 0 {
-                if moving {
-                    6
-                } else {
-                    5
-                }
+                if moving { 6 } else { 5 }
             } else if is_self && moving && input.buttons & INPUT_SPRINT != 0 {
                 3
-            } else if !is_self && combat.remote_player_fire_until.get(&guid.0).is_some_and(|t| *t > now) {
+            } else if !is_self
+                && combat
+                    .remote_player_fire_until
+                    .get(&guid.0)
+                    .is_some_and(|t| *t > now)
+            {
                 1
             } else if moving {
                 2
@@ -187,14 +197,25 @@ pub(super) fn display(
     let mut seen = std::collections::HashSet::new();
     for mut target in targets {
         let original = target.0;
-        let is_local = units.iter().any(|(_, guid, _, _, _, local)| local && guid.0 == original);
-        let group = if original == u64::MAX || is_local { original } else {
-            0xfffe_0000_0000_0000 | ((target.2 as u64) << 40) | ((target.3 as u64) << 32) | target.4 as u64
+        let is_local = units
+            .iter()
+            .any(|(_, guid, _, _, _, local)| local && guid.0 == original);
+        let group = if original == u64::MAX || is_local || target.3 == 10 {
+            original
+        } else {
+            0xfffe_0000_0000_0000
+                | ((target.2 as u64) << 40)
+                | ((target.3 as u64) << 32)
+                | target.4 as u64
         };
-        if !seen.contains(&group) && seen.len() >= 48 { continue; }
+        if !seen.contains(&group) && seen.len() >= 48 {
+            continue;
+        }
         actors.push((original, group, target.1, target.6));
         target.0 = group;
-        if seen.insert(group) { grouped.push(target); }
+        if seen.insert(group) {
+            grouped.push(target);
+        }
     }
     let targets = grouped;
     let requests = targets
@@ -213,7 +234,9 @@ pub(super) fn display(
         if let Some(slot) = state.slots.get(&id) {
             if now - slot.last_used < 10.0 {
                 for entity in &slot.stage.entities {
-                    if let Ok(mut v) = render.1.get_mut(*entity) { *v = Visibility::Hidden; }
+                    if let Ok(mut v) = render.1.get_mut(*entity) {
+                        *v = Visibility::Hidden;
+                    }
                 }
                 continue; // Keep warm idle/run/fire buffers across animation transitions.
             }
@@ -228,7 +251,27 @@ pub(super) fn display(
         state.previous.remove(&id);
     }
     let mut replaced = std::collections::HashSet::new();
-    for (id, root, race, _, weapon, layer, visible) in targets {
+    for (id, root, race, mode, weapon, layer, visible) in targets {
+        if mode == 10
+            && state
+                .slots
+                .get(&id)
+                .is_none_or(|slot| slot.corpse.is_none())
+            && state
+                .slots
+                .values()
+                .filter(|slot| slot.corpse.as_ref().is_some_and(|b| !b.sleeping))
+                .count()
+                >= 12
+        {
+            if let Some(body) = state
+                .slots
+                .values_mut()
+                .find_map(|slot| slot.corpse.as_mut().filter(|b| !b.sleeping))
+            {
+                body.sleeping = true;
+            }
+        }
         let slot = state.slots.entry(id).or_insert_with(|| Slot {
             root,
             race,
@@ -239,11 +282,15 @@ pub(super) fn display(
             vertex_maps: Vec::new(),
             last_used: now,
             generation: 0,
+            death_reader: soldier_ragdoll::Reader::default(),
+            corpse: None,
         });
         if slot.root != root {
             slot.root = root;
             for entity in &slot.stage.entities {
-                if render.1.contains(*entity) { super::soldier_lifecycle::reparent(&mut commands, *entity, root); }
+                if render.1.contains(*entity) {
+                    super::soldier_lifecycle::reparent(&mut commands, *entity, root);
+                }
             }
         }
         if slot.race != race || slot.weapon != weapon {
@@ -262,9 +309,15 @@ pub(super) fn display(
                 vertex_maps: Vec::new(),
                 last_used: now,
                 generation: 0,
+                death_reader: soldier_ragdoll::Reader::default(),
+                corpse: None,
             };
         }
         slot.last_used = now;
+        if mode != 10 {
+            slot.corpse = None;
+            slot.death_reader = soldier_ragdoll::Reader::default();
+        }
         let stream = ViewmodelPaths {
             model: paths
                 .model
@@ -317,11 +370,10 @@ pub(super) fn display(
                 }
             }
             for e in &entities {
-                commands.entity(*e).try_remove::<CodcraftViewmodel>().try_insert((
-                    SoldierMesh,
-                    layer.clone(),
-                    Visibility::Hidden,
-                ));
+                commands
+                    .entity(*e)
+                    .try_remove::<CodcraftViewmodel>()
+                    .try_insert((SoldierMesh, layer.clone(), Visibility::Hidden));
             }
             for h in &materials {
                 if id == u64::MAX {
@@ -345,21 +397,34 @@ pub(super) fn display(
             slot.vertex_maps.clear();
             // Each CODM material indexes one shared pose array. Do not upload that
             // entire array once per material: keep only vertices used by this draw.
-            for (handle, source) in meshes.iter().zip(model.materials.iter().filter(|m| !m.indices.is_empty())) {
+            for (handle, source) in meshes
+                .iter()
+                .zip(model.materials.iter().filter(|m| !m.indices.is_empty()))
+            {
                 let mut lookup = HashMap::<u32, u32>::new();
                 let mut map = Vec::<usize>::new();
-                let indices: Vec<u32> = source.indices.iter().map(|index| {
-                    *lookup.entry(*index).or_insert_with(|| {
-                        let compact = map.len() as u32;
-                        map.push(*index as usize);
-                        compact
+                let indices: Vec<u32> = source
+                    .indices
+                    .iter()
+                    .map(|index| {
+                        *lookup.entry(*index).or_insert_with(|| {
+                            let compact = map.len() as u32;
+                            map.push(*index as usize);
+                            compact
+                        })
                     })
-                }).collect();
+                    .collect();
                 if let Some(mesh) = assets.1.get_mut(handle) {
                     mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vec![[0.0; 3]; map.len()]);
                     mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, vec![[0.0, 1.0, 0.0]; map.len()]);
-                    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, map.iter().map(|i| model.uvs[*i]).collect::<Vec<_>>());
-                    mesh.insert_attribute(Mesh::ATTRIBUTE_COLOR, map.iter().map(|i| model.colors[*i]).collect::<Vec<_>>());
+                    mesh.insert_attribute(
+                        Mesh::ATTRIBUTE_UV_0,
+                        map.iter().map(|i| model.uvs[*i]).collect::<Vec<_>>(),
+                    );
+                    mesh.insert_attribute(
+                        Mesh::ATTRIBUTE_COLOR,
+                        map.iter().map(|i| model.colors[*i]).collect::<Vec<_>>(),
+                    );
                     mesh.insert_indices(bevy::mesh::Indices::U32(indices));
                 }
                 slot.vertex_maps.push(map);
@@ -378,10 +443,49 @@ pub(super) fn display(
             continue;
         }
         if visible {
-            for (h, map) in slot.stage.meshes.iter().zip(&slot.vertex_maps) {
-                if let Some(mesh) = assets.1.get_mut(h) {
-                    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, map.iter().map(|i| pose.positions[*i]).collect::<Vec<_>>());
-                    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, map.iter().map(|i| pose.normals[*i]).collect::<Vec<_>>());
+            let root_affine = units.get(root).ok().map(|row| row.4.compute_affine());
+            if mode == 10 && slot.corpse.is_none() {
+                if let Some(root_affine) = root_affine {
+                    if let Some(rig) = slot.death_reader.poll(
+                        paths
+                            .model
+                            .with_extension(format!("soldier-{race}-{weapon}.codr")),
+                        paths.model.with_extension(format!("soldier-{id}.codb")),
+                        pose.fingerprint,
+                        pose.positions.len(),
+                    ) {
+                        slot.corpse = Some(soldier_ragdoll::Body::new(
+                            rig,
+                            &pose.positions,
+                            &pose.normals,
+                            root_affine,
+                            Vec3::ZERO,
+                        ));
+                        info!("CoDCraft: native soldier ragdoll started id={id}");
+                    }
+                }
+            }
+            let mut upload = true;
+            if let (Some(body), Some(root_affine)) = (&mut slot.corpse, root_affine) {
+                upload = body.advance(time.delta_secs(), root_affine, &collision);
+            }
+            let positions = slot
+                .corpse
+                .as_ref()
+                .map_or(&pose.positions, |b| &b.positions);
+            let normals = slot.corpse.as_ref().map_or(&pose.normals, |b| &b.normals);
+            if upload {
+                for (h, map) in slot.stage.meshes.iter().zip(&slot.vertex_maps) {
+                    if let Some(mesh) = assets.1.get_mut(h) {
+                        mesh.insert_attribute(
+                            Mesh::ATTRIBUTE_POSITION,
+                            map.iter().map(|i| positions[*i]).collect::<Vec<_>>(),
+                        );
+                        mesh.insert_attribute(
+                            Mesh::ATTRIBUTE_NORMAL,
+                            map.iter().map(|i| normals[*i]).collect::<Vec<_>>(),
+                        );
+                    }
                 }
             }
         }
@@ -397,18 +501,31 @@ pub(super) fn display(
         replaced.insert(root);
     }
     let live_actors: std::collections::HashSet<_> = actors.iter().map(|a| a.0).collect();
-    let expired: Vec<_> = state.instances.keys().filter(|id| !live_actors.contains(id)).copied().collect();
+    let expired: Vec<_> = state
+        .instances
+        .keys()
+        .filter(|id| !live_actors.contains(id))
+        .copied()
+        .collect();
     for id in expired {
         if let Some((_, root, _, entities)) = state.instances.remove(&id) {
-            for entity in entities { commands.entity(entity).try_despawn(); }
+            for entity in entities {
+                commands.entity(entity).try_despawn();
+            }
             commands.entity(root).try_remove::<NativeSoldierAnchor>();
         }
     }
     for (id, group, root, visible) in actors {
-        let Some(slot) = state.slots.get(&group) else { continue };
+        let Some(slot) = state.slots.get(&group) else {
+            continue;
+        };
         if !replaced.contains(&slot.root) {
             if let Some((_, _, _, entities)) = state.instances.get(&id) {
-                for entity in entities { if let Ok(mut v) = render.1.get_mut(*entity) { *v = Visibility::Hidden; } }
+                for entity in entities {
+                    if let Ok(mut v) = render.1.get_mut(*entity) {
+                        *v = Visibility::Hidden;
+                    }
+                }
             }
             commands.entity(root).try_remove::<NativeSoldierAnchor>();
             continue;
@@ -417,22 +534,58 @@ pub(super) fn display(
         let meshes = slot.stage.meshes.clone();
         let materials = slot.stage.materials.clone();
         let generation = slot.generation;
-        let reset = state.instances.get(&id).is_none_or(|(g, r, version, entities)| *g != group || *r != root || *version != generation || (owner && !entities.is_empty()) || (!owner && (entities.is_empty() || entities.iter().any(|e| !render.1.contains(*e)))));
+        let reset = state
+            .instances
+            .get(&id)
+            .is_none_or(|(g, r, version, entities)| {
+                *g != group
+                    || *r != root
+                    || *version != generation
+                    || (owner && !entities.is_empty())
+                    || (!owner
+                        && (entities.is_empty() || entities.iter().any(|e| !render.1.contains(*e))))
+            });
         if reset {
             if let Some((_, _, _, entities)) = state.instances.remove(&id) {
-                for entity in entities { commands.entity(entity).try_despawn(); }
+                for entity in entities {
+                    commands.entity(entity).try_despawn();
+                }
             }
-            let entities = if owner { Vec::new() } else {
-                meshes.into_iter().zip(materials).map(|(mesh, material)| commands.spawn((
-                    Mesh3d(mesh), bevy::pbr::MeshMaterial3d(material), SoldierMesh,
-                    Transform::default(), Visibility::Visible, ChildOf(root),
-                    bevy::camera::visibility::NoFrustumCulling,
-                )).id()).collect()
+            let entities = if owner {
+                Vec::new()
+            } else {
+                meshes
+                    .into_iter()
+                    .zip(materials)
+                    .map(|(mesh, material)| {
+                        commands
+                            .spawn((
+                                Mesh3d(mesh),
+                                bevy::pbr::MeshMaterial3d(material),
+                                SoldierMesh,
+                                Transform::default(),
+                                Visibility::Visible,
+                                ChildOf(root),
+                                bevy::camera::visibility::NoFrustumCulling,
+                            ))
+                            .id()
+                    })
+                    .collect()
             };
-            state.instances.insert(id, (group, root, generation, entities));
+            state
+                .instances
+                .insert(id, (group, root, generation, entities));
         }
         if let Some((_, _, _, entities)) = state.instances.get(&id) {
-            for entity in entities { if let Ok(mut v) = render.1.get_mut(*entity) { *v = if visible { Visibility::Visible } else { Visibility::Hidden }; } }
+            for entity in entities {
+                if let Ok(mut v) = render.1.get_mut(*entity) {
+                    *v = if visible {
+                        Visibility::Visible
+                    } else {
+                        Visibility::Hidden
+                    };
+                }
+            }
         }
         commands.entity(root).try_insert(NativeSoldierAnchor);
         replaced.insert(root);

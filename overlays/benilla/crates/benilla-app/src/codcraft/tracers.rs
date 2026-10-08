@@ -1,5 +1,7 @@
 //! Native MW2 tracer art, drawn in Warcraft from the weapon's real animated muzzle.
 use super::*;
+#[derive(Resource,Default)]
+pub(super) struct ExternalShots(pub(super) VecDeque<(Vec3,Vec3,f32)>);
 
 #[derive(Resource, Default)]
 pub(super) struct TracerAsset {
@@ -33,6 +35,7 @@ fn beam_side(direction: Vec3, eye: Vec3, start: Vec3, width: f32) -> Vec3 {
 
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<TracerAsset>()
+        .init_resource::<ExternalShots>()
         .init_resource::<kobold_pose::RifleAims>()
         .add_systems(Update, (load_asset, kobold_pose::cache_barrels))
         .add_systems(
@@ -136,6 +139,7 @@ fn spawn_shots(
     stage: Res<ViewmodelStage>,
     mut ai: ResMut<CodcraftKoboldAi>,
     mut combat: ResMut<CodcraftCombatState>,
+    mut external: ResMut<ExternalShots>,
     mut effects: ResMut<effects::Effects>,
     link: Res<GuestLink>,
     player: Res<crate::player::Player>,
@@ -146,6 +150,7 @@ fn spawn_shots(
 ) {
     if !world.0 {
         ai.pending_shots.clear();
+        external.0.clear();
         return;
     }
     let Some(material) = &asset.material else {
@@ -155,6 +160,12 @@ fn spawn_shots(
         return;
     }
     let mut player_muzzles = HashMap::new();
+    let mut helicopter_keys=std::collections::HashSet::new();
+    for (i,(start,end,born)) in external.0.drain(..).enumerate() {
+        let key=u64::MAX-i as u64;
+        player_muzzles.insert(key,start); helicopter_keys.insert(key);
+        ai.pending_shots.push_back((key,born,end));
+    }
     while let Some((attacker, victim, born)) = combat.remote_player_shots.pop_front() {
         let Some((_, shooter, equipment)) = units.iter().find(|(g, _, _)| g.0 == attacker) else { continue };
         let Some((_, target, _)) = units.iter().find(|(g, _, _)| g.0 == victim) else { continue };
@@ -178,7 +189,7 @@ fn spawn_shots(
         };
         let mut end = endpoint;
         let distance = start.distance(end);
-        if !start.is_finite() || distance < 0.1 || distance > 50.0 {
+        if !start.is_finite() || distance < 0.1 || distance > if helicopter_keys.contains(&guid) {150.0} else {50.0} {
             continue;
         }
         // Never show a tracer passing through a hill/WMO even if the muzzle and

@@ -8,9 +8,11 @@
 #include "Config/Config.h"
 #include "Chat.h"
 #include "Player.h"
+#include "MasterPlayer.h"
 #include "Group.h"
 #include "PlayerBotAI.h"
 #include "CoDCraftPlayerBotAI.h"
+#include "CoDCraftHelicopter.h"
 #include "Item.h"
 #include "PartyBotAI.h"
 #include "BattleBotAI.h"
@@ -89,6 +91,8 @@ void PlayerBotMgr::Load()
     }
     Field* fields = result->Fetch();
     m_maxAccountId = fields[0].GetUInt32() + 10000;
+    if (auto savedAccounts = CharacterDatabase.PQuery("SELECT COALESCE(MAX(account),0) FROM characters"))
+        m_maxAccountId = std::max(m_maxAccountId, savedAccounts->Fetch()[0].GetUInt32());
 
     // 4- LoadFromDB
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> [PlayerBotMgr] Loading Bots ...");
@@ -183,6 +187,37 @@ void PlayerBotMgr::OnBotLogout(PlayerBotEntry *e)
 
 void PlayerBotMgr::OnPlayerInWorld(Player* player)
 {
+    if (!player->GetSession()->GetBot() && sConfig.GetBoolDefault("CoDCraft.PlayerBots.Enable", false))
+    {
+        player->LearnSpell(126, false); // Fork-only Predator, client intercepts the native cast.
+        auto* master = player->GetSession()->GetMasterPlayer();
+        if (master)
+        {
+            auto const& buttons = master->GetActionButtons();
+            bool present = false;
+            for (auto const& row : buttons)
+                if (row.second.uState != ACTIONBUTTON_DELETED && row.second.GetType() == ACTION_BUTTON_SPELL && row.second.GetAction() == 126) present = true;
+            if (!present)
+                for (uint8 slot = 0; slot < 12; ++slot)
+                {
+                    auto const found = buttons.find(slot);
+                    if (found == buttons.end() || found->second.uState == ACTIONBUTTON_DELETED)
+                    { master->addActionButton(slot,126,ACTION_BUTTON_SPELL); break; }
+                }
+            player->LearnSpell(CoDCraftHelicopter::Spell,false);
+            bool heliPresent=false;
+            for (auto const& row:buttons)
+                if (row.second.uState!=ACTIONBUTTON_DELETED && row.second.GetType()==ACTION_BUTTON_SPELL && row.second.GetAction()==CoDCraftHelicopter::Spell) heliPresent=true;
+            if (!heliPresent)
+                for (uint8 slot=0;slot<12;++slot)
+                {
+                    auto found=buttons.find(slot);
+                    if (found==buttons.end() || found->second.uState==ACTIONBUTTON_DELETED)
+                    { master->addActionButton(slot,CoDCraftHelicopter::Spell,ACTION_BUTTON_SPELL); break; }
+                }
+            master->SendInitialActionButtons();
+        }
+    }
     if (PlayerBotEntry* e = player->GetSession()->GetBot())
     {
         player->SetAI(e->ai.get());
@@ -191,9 +226,15 @@ void PlayerBotMgr::OnPlayerInWorld(Player* player)
     }
     else if (!m_codcraftPopulationStarted && sConfig.GetBoolDefault("CoDCraft.PlayerBots.Enable", false))
     {
+        if (!CharacterDatabase.DirectPExecute("CREATE TABLE IF NOT EXISTS codcraft_playerbot_identity (slot_id INT UNSIGNED NOT NULL PRIMARY KEY, char_guid INT UNSIGNED NOT NULL UNIQUE) ENGINE=InnoDB"))
+        {
+            sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "CoDCraft: cannot initialize persistent bot identities; population not started");
+            return;
+        }
         m_codcraftPopulationStarted = true;
-        uint32 count = std::min(30u, uint32(std::max(0, sConfig.GetIntDefault("CoDCraft.PlayerBots.Count", 30))));
-        uint8 startingRaces[] = {RACE_HUMAN, RACE_DWARF, RACE_NIGHTELF, RACE_ORC, RACE_UNDEAD, RACE_TAUREN};
+        CoDCraftPlayerBotAI::UpdateActiveZone(player, 0);
+        uint32 count = 150; // One occupied-zone roster, six local groups of 25.
+        uint8 startingRaces[] = {player->GetRace()};
         uint32 weapon = 0;
         if (Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND)) weapon = item->GetEntry();
         // Only existing level-one-compatible main-hand items; don't silently level bots up.
@@ -227,16 +268,50 @@ void PlayerBotMgr::OnPlayerInWorld(Player* player)
                 if (i % 2 && baseRace == RACE_DWARF) race = RACE_GNOME;
                 if (i % 2 && baseRace == RACE_ORC) race = RACE_TROLL;
                 uint32 botWeapon = weapons.empty() ? weapon : weapons[(i + ordinal++ * 7) % weapons.size()];
-                AddBot(new CoDCraftPlayerBotAI(race, 1, botWeapon, info->mapId, 0,
-                    info->positionX, info->positionY, info->positionZ, info->orientation));
+                auto ai = new CoDCraftPlayerBotAI(race, player->GetLevel(), botWeapon, player->GetMapId(), player->GetInstanceId(),
+                    player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation());
+                uint32 const slot = 1 + i * 16 + baseRace;
+                auto saved = CharacterDatabase.PQuery("SELECT c.guid FROM codcraft_playerbot_identity b JOIN characters c ON c.guid=b.char_guid WHERE b.slot_id=%u AND c.race=%u AND c.class=%u", slot, race, CLASS_WARRIOR);
+                ai->SetPersistentSlot(slot, bool(saved));
+                if (saved) AddBot(saved->Fetch()[0].GetUInt32(), false, ai);
+                else AddBot(ai);
             }
         }
-        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "CoDCraft playerbot population: requested %u real player sessions across six starting areas", count * 6);
+        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "CoDCraft playerbot population: requested %u persistent sessions in occupied zone %u only", count, player->GetZoneId());
     }
 }
 
 void PlayerBotMgr::Update(uint32 diff)
 {
+    CoDCraftHelicopter::Update(diff);
+    if (m_codcraftPopulationStarted)
+    {
+        // Run independently of the legacy ten-second random-bot scheduler.
+        Player* owner = nullptr;
+        for (auto const& row : sWorld.GetAllSessions())
+            if (!row.second->GetBot())
+                if (Player* p = row.second->GetPlayer())
+                    if ((p->IsInWorld() || p->IsBeingTeleported()) && (!owner || p->GetGUIDLow() < owner->GetGUIDLow())) owner = p;
+        CoDCraftPlayerBotAI::UpdateActiveZone(owner, diff);
+        if (owner)
+        {
+            bool remaining=false;
+            for (auto const& row:m_bots)
+                if (dynamic_cast<CoDCraftPlayerBotAI*>(row.second->ai.get())) remaining=true;
+            if (!remaining && !owner->IsBeingTeleported()) { m_codcraftPopulationStarted=false; OnPlayerInWorld(owner); }
+        }
+        if (!owner)
+        {
+            for (auto const& row : m_bots)
+                if (dynamic_cast<CoDCraftPlayerBotAI*>(row.second->ai.get())) row.second->requestRemoval = true;
+            // Keep the population flag until all sessions are unloaded, preventing
+            // duplicate saved identities if the human reconnects immediately.
+            bool remaining = false;
+            for (auto const& row : m_bots)
+                if (dynamic_cast<CoDCraftPlayerBotAI*>(row.second->ai.get())) remaining = true;
+            if (!remaining) m_codcraftPopulationStarted = false;
+        }
+    }
     // Temporary bots.
     std::map<uint32, uint32>::iterator it;
     for (it = m_tempBots.begin(); it != m_tempBots.end(); ++it)
@@ -267,7 +342,7 @@ void PlayerBotMgr::Update(uint32 diff)
     }
 
     m_elapsedTime += diff;
-    if (!((m_elapsedTime - m_lastUpdate) > m_confUpdateDiff))
+    if (!((m_elapsedTime - m_lastUpdate) > (m_codcraftPopulationStarted ? std::min(500u, m_confUpdateDiff) : m_confUpdateDiff)))
         return; // No need to update
     m_lastUpdate = m_elapsedTime;
 
@@ -286,6 +361,7 @@ void PlayerBotMgr::Update(uint32 diff)
             {
                 if (iter->second->ai && iter->second->ai->me)
                 {
+                    if (dynamic_cast<CoDCraftPlayerBotAI*>(iter->second->ai.get())) iter->second->ai->me->SaveToDB();
                     if (!iter->second->ai->me->IsAlive())
                     {
                         // don't leave permanent corpse
@@ -326,6 +402,7 @@ void PlayerBotMgr::Update(uint32 diff)
             continue;
         }
 
+        if (dynamic_cast<CoDCraftPlayerBotAI*>(iter->second->ai.get()) && !CoDCraftPlayerBotAI::ZoneReady()) { ++iter; continue; }
         if (loadedThisUpdate >= 6) { ++iter; continue; }
         ++loadedThisUpdate;
         if (iter->second->ai->OnSessionLoaded(iter->second.get(), sess))

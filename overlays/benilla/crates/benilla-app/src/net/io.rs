@@ -1068,6 +1068,9 @@ fn writer_loop(
                     ClientCommand::PetRename { pet_guid, name } => w.pet_rename(pet_guid, &name),
                     ClientCommand::AttackSwing { guid } => w.attack_swing(guid),
                     ClientCommand::CodcraftBullet { guid } => w.codcraft_bullet(guid),
+                    ClientCommand::CodcraftHelicopter => w.codcraft_helicopter(),
+                    ClientCommand::CodcraftPredator { sequence, phase, position } =>
+                        w.codcraft_predator(sequence, phase, position),
                     ClientCommand::CodcraftGrenade { sequence, phase, position, fuse_ms, radius } =>
                         w.codcraft_grenade(sequence, phase, position, fuse_ms, radius),
                     ClientCommand::CodcraftNpcBullet {

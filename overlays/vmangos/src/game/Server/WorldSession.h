@@ -854,6 +854,8 @@ class WorldSession
         std::map<uint32, CoDCraftFrag> m_codcraftFrags;
         uint32 m_codcraftFragSequence = 0;
         uint32 m_codcraftLastFrag = 0;
+        std::map<uint32, CoDCraftFrag> m_codcraftPredators;
+        uint32 m_codcraftPredatorSequence = 0;
         void MoveItems(Item* myItems[], Item* hisItems[]);
 
         bool VerifyMovementInfo(MovementInfo const& movementInfo) const;

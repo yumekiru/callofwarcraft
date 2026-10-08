@@ -24,6 +24,8 @@ mod effects;
 mod profile;
 pub(crate) mod gear;
 mod grenades;
+pub(crate) mod predator;
+mod helicopter;
 mod kobold_pose;
 mod ragdoll;
 mod shot_math;
@@ -75,6 +77,7 @@ pub(crate) struct GuestInputPublisher {
     fire_latch_until: f32,
     pub(crate) buttons: u32,
     alt_interact: bool,
+    predator_control: bool,
     aim: Option<aim::AimSample>,
 }
 
@@ -86,8 +89,9 @@ impl GuestInputPublisher {
 
     /// Left Alt toggles Warcraft cursor interaction until pressed again.
     pub(crate) fn allows_world_interaction(&self) -> bool {
-        self.owns_gameplay_controls() && self.alt_interact
+        self.owns_gameplay_controls() && self.alt_interact && !self.predator_control
     }
+    pub(crate) fn controls_predator(&self) -> bool { self.predator_control }
 }
 
 /// Whether the local Warcraft attack seams must stay disabled because the passthrough bridge is
@@ -323,7 +327,7 @@ fn update_codcraft_hud(
         combat.marker_until = now + 0.16;
     }
     let live = world_live.0 && input.owns_gameplay_controls() && view.shown;
-    let hip_fire = live && !mouse.pressed(MouseButton::Right) && !typing.typing;
+    let hip_fire = live && (input.predator_control || !mouse.pressed(MouseButton::Right)) && !typing.typing;
     let marker_remaining = (combat.marker_until - now).clamp(0.0, 0.16);
     let marker = live && marker_remaining > 0.0;
     let marker_progress = 1.0 - marker_remaining / 0.16;
@@ -383,10 +387,10 @@ fn publish_guest_input(
     let keyboard_enabled = active && !typing.typing;
     if !active {
         input.alt_interact = false;
-    } else if !typing.typing && keys.just_pressed(KeyCode::AltLeft) {
+    } else if !input.predator_control && !typing.typing && keys.just_pressed(KeyCode::AltLeft) {
         input.alt_interact = !input.alt_interact;
     }
-    let mouse_gameplay = active && !typing.typing && !input.alt_interact && !over_ui.0;
+    let mouse_gameplay = active && !typing.typing && (input.predator_control || (!input.alt_interact && !over_ui.0));
     let armed = !gear::enabled() || gear.code != 0;
     let mut buttons = 0;
     let mut set = |condition, bit| {
@@ -431,6 +435,7 @@ fn publish_guest_input(
     );
     set(keyboard_enabled && keys.pressed(KeyCode::KeyZ), INPUT_PRONE);
     set(keyboard_enabled && keys.pressed(KeyCode::KeyG), INPUT_FRAG);
+    if input.predator_control { buttons &= INPUT_FIRE; }
     input.buttons = buttons;
 
     // CoD owns the view direction: do not require WoW's own mouse-look drag gesture. Preserve UI
@@ -824,6 +829,7 @@ fn apply_guest_player(
     mut effects: ResMut<effects::Effects>,
 ) {
     let _work_scope = profile::scope("codcraft.rs:apply_guest_player");
+    if input.predator_control { return; }
     let _work_scope = profile::scope("codcraft.rs:poll");
     if !world_live.0 {
         return;
@@ -1789,14 +1795,15 @@ fn present_viewmodel(
     cameras: Query<Entity, With<benilla_world::view::WorldCamera>>,
     mut viewmodel_entities: Query<(&mut Transform, &mut Visibility), With<CodcraftViewmodel>>,
     stream: (Local<PoseBlend>, Local<ViewmodelReader>),
-    gear: Res<gear::GearState>,
+    gear: (Res<gear::GearState>, Res<predator::Predator>),
 ) {
+    let (gear, predator) = gear;
     let _work_scope = profile::scope("codcraft.rs:present_viewmodel");
     let (mut smoothing, mut reader) = stream;
     // The equipped weapon is gameplay, not a Q-key diagnostic overlay toggle.
     view.shown = true;
     let Some(paths) = paths else { return };
-    if !world_live.0 || (gear::enabled() && gear.code == 0) {
+    if predator.flying() || !world_live.0 || (gear::enabled() && gear.code == 0) {
         *smoothing = PoseBlend::default();
         hide_viewmodel(&stage, &mut viewmodel_entities);
         return;
@@ -2670,6 +2677,8 @@ impl Plugin for CodcraftPlugin {
         damage_direction::plugin(app);
         grenades::plugin(app);
         effects::plugin(app);
+        predator::plugin(app);
+        helicopter::plugin(app);
         app.init_resource::<GuestLink>()
             .init_resource::<GuestView>()
             .init_resource::<ViewmodelStage>()

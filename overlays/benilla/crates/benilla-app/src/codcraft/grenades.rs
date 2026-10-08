@@ -5,6 +5,7 @@ use avian3d::prelude::Collider;
 mod math;
 
 struct Frag {
+    predator: bool,
     remote: bool,
     session: u64,
     id: u32,
@@ -57,9 +58,15 @@ pub(super) fn plugin(app: &mut App) {
         );
 }
 
-fn remote_frag(In(event): In<benilla_protocol::SessionEvent>, time: Res<Time<Real>>, mut state: ResMut<Frags>) {
+fn remote_frag(In(event): In<benilla_protocol::SessionEvent>, time: Res<Time<Real>>, mut state: ResMut<Frags>, mut effects: ResMut<effects::Effects>) {
     let benilla_protocol::SessionEvent::CodcraftFrag { unit, sequence, phase, position, velocity, fuse_ms, radius } = event else { return };
-    if phase > 1 || !position.into_iter().chain(velocity).all(f32::is_finite) || !(1.0..=15.0).contains(&radius) || fuse_ms > 5000 { return; }
+    if phase > 3 || !position.into_iter().chain(velocity).all(f32::is_finite) || !(1.0..=15.0).contains(&radius) || fuse_ms > 5000 { return; }
+    let predator=phase>=2;
+    // Native FX ownership is per missile, not per 100ms network sample.
+    let trail_key = (unit as u32).wrapping_mul(0x9e3779b9) ^ sequence.rotate_left(16);
+    if phase==2 { effects.predator_trail(trail_key,benilla_assets::coords::wow_to_bevy(position),benilla_assets::coords::wow_to_bevy(velocity)); return; }
+    if phase==3 { effects.stop_predator_trail(trail_key); }
+    let phase=phase&1;
     let position = benilla_assets::coords::wow_to_bevy(position);
     if let Some(frag) = state.active.iter_mut().find(|f| f.remote && f.session == unit && f.sequence == sequence) {
         if phase == 1 { frag.position = position; frag.deadline = time.elapsed_secs(); frag.settled = true; }
@@ -67,6 +74,7 @@ fn remote_frag(In(event): In<benilla_protocol::SessionEvent>, time: Res<Time<Rea
     }
     if state.active.len() >= 64 { return; }
     state.active.push(Frag {
+        predator,
         remote: true, session: unit, id: sequence, spawn: 0, sequence,
         offset: Vec3::ZERO, rotation: Quat::IDENTITY, position,
         velocity: benilla_assets::coords::wow_to_bevy(velocity), gravity: 800.0 / 36.0,
@@ -251,6 +259,7 @@ fn flight(
                     state.seen.pop_front();
                 }
                 state.active.push(Frag {
+                    predator: false,
                     remote: false,
                     session: key.0,
                     id: key.1,
@@ -279,7 +288,7 @@ fn flight(
     let dt = time.delta_secs().min(0.10);
     let mut expired = Vec::new();
     for (index, frag) in state.active.iter_mut().enumerate() {
-        if frag.entities.is_empty() {
+        if !frag.predator && frag.entities.is_empty() {
             for (mesh, material) in &art.parts {
                 frag.entities.push(
                     commands
@@ -363,7 +372,8 @@ fn flight(
             let _ = std::fs::write(root.join(format!("{}-{}.pose", frag.id, frag.spawn)), bytes);
         }
         if now >= frag.deadline {
-            effects.explosion(frag.position, Vec3::Y);
+            if frag.predator { effects.predator(0,frag.position); }
+            else { effects.explosion(frag.position, Vec3::Y); }
             // Queue ordinary server damage acknowledgements for hitmarkers and
             // auto-loot; a candidate alone never counts as confirmed damage.
             for (guid, transform) in &targets {

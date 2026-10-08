@@ -56,6 +56,8 @@ pub(super) struct Effects {
 
 impl Effects {
     pub(super) fn helicopter(&mut self,kind:u32,key:u32,position:Vec3) {
+        // Lifecycle/keepalive cannot be starved by a full frame of combat FX.
+        if kind!=8 && self.pending.len()>=64 {self.pending.pop();}
         if self.pending.len()<64 {self.pending.push((kind,key,position,Vec3::Y,0));}
     }
     pub(super) fn predator_trail(&mut self,key:u32,position:Vec3,velocity:Vec3) {

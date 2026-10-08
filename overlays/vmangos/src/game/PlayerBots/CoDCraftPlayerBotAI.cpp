@@ -40,14 +40,27 @@ namespace
         uint8 levels[6] = {};
         ZonePoint centers[6];
         std::vector<ZonePoint> combatSpawns, squads[30];
+        std::vector<ZonePoint> coverage[6];
         uint32 squadEntries[30] = {};
     } activeZone;
     float DistanceSquared(ZonePoint const& a, ZonePoint const& b)
     { float dx=a.x-b.x,dy=a.y-b.y; return dx*dx+dy*dy; }
-    uint32 SquadForSlot(uint32 slot) { return CoDCraftSquads::Index(slot); }
+    uint32 SquadForSlot(uint32 slot) { return CoDCraftSquads::Index(slot,activeZone.zone==12); }
+    bool CoveragePatrol(uint32 slot) { return slot && (slot-1)/16>=450; }
+    size_t PatrolAnchor(uint32 slot, size_t count)
+    {
+        if (!count) return 0;
+        uint32 ordinal=slot?(slot-1)/16:0;
+        // Stratified sampling covers the entire pool without modulo aliasing
+        // (the old stride of 17 visited one anchor if the pool had 17 entries).
+        uint32 rank=ordinal>=450 ? (ordinal-450)%150 : ordinal%15;
+        uint32 total=ordinal>=450 ? 150 : 15;
+        return size_t(rank)*count/total;
+    }
     std::vector<ZonePoint> const& CombatPool(uint32 slot)
     {
         uint32 squad=SquadForSlot(slot);
+        if (CoveragePatrol(slot) && !activeZone.coverage[squad/5].empty()) return activeZone.coverage[squad/5];
         return activeZone.squads[squad].empty()?activeZone.groups[squad/5]:activeZone.squads[squad];
     }
     bool CanShareTarget(Player const* bot, Creature const* target)
@@ -59,6 +72,23 @@ namespace
     {
         auto zone=AreaEntry::GetById(activeZone.zone);
         bool elwynn=zone && zone->Name && std::string(zone->Name)=="Elwynn Forest";
+        for(auto& pool:activeZone.coverage) pool.clear();
+        // Added bots cover the whole region, not just the original five camps.
+        // Keep real spawn heights/positions and leave Northshire's quota alone.
+        for(auto const& p:activeZone.combatSpawns)
+        {
+            uint32 closest=0;
+            for(uint32 group=1;group<6;++group)
+                if(DistanceSquared(p,activeZone.centers[group])<DistanceSquared(p,activeZone.centers[closest])) closest=group;
+            auto& pool=activeZone.coverage[closest];
+            // Dense camps don't get a disproportionate share of the roster.
+            bool crowded=std::any_of(pool.begin(),pool.end(),[&](ZonePoint const& other) {
+                return DistanceSquared(p,other)<35.0f*35.0f && std::abs(p.z-other.z)<8.0f;
+            });
+            if(!crowded) pool.push_back(p);
+        }
+        for(uint32 group=0;group<6;++group)
+            sLog.Out(LOG_BASIC,LOG_LVL_MINIMAL,"CoDCraft coverage region %u: %u real enemy anchors",group,uint32(activeZone.coverage[group].size()));
         char const* northshire[]={"Young Wolf","Kobold Vermin","Kobold Worker","Kobold Laborer","Defias Thug"};
         for(uint32 squad=0;squad<30;++squad)
         {
@@ -108,7 +138,7 @@ namespace
             for(auto const& p:activeZone.combatSpawns)
                 if(p.guid!=seed.guid && p.entry==seed.entry && DistanceSquared(p,seed)<220.0f*220.0f && std::abs(p.z-seed.z)<18.0f) pool.push_back(p);
             auto info=sObjectMgr.GetCreatureTemplate(seed.entry);
-            sLog.Out(LOG_BASIC,LOG_LVL_MINIMAL,"CoDCraft combat squad %u: 5 bots, target %s (%u), %u spawn positions, xyz %.1f %.1f %.1f",squad,info?info->name.c_str():"?",seed.entry,uint32(pool.size()),seed.x,seed.y,seed.z);
+            sLog.Out(LOG_BASIC,LOG_LVL_MINIMAL,"CoDCraft combat squad %u: %u bots, target %s (%u), %u spawn positions, xyz %.1f %.1f %.1f",squad,CoDCraftSquads::GroupSize(group,elwynn)/5,info?info->name.c_str():"?",seed.entry,uint32(pool.size()),seed.x,seed.y,seed.z);
         }
     }
     void BuildGroups()
@@ -158,7 +188,7 @@ namespace
             std::sort(localLevels.begin(),localLevels.end());
             uint8 level=localLevels.empty()?uint8(low+(high-low)*group/5):localLevels[localLevels.size()/2];
             activeZone.levels[group]=elwynn&&group<3?uint8(group==0?1:group==1?5:10):std::max(low,std::min(high,level));
-            sLog.Out(LOG_BASIC,LOG_LVL_MINIMAL,"CoDCraft bots: zone %u group %u: 25 bots, level %u, %u travel anchors, center %.1f %.1f",activeZone.zone,group,activeZone.levels[group],uint32(activeZone.groups[group].size()),centers[group].x,centers[group].y);
+            sLog.Out(LOG_BASIC,LOG_LVL_MINIMAL,"CoDCraft bots: zone %u group %u: %u bots, level %u, %u travel anchors, center %.1f %.1f",activeZone.zone,group,CoDCraftSquads::GroupSize(group,elwynn),activeZone.levels[group],uint32(activeZone.groups[group].size()),centers[group].x,centers[group].y);
         }
     }
     bool ClearShot(Player const* source, Creature const* target)
@@ -196,6 +226,7 @@ void CoDCraftPlayerBotAI::UpdateActiveZone(Player* player, uint32 diff)
         for(auto& group:activeZone.groups) group.clear();
         activeZone.combatSpawns.clear();
         for(auto& squad:activeZone.squads) squad.clear();
+        for(auto& pool:activeZone.coverage) pool.clear();
         // Real spawn locations, not random coordinates that might be inside a
         // mountain. Index in bounded batches so changing zones cannot stall a tick.
         auto gather = [](auto const& row) {
@@ -239,9 +270,9 @@ void CoDCraftPlayerBotAI::AdoptZone()
 {
     m_zone = activeZone.generation; m_map = activeZone.map; m_instance = activeZone.instance;
     uint32 ordinal=m_persistentSlot?((m_persistentSlot-1)/16):me->GetGUIDLow();
-    uint32 group=std::min(5u,ordinal/25u);
+    uint32 group=SquadForSlot(m_persistentSlot)/5;
     auto const& pool=CombatPool(m_persistentSlot);
-    ZonePoint point = pool.empty() ? activeZone.home : pool[(ordinal*17u)%pool.size()];
+    ZonePoint point = pool.empty() ? activeZone.home : pool[PatrolAnchor(m_persistentSlot,pool.size())];
     if (!pool.empty()) point.level=activeZone.levels[group];
     // Separate arrivals within each route anchor, grounded against real terrain.
     float angle=float(ordinal)*2.3999632f, radius=4.0f+float(ordinal%5)*3.0f;
@@ -310,11 +341,11 @@ CoDCraftPlayerBotAI::CoDCraftPlayerBotAI(uint8 race, uint8 level, uint32 weapon,
 bool CoDCraftPlayerBotAI::OnSessionLoaded(PlayerBotEntry* entry, WorldSession* session)
 {
     uint32 ordinal=m_persistentSlot?((m_persistentSlot-1)/16):entry->playerGUID;
-    uint32 group=std::min(5u,ordinal/25u);
+    uint32 group=SquadForSlot(m_persistentSlot)/5;
     auto const& pool=CombatPool(m_persistentSlot);
     if (!pool.empty())
     {
-        auto const& p=pool[(ordinal*17u)%pool.size()];
+        auto const& p=pool[PatrolAnchor(m_persistentSlot,pool.size())];
         m_map=activeZone.map; m_instance=activeZone.instance;
         m_x=p.x; m_y=p.y; m_z=p.z+0.1f; m_level=activeZone.levels[group];
     }
@@ -332,7 +363,7 @@ bool CoDCraftPlayerBotAI::OnSessionLoaded(PlayerBotEntry* entry, WorldSession* s
 std::string CoDCraftPlayerBotAI::PreferredName() const
 {
     static char const* first[] = {"Alex", "Ben", "Chloe", "Dylan", "Emma", "Ethan", "Finn", "Gabe", "Grace", "Grant", "Hannah", "Jack", "Jake", "James", "Jenna", "Jordan", "Kai", "Lena", "Liam", "Logan", "Luke", "Mason", "Mia", "Nate", "Noah", "Owen", "Riley", "Ryan", "Sara", "Zoe"};
-    static char const* last[] = {"Carter", "Hayes", "Reed", "Stone", "Miles", "Cole", "Brooks", "Lane", "Blake", "Shaw", "Ford", "West"};
+    static char const* last[] = {"Carter", "Hayes", "Reed", "Stone", "Miles", "Cole", "Brooks", "Lane", "Blake", "Shaw", "Ford", "West", "Price", "Mills", "Wells", "Reese", "Clark", "Grant", "Hart", "Ross", "Scott", "Young", "Banks", "Flynn", "Adams", "Baker", "Bell", "Bennett", "Boyd", "Brown", "Burke", "Burns", "Chase", "Cook", "Cross", "Davis", "Dean", "Drake", "Ellis", "Evans", "Fisher", "Frost", "Gray", "Green", "Hall", "Harris", "Hill", "Holt", "Hughes", "Hunt", "Irwin", "Jones", "Kelly", "King", "Knight", "Lee", "Lewis", "Long", "Marsh", "Martin", "Moore", "Morgan", "Nash", "Neal", "Nolan", "North", "Owens", "Page", "Parker", "Perry", "Pierce", "Quinn", "Ray", "Rhodes", "Rivers", "Rogers", "Rowe", "Smith", "Snow", "Sparks", "Steele", "Taylor", "Turner", "Wade", "Walker", "Ward", "Watts", "White", "Woods", "York"};
     for (auto surname : last)
         for (auto given : first)
         {
@@ -595,7 +626,7 @@ void CoDCraftPlayerBotAI::UpdateAI(uint32 diff)
     // permit assistance; human tags remain protected. Combat precedes errands.
     uint32 assigned=activeZone.squadEntries[SquadForSlot(m_persistentSlot)];
     for(Creature* creature:nearby)
-        if(creature->GetEntry()==assigned && !me->IsFriendlyTo(creature) && CanShareTarget(me,creature) &&
+        if((CoveragePatrol(m_persistentSlot) || creature->GetEntry()==assigned) && !me->IsFriendlyTo(creature) && CanShareTarget(me,creature) &&
             creature->GetLevel()<=me->GetLevel()+4 &&
             !creature->HasFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE|UNIT_FLAG_SPAWNING|UNIT_FLAG_NOT_ATTACKABLE_1|UNIT_FLAG_NON_ATTACKABLE_2))
         { m_approachNpc.Clear(); m_target=creature->GetObjectGuid(); return; }

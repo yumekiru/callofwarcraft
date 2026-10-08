@@ -129,6 +129,7 @@ class PlayerBotMgr
         bool m_confEnableRandomBots;
         bool m_confBattleBotAutoJoin;
         bool m_codcraftPopulationStarted = false;
+        uint32 m_codcraftPopulationCount = 0;
 };
 
 #define sPlayerBotMgr MaNGOS::Singleton<PlayerBotMgr>::Instance()

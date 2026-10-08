@@ -123,7 +123,7 @@ fn requests(
     // lost, caster despawns, zone changes, or the request directory disappears.
     let now = std::time::Instant::now();
     bridge.helicopter_audio.retain(|key,updated| {
-        if now.duration_since(*updated).as_secs_f32()>2.0 {
+        if now.duration_since(*updated).as_secs_f32()>6.0 {
             audio_commands.write(audio::AliasCommand::StopEntity{snd_ent:0xc0000000 ^ *key}); false
         } else {true}
     });

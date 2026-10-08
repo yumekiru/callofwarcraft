@@ -121,7 +121,7 @@ fn tick(
             }
         }
         for e in &f.entities {if let Ok(mut t)=transforms.get_mut(*e) {t.translation=position; t.rotation=f.rotation;}}
-        if heartbeat && player.pos.distance_squared(position)<22500.0 {effects.helicopter(6,key,position);}
+        if heartbeat && player.pos.distance_squared(position)<62500.0 {effects.helicopter(6,key,position);}
         true
     });
     if heartbeat && !state.flights.is_empty() {

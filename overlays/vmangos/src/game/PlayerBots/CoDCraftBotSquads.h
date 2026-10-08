@@ -3,9 +3,12 @@
 #define CODCRAFT_BOT_SQUADS_H
 namespace CoDCraftSquads
 {
-    constexpr unsigned Index(unsigned slot)
+    constexpr unsigned Population(bool elwynn) { return elwynn ? 1200 : 1350; }
+    constexpr unsigned GroupSize(unsigned group, bool elwynn) { return elwynn && group==0 ? 75 : 225; }
+    constexpr unsigned Index(unsigned slot, bool elwynn=true)
     {
-        unsigned index=((slot?slot-1:0)/16)/5;
+        unsigned ordinal=((slot?slot-1:0)/16)/3;
+        unsigned index=ordinal<150 ? ordinal/5 : (ordinal-150)/10+(elwynn?5:0);
         return index<30?index:29;
     }
     constexpr unsigned Size=5;

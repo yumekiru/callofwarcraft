@@ -233,7 +233,8 @@ void PlayerBotMgr::OnPlayerInWorld(Player* player)
         }
         m_codcraftPopulationStarted = true;
         CoDCraftPlayerBotAI::UpdateActiveZone(player, 0);
-        uint32 count = 150; // One occupied-zone roster, six local groups of 25.
+        uint32 count = player->GetZoneId()==12 ? 1200 : 1350;
+        m_codcraftPopulationCount=count;
         uint8 startingRaces[] = {player->GetRace()};
         uint32 weapon = 0;
         if (Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND)) weapon = item->GetEntry();
@@ -295,6 +296,10 @@ void PlayerBotMgr::Update(uint32 diff)
         CoDCraftPlayerBotAI::UpdateActiveZone(owner, diff);
         if (owner)
         {
+            uint32 desired=owner->GetZoneId()==12 ? 1200 : 1350;
+            if (desired!=m_codcraftPopulationCount && !owner->IsBeingTeleported())
+                for (auto const& row:m_bots)
+                    if (dynamic_cast<CoDCraftPlayerBotAI*>(row.second->ai.get())) row.second->requestRemoval=true;
             bool remaining=false;
             for (auto const& row:m_bots)
                 if (dynamic_cast<CoDCraftPlayerBotAI*>(row.second->ai.get())) remaining=true;

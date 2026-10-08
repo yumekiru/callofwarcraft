@@ -9,25 +9,24 @@ Add to your patched world's `mangosd.conf`:
 
 ```ini
 CoDCraft.PlayerBots.Enable = 1
-CoDCraft.PlayerBots.Count = 150
 CoDCraft.PlayerBots.WeaponMap = "C:/path/to/Custom Gear/weapon-item-map.tsv"
 PlayerBot.ShowInWhoList = 1
 ```
 
-Restart the world server. Human login starts 150 active bots in the occupied
+Restart the world server. Human login starts 1,200 active bots in Elwynn or 1,350 in any other occupied
 zone only, replacing the old 180-bot six-starting-area population. For this local
 single-player setup, the lowest-GUID real player anchors the population if multiple
 humans log in. Zone transitions relocate the same saved roster; disconnecting
 unloads it. Movement endpoints remain in that zone. Real normal-creature spawns
 provide separated travel anchors, indexed in bounded batches. Once indexing
-finishes, bots disperse across six separated patrol regions, 25 per region, and
-receive local creature levels. The Elwynn groups are explicitly Northshire (25,
-level 1), Goldshire (25, level 5), Eastvale Logging Camp (25, level 10), plus three
-other forest regions (75 total, local levels within 1–10). Other zones derive six
+finishes, bots disperse across six separated patrol regions, 225 per region except Northshire's 75, and
+receive local creature levels. The Elwynn groups are explicitly Northshire (75,
+level 1), Goldshire (225, level 5), Eastvale Logging Camp (225, level 10), plus three
+other forest regions (675 total, local levels within 1–10). Other zones derive six
 spread-out regions and their level baselines from normal local creatures, excluding
 guards from the estimate. Initial logins wait for the route index rather than
-spawning all 150 beside the human. This build fixes the roster size at 150.
-Each 25-bot region is split into five persistent combat squads of five. Squads
+spawning everyone beside the human. Moving between Elwynn and other zones reloads the saved roster to match the population quota.
+Each region is split into five persistent combat squads: fifteen bots per Northshire squad, forty-five elsewhere. The added coverage patrols sample region-wide enemy anchors evenly, thinning densely packed spawns to avoid concentrating everyone in one camp. Squads
 spawn beside and patrol actual enemy spawn clusters rather than town waypoints.
 Northshire's squads target Young Wolves, Kobold Vermin, Kobold Workers, Kobold
 Laborers in the cave, and Defias Thugs across the river. Elsewhere, separate enemy

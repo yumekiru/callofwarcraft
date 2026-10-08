@@ -5,6 +5,7 @@ use avian3d::prelude::Collider;
 mod math;
 
 struct Frag {
+    remote: bool,
     session: u64,
     id: u32,
     spawn: u32,
@@ -46,12 +47,34 @@ struct Frags {
 }
 
 pub(super) fn plugin(app: &mut App) {
+    use crate::net::NetHandlerApp;
+    app.net_handler(benilla_protocol::SessionEventKind::CodcraftFrag, remote_frag);
     app.init_resource::<Frags>()
         .init_resource::<FragArt>()
         .add_systems(
             Update,
             (load_art, flight).chain().after(super::apply_guest_player),
         );
+}
+
+fn remote_frag(In(event): In<benilla_protocol::SessionEvent>, time: Res<Time<Real>>, mut state: ResMut<Frags>) {
+    let benilla_protocol::SessionEvent::CodcraftFrag { unit, sequence, phase, position, velocity, fuse_ms, radius } = event else { return };
+    if phase > 1 || !position.into_iter().chain(velocity).all(f32::is_finite) || !(1.0..=15.0).contains(&radius) || fuse_ms > 5000 { return; }
+    let position = benilla_assets::coords::wow_to_bevy(position);
+    if let Some(frag) = state.active.iter_mut().find(|f| f.remote && f.session == unit && f.sequence == sequence) {
+        if phase == 1 { frag.position = position; frag.deadline = time.elapsed_secs(); frag.settled = true; }
+        return;
+    }
+    if state.active.len() >= 64 { return; }
+    state.active.push(Frag {
+        remote: true, session: unit, id: sequence, spawn: 0, sequence,
+        offset: Vec3::ZERO, rotation: Quat::IDENTITY, position,
+        velocity: benilla_assets::coords::wow_to_bevy(velocity), gravity: 800.0 / 36.0,
+        parallel: 0.6, perpendicular: 0.4, radius,
+        // Server detonation supplies the exact authoritative collision position.
+        deadline: time.elapsed_secs() + if phase == 1 { 0.0 } else { 10.0 },
+        last_pose: 0.0, settled: phase == 1, entities: Vec::new(),
+    });
 }
 
 fn load_art(
@@ -97,7 +120,7 @@ fn load_art(
         return;
     };
     for entity in entities {
-        commands.entity(entity).despawn();
+        commands.entity(entity).try_despawn();
     }
     for handle in &handles {
         if let Some(mesh) = meshes.get_mut(handle) {
@@ -154,7 +177,7 @@ fn flight(
     if !live.0 || !player.active {
         for frag in state.active.drain(..) {
             for entity in frag.entities {
-                commands.entity(entity).despawn();
+                commands.entity(entity).try_despawn();
             }
         }
         return;
@@ -228,6 +251,7 @@ fn flight(
                     state.seen.pop_front();
                 }
                 state.active.push(Frag {
+                    remote: false,
                     session: key.0,
                     id: key.1,
                     spawn: key.2,
@@ -317,9 +341,9 @@ fn flight(
         for entity in &frag.entities {
             commands
                 .entity(*entity)
-                .insert(Transform::from_translation(frag.position));
+                .try_insert(Transform::from_translation(frag.position));
         }
-        if now - frag.last_pose >= 1.0 / 60.0 || now >= frag.deadline {
+        if !frag.remote && (now - frag.last_pose >= 1.0 / 60.0 || now >= frag.deadline) {
             frag.last_pose = now;
             let mut bytes = Vec::with_capacity(48);
             bytes.extend_from_slice(b"CCGR");
@@ -344,7 +368,7 @@ fn flight(
             // auto-loot; a candidate alone never counts as confirmed damage.
             for (guid, transform) in &targets {
                 if transform.translation.distance(frag.position) <= frag.radius + 2.0 {
-                    combat.queue_grenade(guid.0, feedback_time.elapsed_secs());
+                    if !frag.remote { combat.queue_grenade(guid.0, feedback_time.elapsed_secs()); }
                     let offset = transform.translation + Vec3::Y - frag.position;
                     let distance = offset.length();
                     if let Ok(direction) = Dir3::new(offset) {
@@ -363,30 +387,30 @@ fn flight(
                     }
                 }
             }
-            let _ = net.0.send(crate::net::ClientCommand::CodcraftGrenade {
+            if !frag.remote { let _ = net.0.send(crate::net::ClientCommand::CodcraftGrenade {
                 sequence: frag.sequence,
                 phase: 1,
                 position: benilla_assets::coords::bevy_to_wow(frag.position),
                 fuse_ms: 0,
                 radius: frag.radius,
-            });
+            }); }
             info!(
                 "CoDCraft: frag {} exploded at {:?}",
                 frag.sequence, frag.position
             );
             expired.push(index);
-            let _ = std::fs::remove_file(root.join(format!("{}-{}.launch", frag.id, frag.spawn)));
+            if !frag.remote { let _ = std::fs::remove_file(root.join(format!("{}-{}.launch", frag.id, frag.spawn))); }
         }
     }
     for index in expired.into_iter().rev() {
         let frag = state.active.swap_remove(index);
         for entity in frag.entities {
-            commands.entity(entity).despawn();
+            commands.entity(entity).try_despawn();
         }
-        state.cleanup.push_back((
+        if !frag.remote { state.cleanup.push_back((
             root.join(format!("{}-{}.pose", frag.id, frag.spawn)),
             now + 1.0,
-        ));
+        )); }
     }
 }
 

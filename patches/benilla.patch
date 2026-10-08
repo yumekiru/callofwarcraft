@@ -2999,3 +2999,51 @@ index 2b61a1e..17be8d6 100644
          .and_then(|d| d.icon.clone());
      let num_available = if item.current_count == STOCK_UNLIMITED {
          -1
+diff --git a/crates/benilla-app/src/portrait/mod.rs b/crates/benilla-app/src/portrait/mod.rs
+index 6fdeab7..6844490 100644
+--- a/crates/benilla-app/src/portrait/mod.rs
++++ b/crates/benilla-app/src/portrait/mod.rs
+@@ -54,6 +54,7 @@ use booth::{
+ mod dressup;
+ pub(crate) use dressup::{DressUpBake, DressUpLook, DressUpPreview};
+ mod glue_booth;
++pub(crate) use glue_booth::CodcraftPreviewAnchor;
+ pub(crate) use glue_booth::{
+     CreateLook, GhostKit, GlueLook, GluePetBake, GluePreview, GluePreviewBake, GlueScene, PetLook,
+     PreviewBillboard, PreviewEffects, PreviewPart, PreviewRider, SelectLook, GLUE_SLOT,
+@@ -752,6 +753,8 @@ impl Plugin for PortraitPlugin {
+             .init_resource::<StableStandIn>()
+             .init_resource::<glue_booth::GluePreview>()
+             .init_resource::<glue_booth::GluePreviewBake>()
++            .init_resource::<CodcraftPreviewAnchor>()
++            .add_systems(Update, glue_booth::publish_codcraft_anchor.after(glue_booth::sync_glue_booth))
+             .init_resource::<glue_booth::GluePetBake>()
+             .init_resource::<dressup::DressUpPreview>()
+             .init_resource::<dressup::DressUpBake>()
+diff --git a/crates/benilla-app/src/portrait/glue_booth.rs b/crates/benilla-app/src/portrait/glue_booth.rs
+index fba0ce8..6ce2271 100644
+--- a/crates/benilla-app/src/portrait/glue_booth.rs
++++ b/crates/benilla-app/src/portrait/glue_booth.rs
+@@ -445,6 +445,22 @@ pub(crate) struct GluePetBake {
+     pub(crate) revision: u64,
+ }
+ 
++/// CoDCraft replaces only the rendered body; the stock booth still owns its camera and yaw.
++#[derive(Resource, Default)]
++pub(crate) struct CodcraftPreviewAnchor {
++    pub(crate) target: Option<(Entity, u8, bevy::camera::visibility::RenderLayers)>,
++    pub(crate) light: Option<bevy::render::render_resource::Buffer>,
++}
++
++pub(super) fn publish_codcraft_anchor(
++    preview: Res<GluePreview>, booths: Res<Booths>, scene: Option<Res<CreateScene>>,
++    light: Res<BoothLight>, mut out: ResMut<CodcraftPreviewAnchor>,
++) {
++    out.target = preview.look.and_then(|look| booths.0.get(GLUE_SLOT)
++        .map(|booth| (booth.root, look.body().0, booth.layer.clone())));
++    out.light = scene.as_ref().and_then(|s| s.light.clone()).or_else(|| light.studio.buffer.clone());
++}
++
+ /// Stand up the glue booth (called from [`super::setup_booths`]).
+ pub(super) fn spawn_glue_booth(
+     commands: &mut Commands,

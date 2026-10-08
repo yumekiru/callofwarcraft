@@ -148,6 +148,22 @@ fn requests(
             continue;
         }
         let scene = MarkScene::default();
+        if u(8) == 2 {
+            if let Some(sounds) = weapons.0.sounds_of(u(12)) {
+                if let Some(alias) = audio::select_fire_alias(true, sounds.fire.as_deref(), sounds.fire_player.as_deref()) {
+                    static REPORTED: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
+                    if REPORTED.fetch_add(1, std::sync::atomic::Ordering::Relaxed) < 8 {
+                        diag::info!(World, "CoDCraft playerbot gunfire requested: weapon={} alias={}", u(12), alias);
+                    }
+                    audio_commands.write(audio::AliasCommand::Play(audio::PlayAlias {
+                        event: None, namespace: asset_core::AssetNamespace::Iw4,
+                        alias: alias.to_owned(), fallback: None, origin_inches: None,
+                        snd_ent: Some(audio::SND_ENT_LOCAL),
+                    }));
+                }
+            }
+            continue; // Audio-only requests must not invoke impact or collision work.
+        }
         if u(8) == 0 {
             let Some(facts) = weapons.0.facts_of(u(12)) else {
                 continue;

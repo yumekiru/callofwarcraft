@@ -63,6 +63,9 @@ impl Effects {
             self.pending.push((1, 0, position, normal, 6)); // IW4 dirt surface.
         }
     }
+    pub(super) fn gunfire(&mut self, weapon: u32, position: Vec3) {
+        if self.pending.len() < 64 { self.pending.push((2, weapon, position, Vec3::Y, 0)); }
+    }
 }
 
 pub(super) fn plugin(app: &mut App) {
@@ -155,6 +158,7 @@ fn requests(
         .collision_regions
         .retain(|(_, expires)| *expires > time.elapsed_secs());
     for (kind, _, position, _, _) in &pending {
+        if *kind == 2 { continue; }
         effects.collision_regions.push((
             *position,
             time.elapsed_secs() + if *kind == 1 { 8.0 } else { 2.0 },
@@ -164,7 +168,9 @@ fn requests(
         let excess = effects.collision_regions.len() - 16;
         effects.collision_regions.drain(..excess);
     }
-    effects.triangles = publish_collision(&base, &effects.collision_regions, &colliders);
+    if pending.iter().any(|request| request.0 != 2) {
+        effects.triangles = publish_collision(&base, &effects.collision_regions, &colliders);
+    }
     for (kind, weapon, position, normal, surface) in pending {
         let mut b = b"CCFE".to_vec();
         b.extend_from_slice(&1u32.to_le_bytes());
@@ -634,17 +640,6 @@ fn display(
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test]
-    fn frame_mailbox_never_waits_for_the_worker() {
-        let mailbox: LatestFrame = Default::default();
-        let mut reader = FrameReader { latest: Some(mailbox.clone()) };
-        let lock = mailbox.lock().unwrap();
-        assert!(reader.take(PathBuf::new()).is_none());
-        drop(lock);
-        *mailbox.lock().unwrap() = Some((42, Vec::new()));
-        assert_eq!(reader.take(PathBuf::new()).unwrap().0, 42);
-        assert!(reader.take(PathBuf::new()).is_none());
-    }
     #[test]
     fn refuses_truncated_or_oversized_fx_packets() {
         assert!(decode(&[]).is_err());

@@ -17,6 +17,8 @@ const VERSION: u32 = 2;
 const HEADER: usize = 4 + 4 + 8;
 #[path = "codcraft_fx.rs"]
 mod codcraft_fx;
+#[path = "codcraft_soldiers.rs"]
+mod codcraft_soldiers;
 
 struct BridgePaths {
     model: std::path::PathBuf,
@@ -636,6 +638,8 @@ impl Plugin for CodcraftFramePlugin {
             paths.model.display(),
             paths.pose.display()
         );
+        app.init_resource::<codcraft_soldiers::Soldiers>()
+            .add_systems(PostUpdate, codcraft_soldiers::publish.after(frame::RenderSet::FrontendAssemble));
         app.init_resource::<Publisher>().add_systems(
             PostUpdate,
             (publish_viewmodel, publish_tracer_asset, publish_world_weapon, publish_frag_model).chain().after(frame::RenderSet::FrontendAssemble),

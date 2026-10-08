@@ -27,6 +27,9 @@ mod grenades;
 mod kobold_pose;
 mod ragdoll;
 mod shot_math;
+mod soldiers;
+mod soldier_lifecycle;
+pub(crate) use soldiers::NativeSoldierAnchor;
 mod tracers;
 
 use crate::creature_anim::wrap_pi;
@@ -107,6 +110,8 @@ pub(crate) struct CodcraftCombatState {
     attack_stop_sent: bool,
     pub(crate) incoming_hits: VecDeque<(u64, f32)>,
     pub(crate) rifle_attackers: std::collections::HashSet<u64>,
+    pub(crate) remote_player_shots: VecDeque<(u64, u64, f32)>,
+    pub(crate) remote_player_fire_until: HashMap<u64, f32>,
 }
 
 struct PendingCodcraftShot {
@@ -1632,6 +1637,17 @@ fn install_model(
                 source.alpha_cutoff,
             )
             .ok_or_else(|| "Warcraft shared light buffer is not ready yet".to_owned())?;
+        // The normal M2 builder parks the material until its first visible frame.
+        // These streamed meshes must configure their light buffer and FPV flags
+        // BEFORE that frame; get_mut on a parked handle silently returns None.
+        if !benilla_world::model_render::lazy::realize(batch.materials(), material.id()) {
+            return Err("Streamed material could not be realized".to_owned());
+        }
+        if blend == benilla_formats::ModelBlend::AlphaTest {
+            if let Some(asset) = batch.materials().get_mut(&material) {
+                asset.base.alpha_mode = AlphaMode::Mask(source.alpha_cutoff.clamp(0.0, 1.0));
+            }
+        }
         material_handles.push(material.clone());
         if std::env::var("CODCRAFT_REALISTIC_LIGHTING").as_deref() == Ok("1")
             && !additive
@@ -1777,13 +1793,8 @@ fn present_viewmodel(
 ) {
     let _work_scope = profile::scope("codcraft.rs:present_viewmodel");
     let (mut smoothing, mut reader) = stream;
-    if !capture.typing && keys.just_pressed(KeyCode::KeyQ) {
-        view.shown = !view.shown;
-        info!(
-            "CoDCraft: 3D viewmodel {}",
-            if view.shown { "on" } else { "off" }
-        );
-    }
+    // The equipped weapon is gameplay, not a Q-key diagnostic overlay toggle.
+    view.shown = true;
     let Some(paths) = paths else { return };
     if !world_live.0 || (gear::enabled() && gear.code == 0) {
         *smoothing = PoseBlend::default();
@@ -2668,6 +2679,7 @@ impl Plugin for CodcraftPlugin {
             .init_resource::<CodcraftKoboldAi>()
             .init_resource::<CodcraftNearClip>()
             .init_resource::<CodcraftPoseMap>()
+            .add_systems(PostUpdate, soldiers::display)
             .add_message::<CodcraftHitMarker>()
             .add_message::<CodcraftBulletImpact>()
             .add_message::<CodcraftDamageText>()

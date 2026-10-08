@@ -135,6 +135,11 @@ fn spawn_shots(
     asset: Res<TracerAsset>,
     stage: Res<ViewmodelStage>,
     mut ai: ResMut<CodcraftKoboldAi>,
+    mut combat: ResMut<CodcraftCombatState>,
+    mut effects: ResMut<effects::Effects>,
+    link: Res<GuestLink>,
+    player: Res<crate::player::Player>,
+    units: Query<(&crate::net::Guid, &Transform, &crate::net::ObjectStore)>,
     aims: Res<kobold_pose::RifleAims>,
     mut meshes: ResMut<Assets<Mesh>>,
     collision: benilla_world::collision::WorldCollision,
@@ -149,11 +154,26 @@ fn spawn_shots(
     if asset.fingerprint != stage.fingerprint {
         return;
     }
+    let mut player_muzzles = HashMap::new();
+    while let Some((attacker, victim, born)) = combat.remote_player_shots.pop_front() {
+        let Some((_, shooter, equipment)) = units.iter().find(|(g, _, _)| g.0 == attacker) else { continue };
+        let Some((_, target, _)) = units.iter().find(|(g, _, _)| g.0 == victim) else { continue };
+        let eye = shooter.translation + Vec3::Y * 1.25;
+        let endpoint = target.translation + Vec3::Y * 0.85;
+        let start = eye + (endpoint - eye).normalize_or_zero() * 0.75;
+        player_muzzles.insert(attacker, start);
+        if player.pos.distance_squared(start) < 2500.0 {
+            let native = equipment.0.player_visible_item_entry(15).and_then(gear::native_weapon_for_item)
+                .or_else(|| link.state().players.first().map(|guest| guest.weapon));
+            if let Some(native) = native { effects.gunfire(native, start); }
+        }
+        ai.pending_shots.push_back((attacker, born, endpoint));
+    }
     while let Some((guid, born, endpoint)) = ai.pending_shots.pop_front() {
         if time.elapsed_secs() - born > 0.25 {
             continue;
         }
-        let Some(start) = aims.0.get(&guid).map(|aim| aim.muzzle) else {
+        let Some(start) = player_muzzles.get(&guid).copied().or_else(|| aims.0.get(&guid).map(|aim| aim.muzzle)) else {
             continue;
         };
         let mut end = endpoint;
@@ -192,7 +212,8 @@ fn spawn_shots(
                 start,
                 end,
                 born: time.elapsed_secs(),
-                travel: (start.distance(end) / asset.speed).clamp(0.25, 0.35),
+                travel: (start.distance(end) / asset.speed).clamp(0.25, 0.35)
+                    / if player_muzzles.contains_key(&guid) { 4.0 } else { 1.0 },
                 width: asset.width,
                 color: asset.color,
                 mesh: mesh.clone(),

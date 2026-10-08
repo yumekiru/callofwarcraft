@@ -31,6 +31,21 @@ struct WeaponItem {
 
 const WEAPON_DISPLAY_BASE: u32 = 1_000_000;
 
+pub(super) fn native_weapon_for_item(entry: u32) -> Option<u32> {
+    let item = weapon_item(entry)?;
+    static CATALOG: std::sync::OnceLock<HashMap<String, u32>> = std::sync::OnceLock::new();
+    if CATALOG.get().is_none() {
+        let path = PathBuf::from(std::env::var_os("CODCRAFT_INPUT")?).with_extension("weapon-catalog.tsv");
+        let text = std::fs::read_to_string(path).ok()?;
+        let map: HashMap<String, u32> = text.lines().filter_map(|line| {
+            let (index, alias) = line.split_once('\t')?;
+            Some((alias.to_owned(), index.parse().ok()?))
+        }).collect();
+        if !map.is_empty() { let _ = CATALOG.set(map); }
+    }
+    CATALOG.get()?.get(&item.alias).copied()
+}
+
 fn weapon_item(entry: u32) -> Option<&'static WeaponItem> {
     if !enabled() { return None; }
     static ITEMS: std::sync::OnceLock<HashMap<u32, WeaponItem>> = std::sync::OnceLock::new();

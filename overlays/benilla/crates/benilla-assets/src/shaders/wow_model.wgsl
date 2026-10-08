@@ -439,17 +439,22 @@ fn vertex(vertex: WowVertex) -> WowVsOut {
         view.view_from_world[2].xyz,
     );
     out.position = view.clip_from_view * vec4<f32>(view_rot * p_cam, 1.0);
-    // Camera-attached CoDCraft geometry only: depth-clamp the close face instead
-    // of slicing the stock during ADS. Reverse-Z near plane is z=w. Keep the
-    // world camera's precision and ordinary world-model clipping unchanged.
-    if ((u32(m.clutter_fade.z) & 0x8000u) != 0u && out.position.w > 0.0) {
-        out.position.z = min(out.position.z, out.position.w * 0.999999);
-    }
+    // Keep the native FPV perspective and geometry unchanged. Only the depth
+    // component below is remapped; moving the eye shrinks the gun and distorts arms.
     // WMO batch order (`sun_scale.y`, 0 off WMO): the reference layers coplanar batches by MOBA
     // draw order under depth-write + LEQUAL; Bevy reorders draws, so a later batch must win the
     // reverse-Z GreaterEqual test. Scaling clip z by (1 + n·2⁻²³) raises z/w by n ULPs. Uniform
     // data, not a `DepthBiasState`, which would make every batch index its own pipeline.
     out.position.z *= 1.0 + m.sun_scale.y * 1.1920929e-7;
+    // IW4's first-person near plane is 0.1 inches, not the world camera's near plane.
+    // Rebuild only reverse-Z depth, preserving perspective XY and world-space lighting.
+    // Apply the clamp LAST: the batch-order bias otherwise pushes close parts past z=w.
+    // The reserved front depth slice keeps the gun from intersecting world geometry.
+    if ((u32(m.clutter_fade.z) & 0x8000u) != 0u && out.position.w > 0.0) {
+        // Explicit reverse-Z weapon slice: always 0 < z/w < 1, independent of
+        // world near plane. Retain closer-over-farther ordering within the weapon.
+        out.position.z = out.position.w * (0.7 + 0.29 / (1.0 + out.position.w));
+    }
 #ifdef WOW_SKY_DEPTH
     // The WMO-skybox lane (`clutter_fade.z` bit 13): clip z = 0 is reverse-Z infinitely far, so
     // the world always draws over the sky shell (`benilla_world::sky_order`).

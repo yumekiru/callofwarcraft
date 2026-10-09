@@ -55,6 +55,9 @@ pub(super) struct Effects {
 }
 
 impl Effects {
+    pub(super) fn bomber_explosion(&mut self,position:Vec3) {
+        if self.pending.len()<64 {self.pending.push((10,0,position,Vec3::Y,6));}
+    }
     pub(super) fn helicopter(&mut self,kind:u32,key:u32,position:Vec3) {
         // Lifecycle/keepalive cannot be starved by a full frame of combat FX.
         if kind!=8 && self.pending.len()>=64 {self.pending.pop();}
@@ -172,7 +175,7 @@ fn requests(
         .collision_regions
         .retain(|(_, expires)| *expires > time.elapsed_secs());
     for (kind, _, position, _, _) in &pending {
-        if *kind == 2 || *kind >= 4 { continue; }
+        if *kind == 2 || (*kind >= 4 && *kind!=10) { continue; }
         effects.collision_regions.push((
             *position,
             time.elapsed_secs() + if *kind == 1 { 8.0 } else { 2.0 },
@@ -182,7 +185,7 @@ fn requests(
         let excess = effects.collision_regions.len() - 16;
         effects.collision_regions.drain(..excess);
     }
-    if pending.iter().any(|request| matches!(request.0,0|1|3)) {
+    if pending.iter().any(|request| matches!(request.0,0|1|3|10)) {
         effects.triangles = publish_collision(&base, &effects.collision_regions, &colliders);
     }
     for (kind, weapon, position, normal, surface) in pending {

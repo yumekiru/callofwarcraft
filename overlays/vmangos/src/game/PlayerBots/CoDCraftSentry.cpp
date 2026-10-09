@@ -41,18 +41,19 @@ namespace
         for(auto const& row:sWorld.GetAllSessions())
             if(!row.second->GetBot())
                 if(Player* p=row.second->GetPlayer())
-                    if(p->IsInWorld() && p->GetMapId()==t.map && p->GetInstanceId()==t.instance &&
+                    if((phase!=10 || p->GetObjectGuid()==t.owner) && p->IsInWorld() && p->GetMapId()==t.map && p->GetInstanceId()==t.instance &&
                         (phase==8 || p->IsWithinDist3d(t.x,t.y,t.z,180.0f))) row.second->SendPacket(&packet);
     }
 }
-bool Deploy(Player* p)
+bool Deploy(Player* p, float x, float y, float requestedZ)
 {
     if(!p || !p->IsInWorld() || !p->IsAlive() || !p->HasSpell(Spell)) return false;
     if(turrets.size()>=32 || std::count_if(turrets.begin(),turrets.end(),[p](Turret const& t){return t.owner==p->GetObjectGuid();})>=3) return false;
-    float yaw=p->GetOrientation(),x=p->GetPositionX()+std::cos(yaw)*2.0f,y=p->GetPositionY()+std::sin(yaw)*2.0f;
+    if(!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(requestedZ) || !p->IsWithinDist3d(x,y,requestedZ,6.0f)) return false;
+    float yaw=p->GetOrientation();
     Map const* map=p->GetMap();
-    float z=map->GetTerrain()->GetHeightStatic(x,y,p->GetPositionZ()+2.0f,true);
-    if(!std::isfinite(z) || z<=INVALID_HEIGHT || std::abs(z-p->GetPositionZ())>2.0f ||
+    float z=map->GetTerrain()->GetHeightStatic(x,y,requestedZ+1.0f,true);
+    if(!std::isfinite(z) || z<=INVALID_HEIGHT || std::abs(z-requestedZ)>0.75f ||
         !map->isInLineOfSight(p->GetPositionX(),p->GetPositionY(),p->GetPositionZ()+1,x,y,z+1,true)) return false;
     // Reject unsupported ledges and steep placement, using real VMAP/ADT heights.
     for(float dx:{-0.4f,0.4f}) for(float dy:{-0.4f,0.4f})
@@ -105,6 +106,11 @@ void Update(uint32 diff)
             c->m_codcraftBulletLootOwner=p->GetObjectGuid();
             p->DealDamage(c,damage,nullptr,DIRECT_DAMAGE,SPELL_SCHOOL_MASK_NORMAL,nullptr,false);
             p->SendAttackStateUpdate(HITINFO_AFFECTS_VICTIM,c,SPELL_SCHOOL_MASK_NORMAL,damage,0,0,VICTIMSTATE_NORMAL,0);
+            if(!c->IsAlive()) {
+                // DealDamage already awards native XP/quest credit. Do not award twice.
+                Publish(t,10);
+                p->SendLoot(c->GetObjectGuid(),LOOT_CORPSE,nullptr,true);
+            }
             break;
         }
         ++it;

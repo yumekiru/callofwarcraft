@@ -307,14 +307,26 @@ impl SpellCatalog {
 
     /// Explicit fork override; retail DBC files are never modified.
     pub fn codcraft_predator(&mut self) {
-        if let Some(spell)=self.spells.get_mut(&24733) {
-            spell.name="Sentry Gun".into();spell.rank=None;spell.passive=false;spell.cast_ui=0;
+        if let Some(spell)=self.spells.get_mut(&24734) {
+            spell.name="Stealth Bomber".into();spell.rank=None;spell.passive=false;spell.cast_ui=0;
+            spell.reagents=[(0,0);8];spell.totems=[0;2];
+            spell.equipped_item_class=-1;spell.equipped_item_subclass_mask=0;
+            spell.equipped_item_inventory_type_mask=0;spell.requires_spell_focus=0;
             spell.casting_time_index=0;spell.recovery_ms=0;spell.category_recovery_ms=0;
             spell.start_recovery_ms=0;spell.start_recovery_category=0;
             spell.mana_cost=0;spell.mana_cost_pct=0;spell.mana_cost_per_level=0;spell.mana_per_second=0;
             spell.range_index=1;
+            spell.icon=Some("Interface\\Icons\\INV_Gizmo_01".into());
+            spell.description=Some("Call a native MW2 Stealth Bomber along your facing direction through the ground under your crosshair (up to 90 yards). One active pass per player. No cooldown for testing.".into());
+        }
+        if let Some(spell)=self.spells.get_mut(&24733) {
+            spell.name="Sentry Gun".into();spell.rank=None;spell.passive=false;spell.cast_ui=0;
+            spell.casting_time_index=0;spell.recovery_ms=120_000;spell.category_recovery_ms=0;
+            spell.start_recovery_ms=0;spell.start_recovery_category=0;
+            spell.mana_cost=0;spell.mana_cost_pct=0;spell.mana_cost_per_level=0;spell.mana_per_second=0;
+            spell.range_index=1;
             spell.icon=Some("Interface\\Icons\\INV_Gizmo_03".into());
-            spell.description=Some("Deploy a Sentry Gun ahead of you for 60 seconds. Automatically engages exposed enemies within 40 yards in its forward arc. No cooldown while testing; maximum 3 deployed.".into());
+            spell.description=Some("Carry and position a Sentry Gun. Left-click a valid highlighted spot to deploy; right-click to cancel. Lasts 60 seconds and engages enemies within 40 yards. Two-minute cooldown begins on successful placement.".into());
         }
         if let Some(spell)=self.spells.get_mut(&24732) {
             spell.name="Attack Helicopter".into();

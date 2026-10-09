@@ -1069,7 +1069,8 @@ fn writer_loop(
                     ClientCommand::AttackSwing { guid } => w.attack_swing(guid),
                     ClientCommand::CodcraftBullet { guid } => w.codcraft_bullet(guid),
                     ClientCommand::CodcraftHelicopter => w.codcraft_helicopter(),
-                    ClientCommand::CodcraftSentry => w.codcraft_sentry(),
+                    ClientCommand::CodcraftSentry { position } => w.codcraft_sentry(position),
+                    ClientCommand::CodcraftBomber { position,heading } => w.codcraft_bomber(position,heading),
                     ClientCommand::CodcraftPredator { sequence, phase, position } =>
                         w.codcraft_predator(sequence, phase, position),
                     ClientCommand::CodcraftGrenade { sequence, phase, position, fuse_ms, radius } =>

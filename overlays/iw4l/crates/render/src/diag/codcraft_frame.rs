@@ -25,6 +25,10 @@ mod codcraft_predator;
 mod codcraft_helicopter;
 #[path = "codcraft_sentry.rs"]
 mod codcraft_sentry;
+#[path = "codcraft_bomber.rs"]
+mod codcraft_bomber;
+#[path = "codcraft_bomb.rs"]
+mod codcraft_bomb;
 
 struct BridgePaths {
     model: std::path::PathBuf,
@@ -648,6 +652,10 @@ impl Plugin for CodcraftFramePlugin {
             .add_systems(PostUpdate,codcraft_helicopter::publish.after(frame::RenderSet::FrontendAssemble));
         app.init_resource::<codcraft_sentry::Sentry>()
             .add_systems(PostUpdate,codcraft_sentry::publish.after(frame::RenderSet::FrontendAssemble));
+        app.init_resource::<codcraft_bomber::Bomber>()
+            .add_systems(PostUpdate,codcraft_bomber::publish.after(frame::RenderSet::FrontendAssemble));
+        app.init_resource::<codcraft_bomb::Bomb>()
+            .add_systems(PostUpdate,codcraft_bomb::publish.after(frame::RenderSet::FrontendAssemble));
         app.init_resource::<codcraft_soldiers::Soldiers>()
             .add_systems(PostUpdate, codcraft_soldiers::publish.after(frame::RenderSet::FrontendAssemble));
         app.add_systems(PostUpdate, codcraft_predator::publish.after(frame::RenderSet::FrontendAssemble));

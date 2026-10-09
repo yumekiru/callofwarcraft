@@ -38,6 +38,7 @@
 #include "Timer.h"
 #include "CoDCraftHelicopter.h"
 #include "CoDCraftSentry.h"
+#include "CoDCraftBomber.h"
 #include "SpellMgr.h"
 
 namespace
@@ -89,7 +90,20 @@ void WorldSession::HandleAttackSwingOpcode(WorldPackets::Combat::AttackSwing con
 
 void WorldSession::HandleCoDCraftBulletOpcode(WorldPackets::Combat::CoDCraftBullet const& packet)
 {
-    if(packet.sentry) {if(packet.grenadePhase==0) CoDCraftSentry::Deploy(_player);return;}
+    if(packet.bomber) {
+        if(_player->HasSpell(CoDCraftBomber::Spell) && packet.grenadePhase==0)
+            CoDCraftBomber::Call(_player,packet.grenadeX,packet.grenadeY,packet.grenadeZ,packet.grenadeRadius);
+        return;
+    }
+    if(packet.sentry) {
+        auto spell=sSpellMgr.GetSpellEntry(CoDCraftSentry::Spell);
+        if(spell && _player->HasSpell(CoDCraftSentry::Spell) && packet.grenadePhase==0 &&
+           _player->IsSpellReady(spell) && CoDCraftSentry::Deploy(_player,packet.grenadeX,packet.grenadeY,packet.grenadeZ)) {
+            _player->AddCooldown(spell,nullptr,false,120000);
+            _player->SendSpellCooldown(spell->Id,Milliseconds(120000),_player->GetObjectGuid());
+        }
+        return;
+    }
     if (packet.helicopter)
     {
         auto spell=sSpellMgr.GetSpellEntry(CoDCraftHelicopter::Spell);

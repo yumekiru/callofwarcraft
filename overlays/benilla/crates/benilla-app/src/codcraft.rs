@@ -27,7 +27,8 @@ pub(crate) mod gear;
 mod grenades;
 pub(crate) mod predator;
 mod helicopter;
-mod sentry;
+pub(crate) mod sentry;
+pub(crate) mod bomber;
 mod kobold_pose;
 mod ragdoll;
 mod shot_math;
@@ -379,6 +380,7 @@ fn publish_guest_input(
     windows: Query<&Window, With<PrimaryWindow>>,
     mut input: ResMut<GuestInputPublisher>,
     gear: Res<gear::GearState>,
+    placement: Res<sentry::Placement>,
 ) {
     let _work_scope = profile::scope("codcraft.rs:publish_guest_input");
     let Some(path) = input.path.clone() else {
@@ -394,7 +396,7 @@ fn publish_guest_input(
         input.alt_interact = !input.alt_interact;
     }
     let mouse_gameplay = active && !typing.typing && (input.predator_control || (!input.alt_interact && !over_ui.0));
-    let armed = !gear::enabled() || gear.code != 0;
+    let armed = (!gear::enabled() || gear.code != 0) && !placement.busy();
     let mut buttons = 0;
     let mut set = |condition, bit| {
         if condition {
@@ -425,7 +427,7 @@ fn publish_guest_input(
         INPUT_FIRE,
     );
     set(
-        mouse_gameplay && mouse.pressed(MouseButton::Right),
+        mouse_gameplay && !placement.busy() && mouse.pressed(MouseButton::Right),
         INPUT_AIM,
     );
     set(
@@ -1784,15 +1786,15 @@ fn present_viewmodel(
     cameras: Query<Entity, With<benilla_world::view::WorldCamera>>,
     mut viewmodel_entities: Query<(&mut Transform, &mut Visibility), With<CodcraftViewmodel>>,
     stream: (Local<PoseBlend>, Local<ViewmodelReader>),
-    gear: (Res<gear::GearState>, Res<predator::Predator>),
+    gear: (Res<gear::GearState>, Res<predator::Predator>, Res<sentry::Placement>),
 ) {
-    let (gear, predator) = gear;
+    let (gear, predator, placement) = gear;
     let _work_scope = profile::scope("codcraft.rs:present_viewmodel");
     let (mut smoothing, mut reader) = stream;
     // The equipped weapon is gameplay, not a Q-key diagnostic overlay toggle.
     view.shown = true;
     let Some(paths) = paths else { return };
-    if predator.flying() || !world_live.0 || (gear::enabled() && gear.code == 0) {
+    if placement.busy() || predator.flying() || !world_live.0 || (gear::enabled() && gear.code == 0) {
         *smoothing = PoseBlend::default();
         hide_viewmodel(&stage, &mut viewmodel_entities);
         return;
@@ -2669,6 +2671,7 @@ impl Plugin for CodcraftPlugin {
         predator::plugin(app);
         helicopter::plugin(app);
         sentry::plugin(app);
+        bomber::plugin(app);
         app.init_resource::<GuestLink>()
             .init_resource::<GuestView>()
             .init_resource::<ViewmodelStage>()

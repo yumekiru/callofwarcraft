@@ -14,6 +14,7 @@
 #include "CoDCraftPlayerBotAI.h"
 #include "CoDCraftHelicopter.h"
 #include "CoDCraftSentry.h"
+#include "CoDCraftBomber.h"
 #include "Item.h"
 #include "PartyBotAI.h"
 #include "BattleBotAI.h"
@@ -218,6 +219,15 @@ void PlayerBotMgr::OnPlayerInWorld(Player* player)
                 }
             master->SendInitialActionButtons();
             player->LearnSpell(CoDCraftSentry::Spell,false);
+            player->LearnSpell(CoDCraftBomber::Spell,false);
+            bool bomberPresent=false;
+            for(auto const& row:buttons)
+                if(row.second.uState!=ACTIONBUTTON_DELETED && row.second.GetType()==ACTION_BUTTON_SPELL && row.second.GetAction()==CoDCraftBomber::Spell) bomberPresent=true;
+            if(!bomberPresent) for(uint8 slot=0;slot<12;++slot) {
+                auto found=buttons.find(slot);
+                if(found==buttons.end() || found->second.uState==ACTIONBUTTON_DELETED)
+                { master->addActionButton(slot,CoDCraftBomber::Spell,ACTION_BUTTON_SPELL);break; }
+            }
             bool sentryPresent=false;
             for(auto const& row:buttons)
                 if(row.second.uState!=ACTIONBUTTON_DELETED && row.second.GetType()==ACTION_BUTTON_SPELL && row.second.GetAction()==CoDCraftSentry::Spell) sentryPresent=true;
@@ -298,6 +308,7 @@ void PlayerBotMgr::Update(uint32 diff)
 {
     CoDCraftHelicopter::Update(diff);
     CoDCraftSentry::Update(diff);
+    CoDCraftBomber::Update(diff);
     if (m_codcraftPopulationStarted)
     {
         // Run independently of the legacy ten-second random-bot scheduler.

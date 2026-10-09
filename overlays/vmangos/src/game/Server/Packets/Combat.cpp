@@ -12,7 +12,8 @@ void WorldPackets::Combat::CoDCraftBullet::ReadFromWorldPacket(WorldPacket& recv
     {
         uint32 magic;
         recv_data >> magic;
-        if (magic != 0x4e474343u && magic != 0x4d504343u && magic != 0x48414343u && magic != 0x47534343u) return;
+        if (magic != 0x4e474343u && magic != 0x4d504343u && magic != 0x48414343u && magic != 0x47534343u && magic != 0x42534343u) return;
+        bomber = magic == 0x42534343u;
         sentry = magic == 0x47534343u;
         helicopter = magic == 0x48414343u;
         predator = magic == 0x4d504343u;

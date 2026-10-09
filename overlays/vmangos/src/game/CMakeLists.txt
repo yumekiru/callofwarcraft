@@ -197,6 +197,7 @@ set (game_SRCS
     PlayerBots/CoDCraftPlayerBotAI.cpp
     PlayerBots/CoDCraftHelicopter.cpp
     PlayerBots/CoDCraftSentry.cpp
+    PlayerBots/CoDCraftBomber.cpp
     PlayerBots/PlayerBotMgr.cpp
     Server/Protocol/Opcodes.cpp
     Server/Packets/Battleground.cpp

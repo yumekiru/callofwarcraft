@@ -29,6 +29,18 @@
 namespace
 {
     struct ZonePoint { float x, y, z; uint8 level; uint32 area=0, entry=0, guid=0; };
+    uint8 AssignedLevel(ZonePoint const& point)
+    {
+        uint8 level=uint8(std::max(1,int(point.level)-1));
+        auto area=AreaEntry::GetById(point.area);
+        if(area && area->Name) {
+            std::string name=area->Name;
+            if(name=="Valley of Trials" || name=="Northshire Valley" || name=="Coldridge Valley" ||
+               name=="Shadowglen" || name=="Deathknell" || name=="Camp Narache")
+                level=std::min(uint8(3),level);
+        }
+        return level;
+    }
     struct ActiveZone
     {
         uint32 map = 0, instance = 0, zone = 0, generation = 0, scanDelay = 0;
@@ -273,7 +285,7 @@ void CoDCraftPlayerBotAI::AdoptZone()
     uint32 group=SquadForSlot(m_persistentSlot)/5;
     auto const& pool=CombatPool(m_persistentSlot);
     ZonePoint point = pool.empty() ? activeZone.home : pool[PatrolAnchor(m_persistentSlot,pool.size())];
-    if (!pool.empty()) point.level=activeZone.levels[group];
+    point.level=AssignedLevel(point);
     // Separate arrivals within each route anchor, grounded against real terrain.
     float angle=float(ordinal)*2.3999632f, radius=4.0f+float(ordinal%5)*3.0f;
     float x=point.x+std::cos(angle)*radius,y=point.y+std::sin(angle)*radius;
@@ -287,16 +299,15 @@ void CoDCraftPlayerBotAI::AdoptZone()
     m_grenadeFuse=0; m_predatorFlight=0;
     me->AttackStop(); me->GetMotionMaster()->Clear(); me->CombatStop(true);
     me->TeleportTo(m_map,m_x,m_y,m_z,m_orientation);
-    // Native stats and XP remain real. Keep fraction-to-next-level while changing
-    // the zone's baseline, then allow ordinary kills/quests to advance it.
+    // Fixed camp assignment: native stats remain real, but bot XP is disabled.
     if (me->GetLevel()!=point.level)
     {
-        float fraction = float(me->GetUInt32Value(PLAYER_XP)) / std::max(1u,me->GetUInt32Value(PLAYER_NEXT_LEVEL_XP));
         me->GiveLevel(point.level);
-        me->SetUInt32Value(PLAYER_XP,uint32(fraction*me->GetUInt32Value(PLAYER_NEXT_LEVEL_XP)));
         m_scaledHealth=0; // GiveLevel rebuilt the unscaled native maximum.
     }
     m_level=point.level;
+    me->SetUInt32Value(PLAYER_XP,0);
+    me->SetPersonalXpRate(0.0f);
 }
 
 void CoDCraftPlayerBotAI::Explore()
@@ -347,7 +358,7 @@ bool CoDCraftPlayerBotAI::OnSessionLoaded(PlayerBotEntry* entry, WorldSession* s
     {
         auto const& p=pool[PatrolAnchor(m_persistentSlot,pool.size())];
         m_map=activeZone.map; m_instance=activeZone.instance;
-        m_x=p.x; m_y=p.y; m_z=p.z+0.1f; m_level=activeZone.levels[group];
+        m_x=p.x; m_y=p.y; m_z=p.z+0.1f; m_level=AssignedLevel(p);
     }
     if (m_restored)
     {
@@ -396,13 +407,17 @@ void CoDCraftPlayerBotAI::BeforeAddToMap(Player* player)
 
 void CoDCraftPlayerBotAI::OnPlayerLogin()
 {
-    if (!m_restored) me->GiveLevel(m_level);
+    me->SetPersonalXpRate(0.0f);
+    me->GiveLevel(m_level);
     if (!m_restored && m_weapon && sObjectMgr.GetItemPrototype(m_weapon))
     {
         me->AutoUnequipItemFromSlot(EQUIPMENT_SLOT_MAINHAND);
         me->SatisfyItemRequirements(sObjectMgr.GetItemPrototype(m_weapon));
         me->StoreNewItemInBestSlots(m_weapon, 1);
     }
+    // Equipment requirements may raise level; restore the fixed assignment.
+    me->GiveLevel(m_level);
+    me->SetUInt32Value(PLAYER_XP,0);
     m_scaledHealth = std::max(1u, me->GetMaxHealth() / 4);
     me->SetMaxHealth(m_scaledHealth);
     me->SetHealth(m_scaledHealth);

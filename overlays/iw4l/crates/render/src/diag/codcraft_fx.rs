@@ -12,6 +12,7 @@ struct FxBridge {
     mark_sequence: u64,
     texture_namespace: u64,
     audio_inspected: bool,
+    bomber_inspected: bool,
 }
 
 struct MissileTrail {
@@ -149,6 +150,17 @@ fn requests(
         return;
     };
     cache.0.sync(&catalog.0);
+    if !bridge.bomber_inspected {
+        let report=catalog.0.effects().filter(|def| {
+            let n=def.name.to_ascii_lowercase();
+            n.contains("explosion") || n.contains("airstrike") || n.contains("bomb")
+        }).map(|def|format!("{} namespace={:?} elements={}\n",def.name,def.namespace,def.elems.len())).collect::<String>();
+        if let Some(paths)=paths() {
+            if std::fs::write(paths.model.with_extension("bomber-fx-catalog.txt"),report).is_ok() {
+                bridge.bomber_inspected=true;
+            }
+        }
+    }
     for file in files.flatten().take(64) {
         let path = file.path();
         if path.extension().and_then(|p| p.to_str()) != Some("request") {
@@ -178,6 +190,25 @@ fn requests(
             continue;
         }
         let scene = MarkScene::default();
+        if u(8)==11 || u(8)==12 {
+            let key=u(12); let snd_ent=0xb0000000 ^ key;
+            if u(8)==12 {
+                audio_commands.write(audio::AliasCommand::StopEntity{snd_ent});
+                bridge.helicopter_audio.remove(&(key ^ 0x70000000));
+            } else if let Some(bank)=sound_bank.as_ref() {
+                let audio_key=key ^ 0x70000000;
+                if let Some(updated)=bridge.helicopter_audio.get_mut(&audio_key) { *updated=now; }
+                else if let Some(alias)=bank.0.sound_in(asset_core::AssetNamespace::Iw4,"veh_b2_close_loop") {
+                    audio_commands.write(audio::AliasCommand::Play(audio::PlayAlias{
+                        event:None,namespace:asset_core::AssetNamespace::Iw4,alias:alias.name.clone(),
+                        fallback:None,origin_inches:None,snd_ent:Some(snd_ent),
+                    }));
+                    bridge.helicopter_audio.insert(audio_key,now);
+                    diag::info!(World,"CoDCraft: native bomber flight sound {}",alias.name);
+                }
+            }
+            continue;
+        }
         if (6..=9).contains(&u(8)) {
             let key=u(12); let snd_ent=0xc0000000 ^ key;
             if u(8)==7 {
@@ -275,8 +306,9 @@ fn requests(
                 &mut combat,
                 Some(&scene),
             );
-        } else if u(8) == 1 || u(8) == 3 {
-            let name = if u(8)==3 { "remotemissile_projectile_mp" } else { "frag_grenade_mp" };
+        } else if u(8) == 1 || u(8) == 3 || u(8)==10 {
+            // Bomber bombs share the Predator's authored blast and sound profile.
+            let name = if matches!(u(8), 3 | 10) { "remotemissile_projectile_mp" } else { "frag_grenade_mp" };
             let Some(weapon) = weapons.0.resolve_index(name).ok().flatten() else {
                 continue;
             };
@@ -310,13 +342,16 @@ fn requests(
                 impact.0.as_ref(),
                 slot,
             );
+            // Use exactly the Predator selection path, including surface FX.
+            // Legacy .bomberfx overrides must not replace this shared profile.
+            let selected = [names.table,names.slot];
             let axis = if normal == [0.0; 3] {
                 render_fx::combat::IDENTITY_AXIS
             } else {
                 fx::axis_from_hit_normal(normal)
             };
             let mut played = 0;
-            for name in [names.table, names.slot] {
+            for name in selected {
                 render_fx::combat::try_play_weapon_fx_at_origin(
                     &mut host.0,
                     &catalog.0,
@@ -327,6 +362,9 @@ fn requests(
                     &mut played,
                     Some(&scene),
                 );
+            }
+            if u(8)==10 {
+                diag::info!(World,"CoDCraft: bomber explosion profile=Predator surface={:?} weapon_slot={:?} played={}",names.table,names.slot,played);
             }
             info!("CoDCraft: native frag FX requested; played={played} origin={origin:?}");
         }

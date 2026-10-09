@@ -2,7 +2,7 @@
 
 The initial implementation uses vmangos's native `PlayerBotMgr` and real `Player`
 sessions. It is not an installation of the AzerothCore mod-playerbots module.
-Bots retain server movement, inventory, factions, damage, kill credit, XP and
+Bots retain server movement, inventory, factions, damage, kill credit and
 quest bookkeeping. Benilla displays them through the live MW2 soldier bridge.
 
 Add to your patched world's `mangosd.conf`:
@@ -20,10 +20,10 @@ humans log in. Zone transitions relocate the same saved roster; disconnecting
 unloads it. Movement endpoints remain in that zone. Real normal-creature spawns
 provide separated travel anchors, indexed in bounded batches. Once indexing
 finishes, bots disperse across six separated patrol regions, 225 per region except Northshire's 75, and
-receive local creature levels. The Elwynn groups are explicitly Northshire (75,
-level 1), Goldshire (225, level 5), Eastvale Logging Camp (225, level 10), plus three
-other forest regions (675 total, local levels within 1–10). Other zones derive six
-spread-out regions and their level baselines from normal local creatures, excluding
+receive fixed levels slightly below their assigned camp enemies. The Elwynn groups
+are Northshire (75), Goldshire (225), Eastvale Logging Camp (225), plus three
+other forest regions (675 total). Other zones derive six
+spread-out regions and their enemy-level baselines from normal local creatures, excluding
 guards from the estimate. Initial logins wait for the route index rather than
 spawning everyone beside the human. Moving between Elwynn and other zones reloads the saved roster to match the population quota.
 Each region is split into five persistent combat squads: fifteen bots per Northshire squad, forty-five elsewhere. The added coverage patrols sample region-wide enemy anchors evenly, thinning densely packed spawns to avoid concentrating everyone in one camp. Squads
@@ -35,8 +35,11 @@ quest errands; quest interactions are limited to nearby NPCs. Bots may assist
 another bot's tagged enemy but never take a human's tagged target. Dead enemies
 use normal respawns, with the existing half-time bot-kill rule; no instant enemy
 resurrection or fabricated kills are used. Squad mappings are logged on zone load.
-XP fraction is retained when the zone baseline changes; ordinary kills and quests
-still grant native progression. Logins are limited to six per manager update.
+Bots have fixed camp levels one below their assigned enemies (minimum one).
+Starter areas, including Valley of Trials, are capped at levels 1–3. Their personal
+XP rate is zero for kills, quests and exploration; existing overleveled characters
+are corrected on login/zone assignment without clearing inventory or quest history.
+Logins are limited to six per manager update.
 Names use human first/surname combinations.
 Bots use a varied existing firearm selected from the weapon
 item map. Selection excludes level/honor/reputation-gated items and launchers;
@@ -168,8 +171,10 @@ casts. Calls never evict other aircraft. A rejected bot call retries later witho
 
 ## Sentry Gun (first playable version)
 
-Spell 24733 is repurposed as Sentry Gun and learned on login, with the first free main-bar slot used when available. It deploys two yards ahead on validated Warcraft ground. Maximum three per player and 32 globally; each lasts 60 seconds, with no cooldown during testing. Bots do not cast it.
+Spell 24733 is repurposed as Sentry Gun and learned on login, with the first free main-bar slot used when available. It enters carry/placement mode and deploys on chosen validated Warcraft ground within six yards. Maximum three per player and 32 globally; each lasts 60 seconds, with a two-minute cooldown after successful placement. Bots do not cast it.
 
 The server selects hostile creatures within 40 yards and a forward 120-degree arc, validates VMAP and terrain line of sight, and fires at eight rounds per second. Each round uses equipped-weapon damage with normal mitigation and player kill/loot credit. Human-tagged enemies belonging to another player are protected. Sentries stop firing if their owner moves beyond 130 yards; map exit, disconnect and expiration remove them.
 
-The running MW2 client exports owned native sentry/minigun model geometry and textures. Benilla renders the shared model in the world, turns it toward targets, and displays authoritative shot tracers. Gunfire uses the verified native `sentry_minigun_fire` sound alias. The static mesh pose is retained until rendering dependencies are ready and installed even before a turret is deployed. This is Warcraft-side sentry targeting, not the entire retail MW2 turret script. Destructibility, barrel animation, pickup/repositioning and bot use are not part of this first version.
+Before deployment only the highlighted carried model is drawn, with no duplicate ground model. Confirmed sentry kills notify only their owner through the native hitmarker sound/UI path. Native damage already grants XP and quest credit; the server directly collects permitted corpse loot into inventory without opening a loot window. Owned passthrough corpse access extends to 200 yards to cover the owner-to-turret and turret-to-target distances; other corpses retain normal access checks.
+
+The running MW2 client exports owned native sentry/minigun model geometry and textures. Benilla renders the shared model in the world, turns it toward targets, and displays authoritative shot tracers. Gunfire uses the verified native `sentry_minigun_fire` sound alias. The static mesh pose is retained until rendering dependencies are ready and installed even before a turret is deployed. Casting enters a highlighted carry/placement preview: left-click supported ground to place, right-click or Escape to cancel. Regular gunfire is disabled while carrying. The server validates proximity, terrain, slope and line of sight, then starts a two-minute cooldown only after successful placement. This is Warcraft-side sentry targeting, not the entire retail MW2 turret script. Destructibility, barrel animation, native carry animation, pickup/repositioning and bot use are not part of this version.

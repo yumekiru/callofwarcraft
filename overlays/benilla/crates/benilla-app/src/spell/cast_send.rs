@@ -196,7 +196,7 @@ impl CastLadder<'_, '_> {
         ctx: &cast_target::CastContext,
         commit: CastCommit,
     ) {
-        if matches!(spell_id,126|24732) && crate::codcraft::passthrough_enabled() {
+        if matches!(spell_id,126|24732|24733|24734) && crate::codcraft::passthrough_enabled() {
             let def=self.spells.as_ref().and_then(|s|s.catalog.get(spell_id));
             if self.cooldowns.not_ready(spell_id,0,def,Instant::now()) {
                 self.cast_errors.push_local(spell_id,commit.not_ready_reason());
@@ -211,10 +211,16 @@ impl CastLadder<'_, '_> {
             });
             return;
         }
+        if spell_id==24734 && crate::codcraft::passthrough_enabled() {
+            self.ecs.queue(|world:&mut World| {
+                if let Some(mut bomber)=world.get_resource_mut::<crate::codcraft::bomber::Targeting>() {bomber.request=true;}
+            });
+            return;
+        }
         if spell_id == 24733 && crate::codcraft::passthrough_enabled() {
             self.ecs.queue(|world:&mut World| {
-                if let Some(net)=world.get_resource::<crate::net::NetCommands>() {
-                    let _=net.0.send(crate::net::ClientCommand::CodcraftSentry);
+                if let Some(mut placement)=world.get_resource_mut::<crate::codcraft::sentry::Placement>() {
+                    placement.request = true;
                 }
             });
             return;

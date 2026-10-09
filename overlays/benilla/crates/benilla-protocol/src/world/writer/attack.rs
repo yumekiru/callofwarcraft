@@ -65,9 +65,14 @@ impl WorldWriter {
         payload[8..12].copy_from_slice(b"CCAH");
         self.send(opcode::CMSG_CODCRAFT_BULLET,&payload)
     }
-    pub fn codcraft_sentry(&mut self) -> Result<()> {
-        let mut payload=grenade_packet(0,0,[0.0;3],0,15.0);
+    pub fn codcraft_sentry(&mut self, position: [f32;3]) -> Result<()> {
+        let mut payload=grenade_packet(0,0,position,0,15.0);
         payload[8..12].copy_from_slice(b"CCSG");
+        self.send(opcode::CMSG_CODCRAFT_BULLET,&payload)
+    }
+    pub fn codcraft_bomber(&mut self,position:[f32;3],heading:f32)->Result<()> {
+        let mut payload=grenade_packet(0,0,position,0,heading);
+        payload[8..12].copy_from_slice(b"CCSB");
         self.send(opcode::CMSG_CODCRAFT_BULLET,&payload)
     }
 

@@ -821,7 +821,7 @@ impl ZoneLane for Iw4Lane {
             for index in 0..sink.projectile_meshes.len() {
                 if let Some(model)=sink.projectile_meshes.get_at(index) {
                     let name=model.skel.name.to_ascii_lowercase();
-                    if name.contains("cobra") || name.contains("helicopter") || name.contains("apache") || name.contains("hind") || name.contains("sentry") || name.contains("minigun") || name.contains("turret") {
+                    if name.contains("cobra") || name.contains("helicopter") || name.contains("apache") || name.contains("hind") || name.contains("sentry") || name.contains("minigun") || name.contains("turret") || name.contains("bomber") || name.contains("b2") || name.contains("stealth") {
                         projectile_keys.insert(model.key());
                     }
                 }

@@ -178,12 +178,19 @@ fn requests(
             continue;
         }
         let scene = MarkScene::default();
-        if (6..=8).contains(&u(8)) {
+        if (6..=9).contains(&u(8)) {
             let key=u(12); let snd_ent=0xc0000000 ^ key;
             if u(8)==7 {
                 audio_commands.write(audio::AliasCommand::StopEntity{snd_ent}); bridge.helicopter_audio.remove(&key);
             } else if let Some(bank)=sound_bank.as_ref() {
-                if u(8)==6 {
+                if u(8)==9 {
+                    if let Some(alias)=bank.0.sound_in(asset_core::AssetNamespace::Iw4,"sentry_minigun_fire") {
+                        audio_commands.write(audio::AliasCommand::Play(audio::PlayAlias {
+                            event:None,namespace:asset_core::AssetNamespace::Iw4,alias:alias.name.clone(),fallback:None,
+                            origin_inches:None,snd_ent:Some(audio::SND_ENT_LOCAL),
+                        }));
+                    }
+                } else if u(8)==6 {
                     if let Some(updated)=bridge.helicopter_audio.get_mut(&key) { *updated=now; continue; }
                     if let Some(alias)=bank.0.sound_in(asset_core::AssetNamespace::Iw4,"mp_cobra_helicopter") {
                         audio_commands.write(audio::AliasCommand::Play(audio::PlayAlias {
@@ -192,7 +199,9 @@ fn requests(
                         }));
                         bridge.helicopter_audio.insert(key,now);
                     }
-                } else if let Some(weapon)=weapons.0.resolve_index("cobra_20mm_mp").ok().flatten() {
+                } else if let Some(weapon)=if u(8)==9 {
+                    ["sentry_minigun_mp","airdrop_sentry_minigun_mp","minigun_mp","m240_mp"].iter().find_map(|name|weapons.0.resolve_index(name).ok().flatten())
+                } else {weapons.0.resolve_index("cobra_20mm_mp").ok().flatten()} {
                     if let Some(alias)=weapons.0.sounds_of(weapon).and_then(|s|audio::select_fire_alias(false,s.fire.as_deref(),s.fire_player.as_deref())) {
                         audio_commands.write(audio::AliasCommand::Play(audio::PlayAlias {
                             event:None,namespace:asset_core::AssetNamespace::Iw4,alias:alias.to_owned(),fallback:None,

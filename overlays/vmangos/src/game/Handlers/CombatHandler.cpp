@@ -37,6 +37,8 @@
 #include "CellImpl.h"
 #include "Timer.h"
 #include "CoDCraftHelicopter.h"
+#include "CoDCraftSentry.h"
+#include "SpellMgr.h"
 
 namespace
 {
@@ -87,10 +89,16 @@ void WorldSession::HandleAttackSwingOpcode(WorldPackets::Combat::AttackSwing con
 
 void WorldSession::HandleCoDCraftBulletOpcode(WorldPackets::Combat::CoDCraftBullet const& packet)
 {
+    if(packet.sentry) {if(packet.grenadePhase==0) CoDCraftSentry::Deploy(_player);return;}
     if (packet.helicopter)
     {
-        if (_player->HasSpell(CoDCraftHelicopter::Spell) && packet.grenadePhase==0)
-            CoDCraftHelicopter::Call(_player);
+        auto spell=sSpellMgr.GetSpellEntry(CoDCraftHelicopter::Spell);
+        if (spell && _player->HasSpell(CoDCraftHelicopter::Spell) && packet.grenadePhase==0 &&
+            _player->IsSpellReady(spell) && CoDCraftHelicopter::Call(_player))
+        {
+            _player->AddCooldown(spell,nullptr,false,300000);
+            _player->SendSpellCooldown(spell->Id,Milliseconds(300000),_player->GetObjectGuid());
+        }
         return;
     }
     if (packet.grenade)
@@ -108,6 +116,8 @@ void WorldSession::HandleCoDCraftBulletOpcode(WorldPackets::Combat::CoDCraftBull
             if (WorldTimer::getMSTimeDiff(it->second.born,now)>(predator ? 30000u : 10000u)) it=flights.erase(it); else ++it;
         if (packet.grenadePhase == 0)
         {
+            auto predatorSpell=predator ? sSpellMgr.GetSpellEntry(126) : nullptr;
+            if (predator && (!predatorSpell || !_player->IsSpellReady(predatorSpell))) return;
             float const dx=packet.grenadeX-_player->GetPositionX(), dy=packet.grenadeY-_player->GetPositionY(), dz=packet.grenadeZ-_player->GetPositionZ();
             if (!_player->IsAlive() || packet.grenadeSequence<=sequence ||
                 packet.grenadeFuse>5000 || packet.grenadeRadius<1.0f || packet.grenadeRadius>15.0f ||
@@ -117,6 +127,11 @@ void WorldSession::HandleCoDCraftBulletOpcode(WorldPackets::Combat::CoDCraftBull
             if (!predator) m_codcraftLastFrag=now;
             flights.emplace(packet.grenadeSequence,CoDCraftFrag{
                 now,packet.grenadeFuse,_player->GetMapId(),packet.grenadeX,packet.grenadeY,packet.grenadeZ,packet.grenadeRadius});
+            if (predator)
+            {
+                _player->AddCooldown(predatorSpell,nullptr,false,60000);
+                _player->SendSpellCooldown(126,Milliseconds(60000),_player->GetObjectGuid());
+            }
             return;
         }
         auto const found=flights.find(packet.grenadeSequence);

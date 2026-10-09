@@ -307,15 +307,24 @@ impl SpellCatalog {
 
     /// Explicit fork override; retail DBC files are never modified.
     pub fn codcraft_predator(&mut self) {
+        if let Some(spell)=self.spells.get_mut(&24733) {
+            spell.name="Sentry Gun".into();spell.rank=None;spell.passive=false;spell.cast_ui=0;
+            spell.casting_time_index=0;spell.recovery_ms=0;spell.category_recovery_ms=0;
+            spell.start_recovery_ms=0;spell.start_recovery_category=0;
+            spell.mana_cost=0;spell.mana_cost_pct=0;spell.mana_cost_per_level=0;spell.mana_per_second=0;
+            spell.range_index=1;
+            spell.icon=Some("Interface\\Icons\\INV_Gizmo_03".into());
+            spell.description=Some("Deploy a Sentry Gun ahead of you for 60 seconds. Automatically engages exposed enemies within 40 yards in its forward arc. No cooldown while testing; maximum 3 deployed.".into());
+        }
         if let Some(spell)=self.spells.get_mut(&24732) {
             spell.name="Attack Helicopter".into();
             spell.rank=None; spell.passive=false; spell.cast_ui=0;
-            spell.casting_time_index=0; spell.recovery_ms=0; spell.category_recovery_ms=0;
+            spell.casting_time_index=0; spell.recovery_ms=300_000; spell.category_recovery_ms=0;
             spell.start_recovery_ms=0; spell.start_recovery_category=0;
             spell.mana_cost=0; spell.mana_cost_pct=0; spell.mana_cost_per_level=0; spell.mana_per_second=0;
             spell.range_index=1;
-            spell.icon=Some("Interface\\Icons\\Ability_Mount_Gyrocoptor".into());
-            spell.description=Some("Call in an attack helicopter to patrol the area and engage exposed enemies for 60 seconds. No cooldown while testing. Multiple helicopters can patrol simultaneously.".into());
+            spell.icon=Some("Interface\\Icons\\INV_Gizmo_02".into());
+            spell.description=Some("Call in an attack helicopter to patrol the area and engage exposed enemies for 60 seconds. 5 minute cooldown. Multiple helicopters can patrol simultaneously.".into());
         }
         if let Some(spell) = self.spells.get_mut(&126) {
             spell.name = "Predator Missile".into();
@@ -323,7 +332,7 @@ impl SpellCatalog {
             spell.passive = false;
             spell.cast_ui = 0;
             spell.casting_time_index = 0;
-            spell.recovery_ms = 0;
+            spell.recovery_ms = 60_000;
             spell.category_recovery_ms = 0;
             spell.start_recovery_ms = 0;
             spell.start_recovery_category = 0;
@@ -333,7 +342,7 @@ impl SpellCatalog {
             spell.mana_per_second = 0;
             spell.range_index = 1;
             spell.icon = Some("Interface\\Icons\\Ability_Hunter_SniperShot".into());
-            spell.description = Some("Control a Predator missile over Azeroth. Move the mouse to steer; left click boosts descent. No cooldown while testing.".into());
+            spell.description = Some("Control a Predator missile over Azeroth. Move the mouse to steer; left click boosts descent. 1 minute cooldown.".into());
         }
     }
 

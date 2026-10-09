@@ -196,10 +196,25 @@ impl CastLadder<'_, '_> {
         ctx: &cast_target::CastContext,
         commit: CastCommit,
     ) {
+        if matches!(spell_id,126|24732) && crate::codcraft::passthrough_enabled() {
+            let def=self.spells.as_ref().and_then(|s|s.catalog.get(spell_id));
+            if self.cooldowns.not_ready(spell_id,0,def,Instant::now()) {
+                self.cast_errors.push_local(spell_id,commit.not_ready_reason());
+                return;
+            }
+        }
         if spell_id == 24732 && crate::codcraft::passthrough_enabled() {
             self.ecs.queue(|world:&mut World| {
                 if let Some(net)=world.get_resource::<crate::net::NetCommands>() {
                     let _=net.0.send(crate::net::ClientCommand::CodcraftHelicopter);
+                }
+            });
+            return;
+        }
+        if spell_id == 24733 && crate::codcraft::passthrough_enabled() {
+            self.ecs.queue(|world:&mut World| {
+                if let Some(net)=world.get_resource::<crate::net::NetCommands>() {
+                    let _=net.0.send(crate::net::ClientCommand::CodcraftSentry);
                 }
             });
             return;

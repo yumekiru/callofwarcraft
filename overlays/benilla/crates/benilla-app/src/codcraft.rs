@@ -21,11 +21,13 @@ use std::{
 mod combat_math;
 mod damage_direction;
 mod effects;
+mod input_writer;
 mod profile;
 pub(crate) mod gear;
 mod grenades;
 pub(crate) mod predator;
 mod helicopter;
+mod sentry;
 mod kobold_pose;
 mod ragdoll;
 mod shot_math;
@@ -71,6 +73,7 @@ const INPUT_FRAG: u32 = 1 << 11;
 /// its render rate briefly misses a host frame.
 #[derive(Resource, Default)]
 pub(crate) struct GuestInputPublisher {
+    writer: input_writer::Writer,
     path: Option<PathBuf>,
     sequence: u64,
     mouse_total: [f64; 2],
@@ -455,13 +458,6 @@ fn publish_guest_input(
     payload.extend_from_slice(&input.mouse_total[0].to_le_bytes());
     payload.extend_from_slice(&input.mouse_total[1].to_le_bytes());
 
-    let Ok(mut file) = std::fs::OpenOptions::new()
-        .write(true)
-        .create(true)
-        .open(&path)
-    else {
-        return;
-    };
     let header = || {
         let mut bytes = Vec::with_capacity(16);
         bytes.extend_from_slice(INPUT_MAGIC);
@@ -469,16 +465,9 @@ fn publish_guest_input(
         bytes.extend_from_slice(&input.sequence.to_le_bytes());
         bytes
     };
-    if file.seek(SeekFrom::Start(0)).is_err()
-        || file.write_all(&[0u8; 16]).is_err()
-        || file.set_len(INPUT_WIRE as u64).is_err()
-        || file.seek(SeekFrom::Start(16)).is_err()
-        || file.write_all(&payload).is_err()
-        || file.seek(SeekFrom::Start(0)).is_err()
-        || file.write_all(&header()).is_err()
-    {
-        return;
-    }
+    let mut packet = header();
+    packet.extend_from_slice(&payload);
+    input.writer.publish(path, packet);
 }
 
 /// Keep the normal Warcraft camera depth buffer for scene/weapon occlusion, but relax its near
@@ -2679,6 +2668,7 @@ impl Plugin for CodcraftPlugin {
         effects::plugin(app);
         predator::plugin(app);
         helicopter::plugin(app);
+        sentry::plugin(app);
         app.init_resource::<GuestLink>()
             .init_resource::<GuestView>()
             .init_resource::<ViewmodelStage>()

@@ -94,7 +94,7 @@ This is not retail MW2 ragdoll code: iw4L's `startragdoll` remains a stub.
 The fork repurposes spell 126 as Predator Missile for human players while the
 CoDCraft population feature is enabled. Login learns it and places it in the first
 empty primary action-bar slot, preserving existing buttons. If the bar is full,
-drag it from the spellbook. It has no mana cost or testing cooldown.
+drag it from the spellbook. It has no mana cost and a server-enforced one-minute cooldown.
 The guest must have `CODCRAFT_PREDATOR_EXPORT=1`. Casting requests the native
 Predator killstreak and activates the action slot assigned by its retail scripts.
 Native remote-missile flight, mouse steering and left-click boost are presented
@@ -138,13 +138,15 @@ over the saved Warcraft cast position, preserving its native relative altitude.
 ## Attack Helicopter
 
 The fork repurposes spell 24732 as **Attack Helicopter**, adds it to the player's
-spellbook, and places it in the first free slot of the main action bar. It has no
-player cooldown during testing. Repeated casts create separate aircraft; neither
+spellbook, and places it in the first free slot of the main action bar. It uses the vanilla
+INV_Gizmo_02 icon and a server-enforced five-minute player cooldown. Accepted casts create separate aircraft; neither
 another player nor a bot replaces an existing helicopter.
 Each aircraft patrols a 30-yard orbit around the cast location for 60 seconds,
 staying about 40 yards above the terrain and firing at exposed nearby enemies.
 Server VMAP and terrain tests block shots through buildings and hills; ordinary
 equipped-weapon damage, mitigation and kill/loot credit remain server-owned.
+
+Audio starts only after model parts are available. Animated helicopter instances disable stale-bound frustum culling, matching the other imported models. Rotor audio is currently non-directional, so hearing an off-screen or tree-obscured aircraft is still possible.
 
 Nearby clients display the actual owned MW2 helicopter mesh, textures and animated
 rotor bones exported by the running IW4 guest—not a screen overlay. The patrol and
@@ -163,3 +165,11 @@ launch. A maximum of 32 aircraft is active server-wide to bound rendering and
 target-search costs; bots can occupy at most 24, reserving eight slots for human
 casts. Calls never evict other aircraft. A rejected bot call retries later without consuming the
 25-minute cooldown. Native assets remain runtime-only and are never distributed.
+
+## Sentry Gun (first playable version)
+
+Spell 24733 is repurposed as Sentry Gun and learned on login, with the first free main-bar slot used when available. It deploys two yards ahead on validated Warcraft ground. Maximum three per player and 32 globally; each lasts 60 seconds, with no cooldown during testing. Bots do not cast it.
+
+The server selects hostile creatures within 40 yards and a forward 120-degree arc, validates VMAP and terrain line of sight, and fires at eight rounds per second. Each round uses equipped-weapon damage with normal mitigation and player kill/loot credit. Human-tagged enemies belonging to another player are protected. Sentries stop firing if their owner moves beyond 130 yards; map exit, disconnect and expiration remove them.
+
+The running MW2 client exports owned native sentry/minigun model geometry and textures. Benilla renders the shared model in the world, turns it toward targets, and displays authoritative shot tracers. Gunfire uses the verified native `sentry_minigun_fire` sound alias. The static mesh pose is retained until rendering dependencies are ready and installed even before a turret is deployed. This is Warcraft-side sentry targeting, not the entire retail MW2 turret script. Destructibility, barrel animation, pickup/repositioning and bot use are not part of this first version.

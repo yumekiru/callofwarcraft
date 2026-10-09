@@ -12,7 +12,7 @@
           "path": "crates/benilla-app/src/codcraft_aim.rs"
         },
         {
-          "sha256": "eb19f5d082049581540d80d5ceeda20e4cc87319dc7271006c77c018dea1b35e",
+          "sha256": "b09afbcab8f3637a531d5591b1a965d805c9c5263e014cb7669b9a4acf636f95",
           "path": "crates/benilla-app/src/codcraft.rs"
         },
         {
@@ -40,8 +40,12 @@
           "path": "crates/benilla-app/src/codcraft/grenades.rs"
         },
         {
-          "sha256": "edf0cfad7ce9ef1ddc88efb3a774ca1e766701c5719a5401fb6e6575ceb273b1",
+          "sha256": "614bedc1c8f223c2cc19c4fcd7a07ee81fd8fc23030b6a96317b686639d35907",
           "path": "crates/benilla-app/src/codcraft/helicopter.rs"
+        },
+        {
+          "sha256": "cdfc4c17588c346618d7b222cc0dce3ed19e4434d929aeea3980f003722c2d54",
+          "path": "crates/benilla-app/src/codcraft/input_writer.rs"
         },
         {
           "sha256": "a46c733b373eef2a33d9a5900aaabcdf6b67fe83390ea9b59ff9c3435513d475",
@@ -72,6 +76,10 @@
           "path": "crates/benilla-app/src/codcraft/ragdoll.rs"
         },
         {
+          "sha256": "1345dfb97643a1ac10291fca00e89a253360285388fe88e0bce6c44c54925f34",
+          "path": "crates/benilla-app/src/codcraft/sentry.rs"
+        },
+        {
           "sha256": "534ea2101247cffd1ee9f708e4c23c5e7848960b4377b29699d6c62301397e71",
           "path": "crates/benilla-app/src/codcraft/shot_math.rs"
         },
@@ -84,7 +92,7 @@
           "path": "crates/benilla-app/src/codcraft/soldier_ragdoll.rs"
         },
         {
-          "sha256": "1a18d90d3ec27d276bb3747840d42f8648f78065ea3ac685d76912d0d249134e",
+          "sha256": "e1b65a432a37976fb998105fc72b2e60a11a3c633089a1a5b61ea473f69b6b17",
           "path": "crates/benilla-app/src/codcraft/soldiers.rs"
         },
         {
@@ -100,15 +108,15 @@
           "path": "crates/benilla-app/src/items.rs"
         },
         {
-          "sha256": "61c1000132d70979d1a3c1c3c7208670a8d91413f7d80a4531811eddf15e3e4e",
+          "sha256": "353e6faaad55a747e7375f6dc5dc633f830dcbd942bc56c0ecc78e0ae90bbb6a",
           "path": "crates/benilla-app/src/nameplates.rs"
         },
         {
-          "sha256": "165cdac019d5ae0d7e8b696c3ea7c24ac6c519c6b3138db3dfacd6fa13983d6a",
+          "sha256": "b9429eec429a8a078569e94c46d5b9d93d2702cefeae734554c821dd8ef3516b",
           "path": "crates/benilla-app/src/net.rs"
         },
         {
-          "sha256": "6234d65f5996589ce35fb5783ff8ef4b281a13701dd39300afd42c219836808c",
+          "sha256": "4b3c05aed10e29dcaf7cf4dc4fd8fa3652c33ac95e7297f52fb97e00bf24f5b3",
           "path": "crates/benilla-app/src/net/io.rs"
         },
         {
@@ -132,7 +140,7 @@
           "path": "crates/benilla-app/src/player/state.rs"
         },
         {
-          "sha256": "b0f0930ad96f65f9361b8cf1a995ef96a3304fa0ad38659fb887e24c7d68630c",
+          "sha256": "5caed3a21c8afc833371382966f4c24bd8a7ccb4433768aaf5210394612d839b",
           "path": "crates/benilla-app/src/spell/cast_send.rs"
         },
         {
@@ -172,7 +180,7 @@
           "path": "crates/benilla-assets/src/world_assets/mod.rs"
         },
         {
-          "sha256": "49b553e1d2e6fbcf6c52dbe9a956678fdd9130c55a87d7423fee85881a48be3e",
+          "sha256": "1fa705de78db6ca18644b1938c7b8b1c790e6f4d218440b18926b85cc18cc16b",
           "path": "crates/benilla-formats/src/spells/mod.rs"
         },
         {
@@ -192,7 +200,7 @@
           "path": "crates/benilla-protocol/src/messages/parse.rs"
         },
         {
-          "sha256": "4da86bb33340c7dda02b16c1820d36defbf1d47daf0c1b97dd8046e1dfd48163",
+          "sha256": "64db6369f40a863c1bba932b30fa1db29330726b85bce9a88ac747c708026a7f",
           "path": "crates/benilla-protocol/src/world/writer/attack.rs"
         },
         {
@@ -270,7 +278,7 @@
           "path": "crates/asset_audio/src/sound_catalog.rs"
         },
         {
-          "sha256": "87a1bdc2919a5cb196ccc03e1d95dd19f65dc2e087b5a0e06572475ac6af98d2",
+          "sha256": "e15448c778e41813c2383e2ff08f7fe4b98ae999d435940f8d254f5149cf24e0",
           "path": "crates/assets/src/lane/iw4.rs"
         },
         {
@@ -326,11 +334,11 @@
           "path": "crates/render/Cargo.toml"
         },
         {
-          "sha256": "bfd5259401bcdf5b60e7b7d0c7d02ca9cc9098be0333bd7315d92aa2d54df1f2",
+          "sha256": "da0a45a638e4650175d2dc477a01f555dc8d1655935bab3197a389d1c7f3df80",
           "path": "crates/render/src/diag/codcraft_frame.rs"
         },
         {
-          "sha256": "5309b887aafdd301a0145bc58b7351d487d51214549c8e214285ff3e2b8b09ec",
+          "sha256": "685bec1a24c195fd7871d562d5d7b0adfddbbc54c8e74bec48711dddda2e161b",
           "path": "crates/render/src/diag/codcraft_fx.rs"
         },
         {
@@ -340,6 +348,10 @@
         {
           "sha256": "d360066c00c9f1c3925f12dbf6441c76b33aa362b5da868853d0153aba38303d",
           "path": "crates/render/src/diag/codcraft_predator.rs"
+        },
+        {
+          "sha256": "97101bad958f99fab777addfd111e39abc414f3b92b375e68198dc4c75919f00",
+          "path": "crates/render/src/diag/codcraft_sentry.rs"
         },
         {
           "sha256": "f5845be13c9c822b3193b4ba33814cb62caab210a829fa2fd3cc3da250efe064",
@@ -364,7 +376,7 @@
     {
       "files": [
         {
-          "sha256": "7727f7fb2a7bde0529517bcab0477bb1a470856e7b24052c826bb7fb8e5402f3",
+          "sha256": "ff8ff8ab97b80d92b2fd833d2c85fb980fcc8a63e6c01e517018372571f013c8",
           "path": "src/game/CMakeLists.txt"
         },
         {
@@ -372,8 +384,12 @@
           "path": "src/game/Handlers/CoDCraftTerrain.h"
         },
         {
-          "sha256": "d1ce10ff4f1077ec4e1cb795d4d8cdb8915efb834eedbefb599b0b14c5fbf51b",
+          "sha256": "c40d0b3a831c09e11894f11029685fbaeb714a0c495095dd5784a1e5b0954bae",
           "path": "src/game/Handlers/CombatHandler.cpp"
+        },
+        {
+          "sha256": "690608ad70a0af1e539e9c46e0bf8b3e37889a1d1997e6c8e0d0c8757b3b5a8c",
+          "path": "src/game/Objects/Creature.cpp"
         },
         {
           "sha256": "56ecdc132a9391975e9373bfa96fb4dede8db974c713c98cf0b785af52c9a2a6",
@@ -404,6 +420,14 @@
           "path": "src/game/PlayerBots/CoDCraftPlayerBotAI.h"
         },
         {
+          "sha256": "e4eca01270c21a1230f09017d55c4a84e3f44fb6a1a81bcf35b37a0496a5438c",
+          "path": "src/game/PlayerBots/CoDCraftSentry.cpp"
+        },
+        {
+          "sha256": "8a05d80487106386d30f827b645a244e3f7c1ddf558dcb532ed7db8dda4843b6",
+          "path": "src/game/PlayerBots/CoDCraftSentry.h"
+        },
+        {
           "sha256": "32d7a1a542d05cf3808a088c08239fc8e4115d276e7ced2c70f1d09e09165ee5",
           "path": "src/game/PlayerBots/PlayerBotAI.cpp"
         },
@@ -412,7 +436,7 @@
           "path": "src/game/PlayerBots/PlayerBotAI.h"
         },
         {
-          "sha256": "cf522cddc36b93a5b705ab5036a81d428ff1d2cbbffefa462b7509f9ad87881d",
+          "sha256": "4dae082476a79f3c0fcc27d4daeba72d8bd1998934bfd49bb993d2c174b09698",
           "path": "src/game/PlayerBots/PlayerBotMgr.cpp"
         },
         {
@@ -420,11 +444,11 @@
           "path": "src/game/PlayerBots/PlayerBotMgr.h"
         },
         {
-          "sha256": "f885b40a1b1e637f2cb5e605d60aceffa94a4b0f86acd57c0a8d57224a446029",
+          "sha256": "9169db5ac345cb690ca257f885c4456747b81a664fa6b12a1b121dbab289200b",
           "path": "src/game/Server/Packets/Combat.cpp"
         },
         {
-          "sha256": "114f6cc6567029526e40cdcd8d0bb2ebd4e916d392d2debf78f020df2bcae91b",
+          "sha256": "e9a83f3115017d1dc84e0bd3ad16533b959f1fa6497ca71bf9cfa4e9ddfa6d26",
           "path": "src/game/Server/Packets/Combat.h"
         },
         {

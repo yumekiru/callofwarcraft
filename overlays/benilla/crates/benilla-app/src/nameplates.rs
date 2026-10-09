@@ -536,6 +536,7 @@ pub(crate) fn drive_nameplates(
                     anchor,
                     anchor_q.4.contains(entity),
                 );
+                let anchor = if net.kind == EntityKind::Player { tf.translation + Vec3::Y * 1.95 } else { anchor };
                 let scale = height_scale(anchor.y - tf.translation.y);
                 let place = Transform {
                     translation: anchor,
@@ -608,7 +609,7 @@ fn name_miss_expired(misses: &mut u8, seen: bool) -> bool {
 fn place_nameplates(
     plates: Res<Nameplates>,
     camera: Query<&Transform, (With<WorldCamera>, Without<NamePlate>)>,
-    units: Query<(&Transform, Has<crate::codcraft::NativeSoldierAnchor>), (Without<NamePlate>, Without<WorldCamera>)>,
+    units: Query<(&Transform, Option<&NetEntity>), (Without<NamePlate>, Without<WorldCamera>)>,
     mut plate_tfs: Query<(&mut Transform, &mut GlobalTransform), With<NamePlate>>,
     anchor_q: (
         Query<&BoneAttach>,
@@ -631,7 +632,7 @@ fn place_nameplates(
     let facing = cam_tf.rotation;
     let blend = 1.0 - (-ROCK_MEAN_RATE * trace.1.delta_secs()).exp();
     for (&unit, (plate, ..)) in plates.live.iter() {
-        let (Ok((tf, native_soldier)), Ok((mut ptf, mut pglobal))) = (units.get(unit), plate_tfs.get_mut(*plate))
+        let (Ok((tf, net)), Ok((mut ptf, mut pglobal))) = (units.get(unit), plate_tfs.get_mut(*plate))
         else {
             continue; // spawned this frame and not yet flushed, or the unit is despawning
         };
@@ -650,7 +651,9 @@ fn place_nameplates(
             raw,
             anchor_q.4.contains(unit),
         );
-        let raw = if native_soldier { tf.translation + Vec3::Y * 1.95 } else { raw };
+        // Render LOD retires NativeSoldierAnchor beyond 80 yards; player identity
+        // does not change with distance, so the overhead seat must use that.
+        let raw = if net.is_some_and(|n| n.kind == EntityKind::Player) { tf.translation + Vec3::Y * 1.95 } else { raw };
         // Mounted: mean + ROCK_KEEP * residual, root-relative so the plate never lags.
         let anchor = if anchor_q.4.contains(unit) {
             let off = raw - tf.translation;

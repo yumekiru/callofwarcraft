@@ -26,6 +26,7 @@ namespace WorldPackets { namespace Combat
         bool grenade = false;
         bool predator = false;
         bool helicopter = false;
+        bool sentry = false;
         uint32 grenadeSequence = 0;
         uint8 grenadePhase = 0;
         float grenadeX = 0, grenadeY = 0, grenadeZ = 0;

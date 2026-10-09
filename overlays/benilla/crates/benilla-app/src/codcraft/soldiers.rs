@@ -251,6 +251,7 @@ pub(super) fn display(
         state.previous.remove(&id);
     }
     let mut replaced = std::collections::HashSet::new();
+    let mut installs = 0;
     for (id, root, race, mode, weapon, layer, visible) in targets {
         if mode == 10
             && state
@@ -346,6 +347,8 @@ pub(super) fn display(
         let resident = !slot.stage.entities.is_empty()
             && slot.stage.entities.iter().all(|e| render.1.contains(*e));
         if slot.stage.fingerprint != Some(pose.fingerprint) || !resident {
+            // Defer cold installations, never animation, to bound arrival bursts.
+            if installs >= 1 { continue; }
             let Some(model) = slot
                 .reader
                 .model
@@ -364,6 +367,7 @@ pub(super) fn display(
             ) else {
                 continue;
             };
+            installs += 1;
             for e in slot.stage.entities.drain(..) {
                 if let Ok(mut e) = commands.get_entity(e) {
                     e.try_despawn();

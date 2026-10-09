@@ -65,6 +65,11 @@ impl WorldWriter {
         payload[8..12].copy_from_slice(b"CCAH");
         self.send(opcode::CMSG_CODCRAFT_BULLET,&payload)
     }
+    pub fn codcraft_sentry(&mut self) -> Result<()> {
+        let mut payload=grenade_packet(0,0,[0.0;3],0,15.0);
+        payload[8..12].copy_from_slice(b"CCSG");
+        self.send(opcode::CMSG_CODCRAFT_BULLET,&payload)
+    }
 
     /// Fire one authoritative CoD-style shot from a streamed Kobold at this player. vmangos
     /// validates both GUIDs and applies one ordinary creature damage event.
